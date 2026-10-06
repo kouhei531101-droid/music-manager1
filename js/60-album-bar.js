@@ -1,5 +1,5 @@
 /* =========================================================
-   60-album-bar.js ― スマホ版：アルバムの曲一覧では再生バーを隠す（スマホ版 v8.7.1）
+   60-album-bar.js ― スマホ版：album の画面では再生バーを隠す（スマホ版 v8.7.1。v8.7.5 からアルバム一覧でも）
    ・album の画面でアルバムを開いている間（アルバムの曲一覧。albView.current がある）だけ、body に .alb-detail-open を付ける
    ・style.css（スマホ幅 760px 以下）：.alb-detail-open のときは再生バー（#player-bar）を出さず、--player-h を 0 にして
      本文の下の余白・歌詞パネル・トースト・スクロールボタンの位置も再生バーの分を詰める（最後の曲までスクロールで見える）
@@ -8,7 +8,8 @@
    ========================================================= */
 
 function syncAlbumDetailBar() {
-  var on = typeof currentPage !== 'undefined' && currentPage === 'albums' && typeof albView !== 'undefined' && !!albView.current;
+  // v8.7.5：アルバムの曲一覧だけでなく、アルバム一覧（album の画面全部）でも再生バーを出さない
+  var on = typeof currentPage !== 'undefined' && currentPage === 'albums';
   document.body.classList.toggle('alb-detail-open', on);
 }
 ['showPage', 'renderAlbumsPage'].forEach(function (name) {

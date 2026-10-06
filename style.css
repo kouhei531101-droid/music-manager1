@@ -2556,3 +2556,20 @@ body.readonly-mode [data-act="copy-folder"] { opacity: 0.45; pointer-events: non
 .card-art-wrap .card-act-sortkey, .card-art-wrap .card-act-hide { display: none !important; }
 .acm-sep { height: 1px; margin: 4px 6px; background: var(--border); }
 .head-art-tag.has-key { color: var(--accent); }
+
+/* ---------- スマホ版 v8.7.5：再生中ボタン（65-album-play-np.js）----------
+   album の画面（再生バーを出さない）で、曲が選ばれているときに左下に出す丸いボタン。3本の棒は再生中だけ動く。押すと再生画面 */
+.alb-np-fab { position: fixed; left: 14px; bottom: calc(var(--player-h) + var(--lyr-bottom) + var(--load-h) + 16px); z-index: 56;
+  width: 56px; height: 56px; border-radius: 50%; border: none; padding: 0; cursor: pointer;
+  background: var(--primary-mid); color: #fff; box-shadow: 0 6px 18px rgba(0, 0, 0, 0.3); display: inline-flex; align-items: center; justify-content: center; }
+.alb-np-fab[hidden] { display: none; }
+.anf-bars { display: inline-flex; align-items: flex-end; gap: 4px; height: 22px; }
+.anf-bars i { display: block; width: 5px; height: 40%; border-radius: 2px; background: currentColor; transform-origin: bottom; }
+.anf-bars i:nth-child(2) { height: 75%; }
+.anf-bars i:nth-child(3) { height: 55%; }
+.alb-np-fab.is-playing .anf-bars i { animation: anf-eq 0.9s ease-in-out infinite alternate; height: 100%; }
+.alb-np-fab.is-playing .anf-bars i:nth-child(2) { animation-delay: -0.3s; }
+.alb-np-fab.is-playing .anf-bars i:nth-child(3) { animation-delay: -0.6s; }
+@keyframes anf-eq { from { transform: scaleY(0.25); } to { transform: scaleY(1); } }
+@media (prefers-reduced-motion: reduce) { .alb-np-fab.is-playing .anf-bars i { animation: none; height: 70%; } }
+body.alb-fab-on #main { padding-bottom: calc(var(--player-h) + var(--lyr-bottom) + var(--load-h) + 96px); }
