@@ -2454,3 +2454,14 @@ body.readonly-mode [data-act="copy-folder"] { opacity: 0.45; pointer-events: non
 @media (max-width: 760px) {
   .readonly-banner { margin: 10px 12px 0; }
 }
+
+/* ---------- スマホ版 v8.7.1 ----------
+   ・アルバムの曲一覧では再生バーを出さない（60-album-bar.js が body に .alb-detail-open を付ける）。--player-h を 0 にして、
+     本文の下の余白・歌詞パネル・トースト・スクロールボタンも再生バーの分を詰める。再生は止めない
+   ・接続状態（サイドバーの「未接続（スマホ）」「読み込み済み（スマホ）」の枠）はスマホ版では全体で出さない。
+     音楽フォルダを選ぶ・選び直すは、読み取り専用モードの表示と「設定・バックアップ」の画面から */
+@media (max-width: 760px) {
+  body.alb-detail-open { --player-h: 0px; }
+  body.alb-detail-open #player-bar { display: none; }
+}
+.conn-status-wrap { display: none; }
