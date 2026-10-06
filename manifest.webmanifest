@@ -1,6 +1,6 @@
 {
-  "name": "Music Manager — 音楽ファイル管理",
-  "short_name": "Music Manager",
+  "name": "Music Manager スマホ版",
+  "short_name": "Music スマホ",
   "description": "スマホやPCの音楽フォルダを読み込んで、アルバム・プレイリストで聴く音楽管理アプリ",
   "lang": "ja",
   "start_url": "./index.html",
