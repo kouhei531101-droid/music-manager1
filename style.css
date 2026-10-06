@@ -2583,3 +2583,90 @@ body.alb-fab-on #main { padding-bottom: calc(var(--player-h) + var(--lyr-bottom)
   .album-pin-grid .album-pin-mark { width: 24px; height: 24px; top: 6px; left: 6px; }
   .album-pin-grid .album-pin-mark svg { width: 13px; height: 13px; }
 }
+
+/* ---------- スマホ版 v8.8：下部メニューバー（66-bottom-nav.js）----------
+   ・スマホ幅（760px 以下）では、サイドバーを隠し、画面の一番下に固定した「下部メニューバー」（#bottom-nav）で画面を切り替える
+   ・項目はバーの中で左右にスクロール（scroll-snap で1項目ずつ止まる）。今の画面の項目は強調（金色の線と文字）
+   ・下からの積み重ね：下部メニューバー（--bnav-h。安全領域 env(safe-area-inset-bottom) を含む）→ 再生バー（--player-h。album の画面は 0）
+     → 歌詞パネル（--lyr-bottom）→ 読み込みの進み具合の帯（--load-h）。トースト・スクロールボタン・再生中ボタン・本文の下の余白も、この合計の上
+   ・再生画面（body.np-open）の間と、文字の入力中（body.bnav-kbd）は隠し、--bnav-h も 0 にする
+   ・PC 幅（761px 以上）はサイドバーのまま（下部メニューバーは出さない） */
+:root { --bnav-h: 0px; --bnav-bar: 56px; }
+.bottom-nav { display: none; }
+@media (max-width: 760px) {
+  :root { --sidebar-w: 0px; --bnav-h: calc(var(--bnav-bar) + env(safe-area-inset-bottom, 0px)); }
+  body.np-open, body.bnav-kbd { --bnav-h: 0px; }
+  body { padding-top: env(safe-area-inset-top, 0px); }
+  #sidebar { display: none; }
+  #app { flex-direction: column; }
+
+  /* 下部メニューバー */
+  .bottom-nav { display: block; position: fixed; left: 0; right: 0; bottom: 0; z-index: 70;
+    height: var(--bnav-h); padding-bottom: env(safe-area-inset-bottom, 0px);
+    background: var(--primary-deep); color: var(--on-dark-sub);
+    border-top: 1px solid rgba(255, 255, 255, 0.10); box-shadow: 0 -4px 14px rgba(20, 15, 50, 0.22); }
+  body.np-open .bottom-nav, body.bnav-kbd .bottom-nav { display: none; }
+  .bnav-scroll { display: flex; align-items: stretch; height: var(--bnav-bar); padding: 0 6px;
+    overflow-x: auto; overflow-y: hidden; scroll-snap-type: x mandatory; overscroll-behavior-x: contain;
+    -webkit-overflow-scrolling: touch; scrollbar-width: none; touch-action: pan-x; }
+  .bnav-scroll::-webkit-scrollbar { display: none; }
+  .bnav-item { position: relative; flex: 0 0 66px; min-width: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px;
+    padding: 4px 2px 3px; border: none; background: transparent; color: inherit; scroll-snap-align: center;
+    border-radius: 10px; -webkit-tap-highlight-color: transparent; }
+  .bnav-item:active { background: rgba(255, 255, 255, 0.08); }
+  .bnav-icon { display: flex; }
+  .bnav-icon svg { width: 21px; height: 21px; }
+  .bnav-label { max-width: 100%; font-size: 10.5px; line-height: 1.1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .bnav-item.active { color: var(--gold); }
+  .bnav-item.active::before { content: ''; position: absolute; top: 0; left: 14px; right: 14px; height: 3px; border-radius: 0 0 3px 3px; background: var(--gold); }
+  .bnav-item.active .bnav-icon { background: rgba(255, 255, 255, 0.12); border-radius: 999px; padding: 1px 12px; }
+  .bnav-sep { flex: none; width: 1px; margin: 12px 4px; background: rgba(255, 255, 255, 0.16); }
+  /* 左右に続きがあるときの端のぼかし */
+  .bottom-nav::before, .bottom-nav::after { content: ''; position: absolute; top: 0; height: var(--bnav-bar); width: 26px; pointer-events: none; opacity: 0; transition: opacity 0.2s; z-index: 1; }
+  .bottom-nav::before { left: 0; background: linear-gradient(90deg, var(--primary-deep), transparent); }
+  .bottom-nav::after { right: 0; background: linear-gradient(270deg, var(--primary-deep), transparent); }
+  .bottom-nav.can-left::before, .bottom-nav.can-right::after { opacity: 1; }
+  .bottom-nav > .ui-label-tag { z-index: 2; }
+
+  /* 下部メニューバーの上に積む */
+  #main { padding-bottom: calc(var(--bnav-h) + var(--player-h) + var(--lyr-bottom) + var(--load-h) + 24px); }
+  body.alb-fab-on #main { padding-bottom: calc(var(--bnav-h) + var(--player-h) + var(--lyr-bottom) + var(--load-h) + 96px); }
+  #player-bar { left: 0; bottom: var(--bnav-h); }
+  .lyrics-panel { bottom: calc(var(--bnav-h) + var(--player-h)); }
+  .load-progress { left: 0; bottom: calc(var(--bnav-h) + var(--player-h) + var(--lyr-bottom)); }
+  .toast-area { bottom: calc(var(--bnav-h) + var(--player-h) + var(--lyr-bottom) + var(--load-h) + 12px); }
+  .alb-scroll { bottom: calc(var(--bnav-h) + var(--player-h) + var(--lyr-bottom) + var(--load-h) + 10px); }
+  .alb-np-fab { bottom: calc(var(--bnav-h) + var(--player-h) + var(--lyr-bottom) + var(--load-h) + 16px); }
+  .art-layout.is-wide .art-list-panel { max-height: calc(100vh - var(--bnav-h) - var(--player-h) - var(--lyr-bottom) - var(--load-h) - 36px); }
+}
+@media (max-width: 760px) and (prefers-reduced-motion: reduce) {
+  .bottom-nav::before, .bottom-nav::after { transition: none; }
+}
+
+/* ---------- スマホ版 v8.8：再生画面の描き方ボタン（ⓘ）・描き方メニュー（67-np-viz-menu.js）----------
+   ・再生画面の上部左の「バー」「波形」「円」の文字の切り替え（#np-modes）は隠し、丸の中に「i」の「描き方ボタン」1つにまとめる
+   ・大きさ・丸の形は右側の閉じるボタン（.np-close）と同じ（40px。400px 以下は 36px）
+   ・押すとボタンの下に「描き方メニュー」（アイコン＋名前。今の選択に ✓）。スマホ版では PC 幅でも同じ */
+.np-top .np-modes.np-modes-hidden { display: none; }
+.np-viz-wrap { position: relative; flex: none; display: inline-flex; }
+.np-viz-btn { flex: none; width: 40px; height: 40px; padding: 0; border-radius: 50%; border: 1px solid var(--border2); background: var(--surface); color: var(--text);
+  display: inline-flex; align-items: center; justify-content: center; cursor: pointer; }
+.np-viz-btn:hover { filter: brightness(0.97); }
+.np-viz-btn.is-open { background: var(--primary-mid); border-color: var(--primary-mid); color: #fff; }
+.np-viz-menu { position: absolute; top: calc(100% + 8px); left: 0; z-index: 20; min-width: 168px; padding: 6px; border-radius: 14px;
+  background: var(--surface); color: var(--text); border: 1px solid var(--border2); box-shadow: 0 10px 30px rgba(0, 0, 0, 0.28); }
+.np-viz-menu[hidden] { display: none; }
+.np-top.np-top-menu-open { z-index: 5; }   /* メニューを開いている間は本文より手前に */
+.np-viz-item { width: 100%; min-height: 44px; display: flex; align-items: center; gap: 10px; padding: 8px 10px; border: none; border-radius: 10px;
+  background: transparent; color: var(--text); font-size: 14.5px; text-align: left; cursor: pointer; }
+.np-viz-item:hover, .np-viz-item:focus-visible { background: var(--primary-pale); outline: none; }
+.np-viz-item.is-cur { color: var(--ink); font-weight: 700; }
+.np-viz-ico { flex: none; width: 32px; height: 32px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center;
+  background: var(--primary-pale); color: var(--ink-soft); }
+.np-viz-item.is-cur .np-viz-ico { background: var(--primary-mid); color: #fff; }   /* 今の選択は塗りで強調 */
+.np-viz-ico svg { width: 18px; height: 18px; }
+.np-viz-name { flex: 1; min-width: 0; }
+.np-viz-check { flex: none; width: 18px; display: inline-flex; color: var(--accent); }
+@media (max-width: 400px) {
+  .np-viz-btn { width: 36px; height: 36px; }
+}
