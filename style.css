@@ -2518,17 +2518,16 @@ body.readonly-mode [data-act="copy-folder"] { opacity: 0.45; pointer-events: non
   body.lyr-collapsed.lyr-mini-empty .lyrics-panel { display: none; }
 }
 
-/* ---------- スマホ版 v8.7.2：Pin の区切りを2行の横スクロールに（14-albums.js の .album-pin-grid）----------
-   ・スマホ幅では、Pin の区切りのアルバムカードを縦に並べず、2行で横に並べて区切りの中だけ横にスクロールする（scroll-snap で1枚ずつ止まる）
+/* ---------- スマホ版 v8.7.2：Pin の区切りを横スクロールに（14-albums.js の .album-pin-grid。v8.7.7 から枚数によらず1行）----------
+   ・スマホ幅では、Pin の区切りのアルバムカードを縦に並べず、1行で横に並べて区切りの中だけ横にスクロールする（scroll-snap で1枚ずつ止まる）
    ・カードの幅は、2.4枚分見える大きさ（次のカードが少し見切れて、横に続くと分かる）。ページ全体には横スクロールを出さない
-   ・Pin が1〜2枚のときは1行（2行にしない）。Pin の並べ替え中（.is-editing）は今までの並べ方 */
+   ・v8.7.7：いつも1行（v8.7.2〜8.7.6 は3枚以上で2行）。Pin の並べ替え中（.is-editing）は今までの並べ方 */
 @media (max-width: 760px) {
   .album-grid.album-pin-grid:not(.is-editing) {
     grid-template-columns: none; grid-auto-flow: column; grid-template-rows: auto;
     grid-auto-columns: calc((100% - 20px) / 2.4); gap: 12px 10px;
     overflow-x: auto; overflow-y: hidden; scroll-snap-type: x mandatory; overscroll-behavior-x: contain;
     -webkit-overflow-scrolling: touch; scrollbar-width: none; padding-bottom: 4px; }
-  .album-grid.album-pin-grid:not(.is-editing):has(> .album-card:nth-child(3)) { grid-template-rows: repeat(2, auto); }
   .album-grid.album-pin-grid:not(.is-editing)::-webkit-scrollbar { display: none; }
   .album-grid.album-pin-grid:not(.is-editing) > .album-card { scroll-snap-align: start; min-width: 0; }
 }
@@ -2573,3 +2572,14 @@ body.readonly-mode [data-act="copy-folder"] { opacity: 0.45; pointer-events: non
 @keyframes anf-eq { from { transform: scaleY(0.25); } to { transform: scaleY(1); } }
 @media (prefers-reduced-motion: reduce) { .alb-np-fab.is-playing .anf-bars i { animation: none; height: 70%; } }
 body.alb-fab-on #main { padding-bottom: calc(var(--player-h) + var(--lyr-bottom) + var(--load-h) + 96px); }
+
+/* ---------- スマホ版 v8.7.6：Pin の区切りのカードの再生ボタン・Pin ボタン・Pin の目印を、通常のカードと同じ大きさ・位置に ----------
+   （v8.7.2 で Pin のカードを大きくしたので、2/3 の大きさのボタンは不要になった。スマホ幅の通常のカードと同じ px） */
+@media (max-width: 700px) {
+  .album-pin-grid .card-act-play { width: 38px; height: 38px; right: 6px; bottom: 6px; }
+  .album-pin-grid .card-act-play svg { width: 18px; height: 18px; }
+  .album-pin-grid .card-act-pin { width: 30px; height: 30px; left: 5px; top: 5px; }
+  .album-pin-grid .card-act-pin svg { width: 15px; height: 15px; }
+  .album-pin-grid .album-pin-mark { width: 24px; height: 24px; top: 6px; left: 6px; }
+  .album-pin-grid .album-pin-mark svg { width: 13px; height: 13px; }
+}
