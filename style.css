@@ -2550,3 +2550,9 @@ body.readonly-mode [data-act="copy-folder"] { opacity: 0.45; pointer-events: non
 @media (max-width: 400px) {
   .page-header h1 { font-size: 26px; }
 }
+
+/* ---------- スマホ版 v8.7.4：カードのタグ・非表示ボタンを出さない（64-card-menu.js）----------
+   ジャケットの上は Pin（ボタン・目印）と再生ボタンだけ。タグ・非表示は長押しのメニューとアルバムの見出しから */
+.card-art-wrap .card-act-sortkey, .card-art-wrap .card-act-hide { display: none !important; }
+.acm-sep { height: 1px; margin: 4px 6px; background: var(--border); }
+.head-art-tag.has-key { color: var(--accent); }
