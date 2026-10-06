@@ -2532,3 +2532,21 @@ body.readonly-mode [data-act="copy-folder"] { opacity: 0.45; pointer-events: non
   .album-grid.album-pin-grid:not(.is-editing)::-webkit-scrollbar { display: none; }
   .album-grid.album-pin-grid:not(.is-editing) > .album-card { scroll-snap-align: start; min-width: 0; }
 }
+
+/* ---------- スマホ版 v8.7.3：ヘッダーのアプリ名（63-header-brand.js）----------
+   スマホ幅では、サイドバーのロゴ（MUSIC と版）を隠し、各画面のヘッダーの見出しの左に「MUSIC」と小さな版番号を出す（ヘッダーのアイコンの代わり）。
+   書体・色はサイドバーのロゴと同じ（Cinzel・金色）。版番号は「MUSIC」の下の右端（サイドバーと同じ並び） */
+.hdr-brand { display: none; }
+@media (max-width: 760px) {
+  .sidebar-header { display: none; }
+  .page-header .page-header-icon { display: none; }
+  .hdr-brand { flex: none; display: inline-flex; flex-direction: column; align-items: flex-end; gap: 1px; padding: 2px 4px; margin: 0;
+    border: none; background: transparent; color: var(--on-dark); cursor: pointer; line-height: 1; border-radius: 8px; }
+  .hdr-brand:active { background: rgba(255, 255, 255, 0.12); }
+  .hdr-brand-title { font-family: 'Cinzel', var(--font-heading); font-size: 17px; letter-spacing: 0.04em; color: var(--gold); white-space: nowrap; }
+  .hdr-brand-ver { font-size: 9.5px; color: var(--gold); opacity: 0.9; white-space: nowrap; }
+  .page-header h1 { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+}
+@media (max-width: 400px) {
+  .page-header h1 { font-size: 26px; }
+}
