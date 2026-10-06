@@ -1,0 +1,739 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Music Manager — 音楽ファイル管理</title>
+<!-- スマホ（ホーム画面に追加）用（v8.7）：アプリの名前・アイコン・色。file:// で開いたときは使われないだけ -->
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#2b2757">
+<meta name="mobile-web-app-capable" content="yes">
+<link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,700&family=Cinzel:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css?v=20261006-16">
+<!-- 画面の色（v3.7）：最初の描画の前にブラックモードを当てる（白→黒のちらつきを防ぐ）。保存場所は musicManager_ui の theme -->
+<script>
+(function () {
+  try {
+    var t = (JSON.parse(localStorage.getItem('musicManager_ui') || '{}') || {}).theme || 'light';
+    if (t === 'dark' || (t === 'auto' && window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches)) document.documentElement.setAttribute('data-theme', 'dark');
+  } catch (e) { /* 読めなければライトのまま */ }
+})();
+</script>
+</head>
+<body>
+<div id="app">
+
+  <!-- ===================== サイドバー ===================== -->
+  <aside id="sidebar">
+    <span class="ui-label-tag ui-label-tag-ondark" style="top:8px;right:8px" onclick="copyUiLabel('サイドバー', event)" title="クリックで「サイドバー」をコピー">□</span>
+    <div class="sidebar-header">
+      <div class="logo">
+        <span class="logo-mark" data-icon="logo"></span>
+        <div class="logo-text">
+          <div class="logo-title">Music</div>
+          <div class="logo-sub">音楽ファイル管理</div>
+          <div class="logo-version" id="app-version-label"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- メニュー項目 -->
+    <nav class="sidebar-nav">
+      <a href="#" class="nav-item" data-page="albums" title="アルバム">
+        <span class="nav-icon" data-icon="album"></span><span class="nav-label">album</span><span class="nav-badge" id="nav-count-albums"></span>
+      </a>
+      <a href="#" class="nav-item" data-page="artists" title="アーティスト">
+        <span class="nav-icon" data-icon="user"></span><span class="nav-label">artist</span><span class="nav-badge" id="nav-count-artists"></span>
+      </a>
+      <a href="#" class="nav-item" data-page="library" title="曲一覧">
+        <span class="nav-icon" data-icon="music"></span><span class="nav-label">songs</span><span class="nav-badge" id="nav-count-library"></span>
+      </a>
+      <a href="#" class="nav-item" data-page="playlists" title="プレイリスト">
+        <span class="nav-icon" data-icon="playlist"></span><span class="nav-label">playlist</span><span class="nav-badge" id="nav-count-playlists"></span>
+      </a>
+      <a href="#" class="nav-item" data-page="newsongs" title="new songs（最近追加した曲）">
+        <span class="nav-icon" data-icon="sparkle"></span><span class="nav-label">new songs</span>
+      </a>
+      <a href="#" class="nav-item" data-page="heavy" title="heavy rotation（よく聞く曲）">
+        <span class="nav-icon" data-icon="fire"></span><span class="nav-label">heavy rotation</span>
+      </a>
+      <a href="#" class="nav-item" data-page="western" title="Western music（洋楽）">
+        <span class="nav-icon" data-icon="globe"></span><span class="nav-label">Western music</span><span class="nav-badge" id="nav-count-western"></span>
+      </a>
+      <a href="#" class="nav-item" data-page="seasons" title="Seasons Song（季節の曲）">
+        <span class="nav-icon" data-icon="seasons"></span><span class="nav-label">Seasons Song</span><span class="nav-badge" id="nav-count-seasons"></span>
+      </a>
+      <a href="#" class="nav-item" data-page="upbeat" title="upbeat music（リズムの速い曲）">
+        <span class="nav-icon" data-icon="upbeat"></span><span class="nav-label">upbeat music</span><span class="nav-badge" id="nav-count-upbeat"></span>
+      </a>
+      <!-- メニューの区切り（ここから下は管理用の画面） -->
+      <div class="nav-sep" role="separator"></div>
+      <a href="#" class="nav-item" data-page="organizer" title="ファイル整理">
+        <span class="nav-icon" data-icon="folder"></span><span class="nav-label">file</span>
+      </a>
+      <a href="#" class="nav-item" data-page="settings" title="設定・バックアップ">
+        <span class="nav-icon" data-icon="settings"></span><span class="nav-label">tools</span>
+      </a>
+      <a href="#" class="nav-item" data-page="versions" title="バージョン管理">
+        <span class="nav-icon" data-icon="versions"></span><span class="nav-label">version</span>
+      </a>
+    </nav>
+
+    <!-- 接続状態（音楽フォルダにつながっているか） -->
+    <div class="conn-status-wrap">
+      <span class="ui-label-tag ui-label-tag-ondark" style="top:4px;right:6px" onclick="copyUiLabel('接続状態', event)" title="クリックで「接続状態」をコピー">□</span>
+      <div id="conn-status" class="conn-status"></div>
+    </div>
+  </aside>
+
+  <!-- ===================== 本文 ===================== -->
+  <main id="main">
+
+    <!-- 非対応のお知らせ（File System Access API が使えないブラウザのとき表示） -->
+    <div id="unsupported-banner" class="unsupported-banner" hidden>
+      <strong>このブラウザでは音楽フォルダを開けません。</strong>
+      Google Chrome または Microsoft Edge（パソコン版）で <code>index.html</code> を開いてください。
+      プレイリストのバックアップ・復元はこのブラウザでも使えます。
+    </div>
+
+    <!-- 読み取り専用モードの表示（v8.7。59-mobile.js）：showDirectoryPicker の無いブラウザ（スマホ）で出す -->
+    <div id="readonly-banner" class="readonly-banner" hidden></div>
+
+    <!-- ===================== アルバム ===================== -->
+    <div id="page-albums" class="page">
+      <div class="page-header">
+        <span class="ui-label-tag ui-label-tag-ondark ui-label-tag-header-badge" style="top:8px;right:10px" onclick="copyUiLabel('アルバムのヘッダー', event)" title="クリックで「アルバムのヘッダー」をコピー">□</span>
+        <span class="page-header-icon" data-icon="album"></span>
+        <h1>album</h1>
+        <span class="count-badge" id="alb-count"></span>
+        <div class="header-actions">
+          <!-- アルバム一覧に戻る（アルバムの曲一覧を開いている間だけ表示） -->
+          <button class="btn-ghost-small" id="alb-back-btn" onclick="backToAlbumList()" hidden><span data-icon="up"></span>アルバム一覧に戻る</button>
+          <button class="btn-ghost-small btn-ghost-icon" data-rescan onclick="rescanLibraryFromUi()" title="読み直す" aria-label="読み直す"><span data-icon="refresh"></span></button>
+        </div>
+      </div>
+      <!-- アルバムのフィルターバー（検索欄・並べ替え）。アルバムの曲一覧を開いている間は隠す -->
+      <div class="filter-bar" id="alb-filter-bar">
+        <span class="ui-label-tag ui-label-tag-onlight" style="top:4px;right:6px" onclick="copyUiLabel('アルバムのフィルターバー', event)" title="クリックで「アルバムのフィルターバー」をコピー">□</span>
+        <div class="search-box">
+          <span class="search-icon" data-icon="search"></span>
+          <input type="search" id="alb-search" class="form-input" placeholder="アルバム名・アーティストで検索" autocomplete="off">
+        </div>
+        <!-- 並べ替えボタン（v4.0。押すと並べ替えの設定ダイアログ。v3.9 までの「並べ替えの選択」のボタン列を置き換えた） -->
+        <span class="album-sort-wrap">
+          <button type="button" class="btn-inline-small album-sort-btn" id="alb-sort-btn">並べ替え</button>
+          <span class="ui-label-tag ui-label-tag-onlight" style="top:-10px;right:-4px" onclick="copyUiLabel('並べ替えボタン', event)" title="クリックで「並べ替えボタン」をコピー">□</span>
+        </span>
+        <!-- 一括編集ボタン（v5.9。41-album-bulk-edit.js）：今の並び・検索・絞り込みに合うアルバムを「アルバムの一括編集」で表にして編集する -->
+        <span class="album-sort-wrap">
+          <button type="button" class="btn-inline-small album-sort-btn" id="alb-bulk-btn" onclick="openAlbumBulkEdit()" title="今の並び・検索・絞り込みに合うアルバムを、表でまとめて編集します"><span data-icon="edit"></span>一覧で編集</button>
+          <span class="ui-label-tag ui-label-tag-onlight" style="top:-10px;right:-4px" onclick="copyUiLabel('一括編集ボタン', event)" title="クリックで「一括編集ボタン」をコピー">□</span>
+        </span>
+        <!-- タグの絞り込み（v4.4。31-album-tags.js）：すべて／各タグ／タグなし -->
+        <span class="album-tag-filter-wrap">
+          <select class="form-input album-tag-filter" id="alb-tag-filter" aria-label="タグで絞り込む" onchange="setAlbumTagFilter(this.value)"></select>
+          <span class="ui-label-tag ui-label-tag-onlight" style="top:-10px;right:-4px" onclick="copyUiLabel('タグの絞り込み', event)" title="クリックで「タグの絞り込み」をコピー">□</span>
+        </span>
+        <!-- ジャンルの絞り込み（v4.6。33-album-genre.js）：すべて／各ジャンル／ジャンルなし -->
+        <span class="album-tag-filter-wrap album-genre-filter-wrap">
+          <select class="form-input album-tag-filter album-genre-filter" id="alb-genre-filter" aria-label="ジャンルで絞り込む" onchange="setAlbumGenreFilter(this.value)"></select>
+          <span class="ui-label-tag ui-label-tag-onlight" style="top:-10px;right:-4px" onclick="copyUiLabel('ジャンルの絞り込み', event)" title="クリックで「ジャンルの絞り込み」をコピー">□</span>
+        </span>
+        <!-- グループの切り替え（v5.3。38-album-groups.js）：なし／タグ／ジャンル／年代 -->
+        <span class="album-tag-filter-wrap album-group-wrap">
+          <select class="form-input album-tag-filter album-group-select" id="alb-group" aria-label="グループ表示" onchange="setAlbumGroupMode(this.value)"></select>
+          <span class="ui-label-tag ui-label-tag-onlight" style="top:-10px;right:-4px" onclick="copyUiLabel('グループの切り替え', event)" title="クリックで「グループの切り替え」をコピー">□</span>
+        </span>
+        <!-- Pin のみボタン（v4.1）：オンで Pin したアルバムだけを出す（Pin が1枚も無ければ隠す） -->
+        <span class="hidden-toggle-wrap">
+          <button class="btn-inline-small album-hidden-toggle album-pin-only" id="alb-pin-only" onclick="togglePinOnly()" hidden></button>
+          <span class="ui-label-tag ui-label-tag-onlight" style="top:-10px;right:-4px" onclick="copyUiLabel('Pin のみボタン', event)" title="クリックで「Pin のみボタン」をコピー">□</span>
+        </span>
+        <!-- 非表示のアルバム（v3.0）：オンで非表示にしたアルバムだけを出す（1枚も無ければ隠す） -->
+        <span class="hidden-toggle-wrap">
+          <button class="btn-inline-small album-hidden-toggle" id="alb-hidden-toggle" onclick="toggleHiddenAlbumsView()" hidden></button>
+          <span class="ui-label-tag ui-label-tag-onlight" style="top:-10px;right:-4px" onclick="copyUiLabel('非表示のアルバム', event)" title="クリックで「非表示のアルバム」をコピー">□</span>
+        </span>
+      </div>
+      <!-- 本文エリア：アルバム一覧 または アルバムの曲一覧（JS が描き替える） -->
+      <div class="page-body" id="alb-body"></div>
+    </div>
+
+    <!-- ===================== artist（アーティスト。21-artists.js） ===================== -->
+    <div id="page-artists" class="page">
+      <div class="page-header">
+        <span class="ui-label-tag ui-label-tag-ondark ui-label-tag-header-badge" style="top:8px;right:10px" onclick="copyUiLabel('アーティストのヘッダー', event)" title="クリックで「アーティストのヘッダー」をコピー">□</span>
+        <span class="page-header-icon" data-icon="user"></span>
+        <h1>artist</h1>
+        <span class="count-badge" id="art-count"></span>
+        <div class="header-actions">
+          <!-- アーティスト一覧に戻る（アーティストの画面を開いている間だけ） -->
+          <button class="btn-ghost-small" id="art-back-btn" onclick="backToArtistList()" hidden><span data-icon="up"></span>アーティスト一覧に戻る</button>
+          <button class="btn-ghost-small btn-ghost-icon" data-rescan onclick="rescanLibraryFromUi()" title="読み直す" aria-label="読み直す"><span data-icon="refresh"></span></button>
+        </div>
+      </div>
+      <div class="filter-bar" id="art-filter-bar">
+        <span class="ui-label-tag ui-label-tag-onlight" style="top:4px;right:6px" onclick="copyUiLabel('アーティストのフィルターバー', event)" title="クリックで「アーティストのフィルターバー」をコピー">□</span>
+        <div class="search-box">
+          <span class="search-icon" data-icon="search"></span>
+          <input type="search" id="art-search" class="form-input" placeholder="アーティスト名で検索" autocomplete="off">
+        </div>
+      </div>
+      <div class="page-body" id="art-body"></div>
+    </div>
+
+    <!-- ===================== 曲一覧 ===================== -->
+    <div id="page-library" class="page">
+      <div class="page-header">
+        <span class="ui-label-tag ui-label-tag-ondark ui-label-tag-header-badge" style="top:8px;right:10px" onclick="copyUiLabel('曲一覧のヘッダー', event)" title="クリックで「曲一覧のヘッダー」をコピー">□</span>
+        <span class="page-header-icon" data-icon="music"></span>
+        <h1>songs</h1>
+        <span class="count-badge" id="lib-count"></span>
+        <!-- ヘッダーの操作エリア -->
+        <div class="header-actions">
+          <button class="btn-ghost-small" onclick="playAllVisible()"><span data-icon="play"></span>表示中の曲を再生</button>
+          <!-- シャッフル再生ボタン（v7.5。47-shuffle-play.js） -->
+          <button class="btn-ghost-small btn-ghost-icon shuffle-play-btn" id="lib-shuffle" title="シャッフル再生：表示中の曲をばらばらの順で再生します（シャッフルをオンにします）" aria-label="シャッフル再生"><span data-icon="shuffle"></span></button>
+          <button class="btn-ghost-small btn-ghost-icon" data-rescan onclick="rescanLibraryFromUi()" title="読み直す" aria-label="読み直す"><span data-icon="refresh"></span></button>
+        </div>
+      </div>
+
+      <!-- 曲一覧のフィルターバー（検索欄・並べ替え） -->
+      <div class="filter-bar" id="lib-filter-bar">
+        <span class="ui-label-tag ui-label-tag-onlight" style="top:4px;right:6px" onclick="copyUiLabel('曲一覧のフィルターバー', event)" title="クリックで「曲一覧のフィルターバー」をコピー">□</span>
+        <div class="search-box">
+          <span class="search-icon" data-icon="search"></span>
+          <input type="search" id="lib-search" class="form-input" placeholder="曲名・アーティスト・アルバム・ファイル名で検索" autocomplete="off">
+        </div>
+        <div class="sort-row">
+          <span class="sort-caption">並べ替え</span>
+          <div class="tab-row" id="lib-sort-tabs"></div>
+        </div>
+        <!-- 読み込み状況 -->
+      </div>
+
+      <!-- 選択操作バー（曲にチェックを入れると表示） -->
+      <div class="select-bar" id="lib-select-bar" hidden></div>
+
+      <div class="ui-label-bar"><span class="ui-label-tag ui-label-tag-onlight" style="top:4px;right:6px" onclick="copyUiLabel('曲一覧の本文エリア', event)" title="クリックで「曲一覧の本文エリア」をコピー">□</span></div>
+      <div class="page-body" id="lib-body"></div>
+    </div>
+
+    <!-- ===================== プレイリスト ===================== -->
+    <div id="page-playlists" class="page">
+      <div class="page-header">
+        <span class="ui-label-tag ui-label-tag-ondark ui-label-tag-header-badge" style="top:8px;right:10px" onclick="copyUiLabel('プレイリストのヘッダー', event)" title="クリックで「プレイリストのヘッダー」をコピー">□</span>
+        <span class="page-header-icon" data-icon="playlist"></span>
+        <h1>playlist</h1>
+        <span class="count-badge" id="pl-count"></span>
+        <div class="header-actions">
+          <button class="btn-add" onclick="createPlaylistInteractive()"><span data-icon="plus"></span>新しいプレイリスト</button>
+        </div>
+      </div>
+      <div class="page-body pl-layout">
+        <!-- プレイリスト一覧 -->
+        <section class="panel pl-list-panel">
+          <span class="ui-label-tag ui-label-tag-onlight" style="top:6px;right:8px" onclick="copyUiLabel('プレイリスト一覧', event)" title="クリックで「プレイリスト一覧」をコピー">□</span>
+          <h2 class="panel-title">プレイリスト一覧</h2>
+          <div id="pl-list"></div>
+        </section>
+        <!-- プレイリストの曲 -->
+        <section class="panel pl-detail-panel">
+          <span class="ui-label-tag ui-label-tag-onlight" style="top:6px;right:8px" onclick="copyUiLabel('プレイリストの曲', event)" title="クリックで「プレイリストの曲」をコピー">□</span>
+          <div id="pl-detail"></div>
+        </section>
+      </div>
+    </div>
+
+    <!-- ===================== new songs（最近追加した曲。19-new-songs.js） ===================== -->
+    <div id="page-newsongs" class="page">
+      <div class="page-header">
+        <span class="ui-label-tag ui-label-tag-ondark ui-label-tag-header-badge" style="top:8px;right:10px" onclick="copyUiLabel('new songsのヘッダー', event)" title="クリックで「new songsのヘッダー」をコピー">□</span>
+        <span class="page-header-icon" data-icon="sparkle"></span>
+        <h1>new songs</h1>
+        <span class="count-badge" id="ns-count"></span>
+        <div class="header-actions">
+          <button class="btn-ghost-small" id="ns-play"><span data-icon="play"></span>再生</button>
+          <button class="btn-ghost-small btn-ghost-icon shuffle-play-btn" id="ns-shuffle" title="シャッフル再生：ばらばらの順で再生します（シャッフルをオンにします）" aria-label="シャッフル再生"><span data-icon="shuffle"></span></button>
+        </div>
+      </div>
+      <div class="filter-bar">
+        <span class="ui-label-tag ui-label-tag-onlight" style="top:4px;right:6px" onclick="copyUiLabel('new songsのフィルターバー', event)" title="クリックで「new songsのフィルターバー」をコピー">□</span>
+        <!-- 表示の切り替え（v4.2）：アルバム（new songs のアルバム表示）／曲 -->
+        <div class="sort-row ns-mode-row"><span class="sort-caption">表示</span><div class="tab-row" id="ns-mode"></div>
+          <span class="ui-label-tag ui-label-tag-onlight" style="top:-12px;right:-8px" onclick="copyUiLabel('new songs の表示の切り替え', event)" title="クリックで「new songs の表示の切り替え」をコピー">□</span></div>
+        <div class="sort-row"><span class="sort-caption">期間</span><div class="tab-row" id="ns-days"></div></div>
+        <div class="sort-row"><span class="sort-caption">件数</span><div class="tab-row" id="ns-limit"></div></div>
+      </div>
+      <div class="ui-label-bar"><span class="ui-label-tag ui-label-tag-onlight" style="top:4px;right:6px" onclick="copyUiLabel('new songsの本文エリア', event)" title="クリックで「new songsの本文エリア」をコピー">□</span></div>
+      <div class="page-body" id="ns-body"></div>
+    </div>
+
+    <!-- ===================== heavy rotation（よく聞く曲。20-heavy-rotation.js） ===================== -->
+    <div id="page-heavy" class="page">
+      <div class="page-header">
+        <span class="ui-label-tag ui-label-tag-ondark ui-label-tag-header-badge" style="top:8px;right:10px" onclick="copyUiLabel('heavy rotationのヘッダー', event)" title="クリックで「heavy rotationのヘッダー」をコピー">□</span>
+        <span class="page-header-icon" data-icon="fire"></span>
+        <h1>heavy rotation</h1>
+        <span class="count-badge" id="hr-count"></span>
+        <div class="header-actions">
+          <button class="btn-ghost-small" id="hr-play"><span data-icon="play"></span>再生</button>
+          <button class="btn-ghost-small btn-ghost-icon shuffle-play-btn" id="hr-shuffle" title="シャッフル再生：ばらばらの順で再生します（シャッフルをオンにします）" aria-label="シャッフル再生"><span data-icon="shuffle"></span></button>
+        </div>
+      </div>
+      <div class="filter-bar">
+        <span class="ui-label-tag ui-label-tag-onlight" style="top:4px;right:6px" onclick="copyUiLabel('heavy rotationのフィルターバー', event)" title="クリックで「heavy rotationのフィルターバー」をコピー">□</span>
+        <div class="sort-row"><span class="sort-caption">期間</span><div class="tab-row" id="hr-days"></div></div>
+      </div>
+      <div class="ui-label-bar"><span class="ui-label-tag ui-label-tag-onlight" style="top:4px;right:6px" onclick="copyUiLabel('heavy rotationの本文エリア', event)" title="クリックで「heavy rotationの本文エリア」をコピー">□</span></div>
+      <div class="page-body" id="hr-body"></div>
+    </div>
+
+    <!-- ===================== upbeat music（リズムの速い曲。49-upbeat.js。v7.8） ===================== -->
+    <div id="page-upbeat" class="page">
+      <div class="page-header">
+        <span class="ui-label-tag ui-label-tag-ondark ui-label-tag-header-badge" style="top:8px;right:10px" onclick="copyUiLabel('upbeat musicのヘッダー', event)" title="クリックで「upbeat musicのヘッダー」をコピー">□</span>
+        <span class="page-header-icon" data-icon="upbeat"></span>
+        <h1>upbeat music</h1>
+        <span class="count-badge" id="upb-count"></span>
+      </div>
+      <div class="filter-bar" id="upb-filter-bar">
+        <span class="ui-label-tag ui-label-tag-onlight" style="top:4px;right:6px" onclick="copyUiLabel('upbeat musicのフィルターバー', event)" title="クリックで「upbeat musicのフィルターバー」をコピー">□</span>
+        <!-- 基準の BPM（この BPM 以上の曲を出す） -->
+        <span class="upb-min-wrap"><span class="sort-caption">BPM</span>
+          <button type="button" class="btn-inline-small upb-step" id="upb-min-down" title="基準の BPM を 5 下げる" aria-label="基準の BPM を 5 下げる">−</button>
+          <input type="number" id="upb-min" class="form-input upb-min" min="40" max="300" step="1" aria-label="基準の BPM（この BPM 以上の曲を出す）">
+          <button type="button" class="btn-inline-small upb-step" id="upb-min-up" title="基準の BPM を 5 上げる" aria-label="基準の BPM を 5 上げる">＋</button>
+          <span class="sort-caption">以上</span>
+          <span class="ui-label-tag ui-label-tag-onlight" style="top:-10px;right:-4px" onclick="copyUiLabel('基準の BPM', event)" title="クリックで「基準の BPM」をコピー">□</span></span>
+        <select class="form-input album-tag-filter" id="upb-sort" aria-label="並べ替え">
+          <option value="bpm-desc">並べ替え：BPM の高い順</option><option value="bpm-asc">並べ替え：BPM の低い順</option><option value="title">並べ替え：曲名</option>
+        </select>
+        <div class="search-box sea-search-box">
+          <span class="search-icon" data-icon="search"></span>
+          <input type="search" id="upb-search" class="form-input" placeholder="曲名・アーティスト・アルバムで検索" autocomplete="off">
+        </div>
+        <!-- BPM を調べる進み具合 -->
+        <div class="sea-progress upb-progress" id="upb-progress" aria-live="polite"></div>
+      </div>
+      <div class="ui-label-bar"><span class="ui-label-tag ui-label-tag-onlight" style="top:4px;right:6px" onclick="copyUiLabel('upbeat musicの本文エリア', event)" title="クリックで「upbeat musicの本文エリア」をコピー">□</span></div>
+      <div class="page-body" id="upb-body"></div>
+    </div>
+
+    <!-- ===================== Seasons Song（季節の曲。46-seasons.js。v7.4） ===================== -->
+    <div id="page-seasons" class="page">
+      <div class="page-header">
+        <span class="ui-label-tag ui-label-tag-ondark ui-label-tag-header-badge" style="top:8px;right:10px" onclick="copyUiLabel('Seasons Songのヘッダー', event)" title="クリックで「Seasons Songのヘッダー」をコピー">□</span>
+        <span class="page-header-icon" data-icon="seasons"></span>
+        <h1>Seasons Song</h1>
+        <span class="count-badge" id="sea-count"></span>
+      </div>
+      <div class="filter-bar" id="sea-filter-bar">
+        <span class="ui-label-tag ui-label-tag-onlight" style="top:4px;right:6px" onclick="copyUiLabel('Seasons Songのフィルターバー', event)" title="クリックで「Seasons Songのフィルターバー」をコピー">□</span>
+        <!-- 季節のタブ（Spring／Summer／Fall／Winter と件数） -->
+        <div class="sea-tabs" id="sea-tabs" role="group" aria-label="季節のタブ"></div>
+        <div class="search-box sea-search-box">
+          <span class="search-icon" data-icon="search"></span>
+          <input type="search" id="sea-search" class="form-input" placeholder="曲名・アーティスト・アルバムで検索" autocomplete="off">
+        </div>
+        <!-- 歌詞を調べる進み具合 -->
+        <div class="sea-progress" id="sea-progress" aria-live="polite"></div>
+      </div>
+      <div class="ui-label-bar"><span class="ui-label-tag ui-label-tag-onlight" style="top:4px;right:6px" onclick="copyUiLabel('Seasons Songの本文エリア', event)" title="クリックで「Seasons Songの本文エリア」をコピー">□</span></div>
+      <div class="page-body" id="sea-body"></div>
+    </div>
+
+    <!-- ===================== Western music（洋楽のアルバム。36-western.js。v5.0） ===================== -->
+    <div id="page-western" class="page">
+      <div class="page-header">
+        <span class="ui-label-tag ui-label-tag-ondark ui-label-tag-header-badge" style="top:8px;right:10px" onclick="copyUiLabel('Western musicのヘッダー', event)" title="クリックで「Western musicのヘッダー」をコピー">□</span>
+        <span class="page-header-icon" data-icon="globe"></span>
+        <h1>Western music</h1>
+        <span class="count-badge" id="wes-count"></span>
+      </div>
+      <div class="filter-bar" id="wes-filter-bar">
+        <span class="ui-label-tag ui-label-tag-onlight" style="top:4px;right:6px" onclick="copyUiLabel('Western musicのフィルターバー', event)" title="クリックで「Western musicのフィルターバー」をコピー">□</span>
+        <div class="search-box">
+          <span class="search-icon" data-icon="search"></span>
+          <input type="search" id="wes-search" class="form-input" placeholder="アルバム名・アーティストで検索" autocomplete="off">
+        </div>
+        <span class="album-sort-wrap"><button type="button" class="btn-inline-small album-sort-btn" id="wes-sort-btn">並べ替え</button></span>
+        <span class="album-tag-filter-wrap"><select class="form-input album-tag-filter" id="wes-tag-filter" aria-label="タグで絞り込む"></select></span>
+        <span class="album-tag-filter-wrap"><select class="form-input album-tag-filter" id="wes-genre-filter" aria-label="ジャンルで絞り込む"></select></span>
+        <div class="sort-row wes-mode-row"><span class="sort-caption">表示</span><div class="tab-row" id="wes-mode"></div>
+          <span class="ui-label-tag ui-label-tag-onlight" style="top:-12px;right:-8px" onclick="copyUiLabel('Western music の表示の切り替え', event)" title="クリックで「Western music の表示の切り替え」をコピー">□</span></div>
+      </div>
+      <div class="ui-label-bar"><span class="ui-label-tag ui-label-tag-onlight" style="top:4px;right:6px" onclick="copyUiLabel('Western musicの本文エリア', event)" title="クリックで「Western musicの本文エリア」をコピー">□</span></div>
+      <div class="page-body" id="wes-body"></div>
+    </div>
+
+    <!-- ===================== ファイル整理 ===================== -->
+    <div id="page-organizer" class="page">
+      <div class="page-header">
+        <span class="ui-label-tag ui-label-tag-ondark ui-label-tag-header-badge" style="top:8px;right:10px" onclick="copyUiLabel('ファイル整理のヘッダー', event)" title="クリックで「ファイル整理のヘッダー」をコピー">□</span>
+        <span class="page-header-icon" data-icon="folder"></span>
+        <h1>file</h1>
+        <div class="header-actions">
+          <button class="btn-ghost-small" id="org-undo-btn" onclick="undoLastOperation()"><span data-icon="undo"></span>直前の操作を元に戻す</button>
+        </div>
+      </div>
+      <div class="page-body">
+        <div class="org-note">
+          ここでの操作は <strong>PC上の音楽ファイルそのもの</strong> を変更します。実行の前に必ず「変更前 → 変更後」の確認が出ます。
+          「削除」はファイルを消さずに、音楽フォルダ直下の <strong>「削除フォルダ」</strong> へ元のフォルダ構成のまま移動します。
+          操作は下の <strong>操作履歴</strong> に残り、「直前の操作を元に戻す」で戻せます。
+        </div>
+        <div id="org-main">
+          <div class="org-layout">
+            <!-- フォルダ一覧 -->
+            <section class="panel org-folders-panel">
+              <span class="ui-label-tag ui-label-tag-onlight" style="top:6px;right:8px" onclick="copyUiLabel('フォルダ一覧', event)" title="クリックで「フォルダ一覧」をコピー">□</span>
+              <div class="panel-title-row">
+                <h2 class="panel-title">フォルダ一覧</h2>
+                <button class="btn-inline-small" onclick="orgCreateFolder()"><span data-icon="folderPlus"></span>新しいフォルダ</button>
+              </div>
+              <div id="org-folders"></div>
+            </section>
+            <!-- フォルダの中身 -->
+            <section class="panel org-files-panel">
+              <span class="ui-label-tag ui-label-tag-onlight" style="top:6px;right:8px" onclick="copyUiLabel('フォルダの中身', event)" title="クリックで「フォルダの中身」をコピー">□</span>
+              <div id="org-files"></div>
+            </section>
+          </div>
+          <!-- 重複チェック（v4.7。34-duplicates.js） -->
+          <section class="panel dup-panel">
+            <span class="ui-label-tag ui-label-tag-onlight" style="top:6px;right:8px" onclick="copyUiLabel('重複チェック', event)" title="クリックで「重複チェック」をコピー">□</span>
+            <div class="panel-title-row"><h2 class="panel-title">重複チェック</h2></div>
+            <p class="panel-desc">同じ曲が2つ以上ないかを調べます。曲ファイルは読むだけです。整理すると、残さない曲を「削除フォルダ」へ元のフォルダ構成のまま移します（操作履歴に残り、元に戻せます）。</p>
+            <div id="dup-body"></div>
+          </section>
+          <!-- 操作履歴 -->
+          <section class="panel org-history-panel">
+            <span class="ui-label-tag ui-label-tag-onlight" style="top:6px;right:8px" onclick="copyUiLabel('操作履歴', event)" title="クリックで「操作履歴」をコピー">□</span>
+            <div class="panel-title-row">
+              <h2 class="panel-title">操作履歴</h2>
+            </div>
+            <div id="org-history"></div>
+          </section>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===================== 設定・バックアップ ===================== -->
+    <div id="page-settings" class="page">
+      <div class="page-header">
+        <span class="ui-label-tag ui-label-tag-ondark ui-label-tag-header-badge" style="top:8px;right:10px" onclick="copyUiLabel('設定・バックアップのヘッダー', event)" title="クリックで「設定・バックアップのヘッダー」をコピー">□</span>
+        <span class="page-header-icon" data-icon="settings"></span>
+        <h1>tools</h1>
+      </div>
+      <div class="page-body settings-body">
+        <!-- 音楽フォルダ設定 -->
+        <section class="panel">
+          <span class="ui-label-tag ui-label-tag-onlight" style="top:6px;right:8px" onclick="copyUiLabel('音楽フォルダ設定', event)" title="クリックで「音楽フォルダ設定」をコピー">□</span>
+          <h2 class="panel-title">音楽フォルダ設定</h2>
+          <div id="set-folder"></div>
+        </section>
+
+        <!-- 情報のメモファイル（v2.7。23-library-index.js） -->
+        <section class="panel">
+          <span class="ui-label-tag ui-label-tag-onlight" style="top:6px;right:8px" onclick="copyUiLabel('情報のメモファイル', event)" title="クリックで「情報のメモファイル」をコピー">□</span>
+          <h2 class="panel-title">情報のメモファイル</h2>
+          <p class="panel-desc">
+            音楽フォルダ直下に「.music-manager-index.json.gz」（曲の場所・大きさ・更新日時・曲情報・追加日を縮めて保存。画像・歌詞は入りません）を置きます。
+            ブラウザの控えが無いとき（別の PC・別のブラウザで開いたときなど）に、これを読んで一覧をすぐに出します。
+            読み込みが終わったとき、変化があれば書き直します（書き込みの許可があるときだけ。無ければ書かずに続けます）。曲一覧・ファイル整理には出ません。
+          </p>
+          <div id="set-memo"></div>
+        </section>
+
+        <!-- バックアップ・復元 -->
+        <section class="panel">
+          <span class="ui-label-tag ui-label-tag-onlight" style="top:6px;right:8px" onclick="copyUiLabel('バックアップ・復元', event)" title="クリックで「バックアップ・復元」をコピー">□</span>
+          <h2 class="panel-title">バックアップ・復元</h2>
+          <p class="panel-desc">
+            プレイリスト・操作履歴・設定（アルバムの並べ替え・カスタム順を含む）・入力した歌詞・アプリ内の曲情報の上書きを JSON ファイルに書き出して保存できます（音楽ファイル自体と、アプリ内で設定した ogg・wav などのジャケット画像は含みません）。
+            ブラウザのデータを消すとプレイリストも消えてしまうので、ときどきバックアップしてください。
+          </p>
+          <div class="btn-row">
+            <button class="btn-save" onclick="exportBackup()"><span data-icon="download"></span>バックアップを書き出す（JSON）</button>
+            <button class="btn-cancel" onclick="document.getElementById('restore-file').click()"><span data-icon="upload"></span>バックアップから復元</button>
+            <input type="file" id="restore-file" accept=".json,application/json" hidden onchange="onRestoreFileChosen(this)">
+          </div>
+          <div class="panel-meta" id="set-backup-meta"></div>
+        </section>
+
+        <!-- □の表示設定 -->
+        <section class="panel">
+          <span class="ui-label-tag ui-label-tag-onlight" style="top:6px;right:8px" onclick="copyUiLabel('□の表示設定', event)" title="クリックで「□の表示設定」をコピー">□</span>
+          <h2 class="panel-title">表示の設定</h2>
+          <!-- 画面の色の設定（v3.7） -->
+          <div class="theme-choice" id="set-theme" role="radiogroup" aria-label="画面の色">
+            <span class="theme-choice-label">画面の色</span>
+            <label><input type="radio" name="theme" value="light" onchange="setTheme(this.value)">ライト</label>
+            <label><input type="radio" name="theme" value="dark" onchange="setTheme(this.value)">ブラック</label>
+            <label><input type="radio" name="theme" value="auto" onchange="setTheme(this.value)">自動（パソコンの設定に合わせる）</label>
+            <span class="ui-label-tag ui-label-tag-onlight" style="position:static" onclick="copyUiLabel('画面の色の設定', event)" title="クリックで「画面の色の設定」をコピー">□</span>
+          </div>
+          <label class="tagedit-write"><input type="checkbox" id="set-show-labels" onchange="setShowUiLabels(this.checked)">画面の名前コピー（□）を表示する</label>
+          <label class="tagedit-write"><input type="checkbox" id="set-pl-autoopen" onchange="db.settings.plAutoOpen = this.checked; saveDB();">プレイリスト再生時に play画面を自動で開く（v5.6）</label>
+          <p class="panel-desc">オフにすると、画面の各部分の右上の小さな「□」（押すと呼び方をコピー）を全部隠します。設定はバックアップに含まれます。</p>
+        </section>
+
+        <!-- Pin のアルバム（v3.4。26-pinned-albums.js） -->
+        <section class="panel">
+          <span class="ui-label-tag ui-label-tag-onlight" style="top:6px;right:8px" onclick="copyUiLabel('Pin のアルバム（tools）', event)" title="クリックで「Pin のアルバム（tools）」をコピー">□</span>
+          <h2 class="panel-title">Pin のアルバム</h2>
+          <p class="panel-desc">album の一覧の先頭に並べるアルバムです（アルバムの見出しの Pin ボタンで追加）。「↑」「↓」で先頭での順番を変えられます。ファイルは変わりません。設定はバックアップに含まれます。</p>
+          <div id="set-pinned-albums"></div>
+        </section>
+
+        <!-- Pin のアーティスト（v3.9。28-pinned-artists.js） -->
+        <section class="panel">
+          <span class="ui-label-tag ui-label-tag-onlight" style="top:6px;right:8px" onclick="copyUiLabel('Pin のアーティスト（tools）', event)" title="クリックで「Pin のアーティスト（tools）」をコピー">□</span>
+          <h2 class="panel-title">Pin のアーティスト</h2>
+          <p class="panel-desc">artist のアーティスト一覧の先頭に並べるアーティストです（一覧の行やアーティストの見出しの Pin ボタンで追加）。「↑」「↓」で先頭での順番を変えられます。ファイルは変わりません。設定はバックアップに含まれます。</p>
+          <div id="set-pinned-artists"></div>
+        </section>
+
+        <!-- タグの設定（v4.4。31-album-tags.js） -->
+        <section class="panel">
+          <span class="ui-label-tag ui-label-tag-onlight" style="top:6px;right:8px" onclick="copyUiLabel('タグの設定（tools）', event)" title="クリックで「タグの設定（tools）」をコピー">□</span>
+          <h2 class="panel-title">アルバムのタグ</h2>
+          <p class="panel-desc">アルバムの種類分けのラベルです（アルバムカードのソートキー・タグボタンや、アルバム情報の編集で1つ付けます）。名前・色を変えられ、「↑」「↓」の順番が並べ替えの「タグ」の順になります。削除すると、付けていたアルバムからも外れます。ファイルは変わりません。設定はバックアップに含まれます。</p>
+          <div id="set-album-tags"></div>
+        </section>
+
+        <!-- ジャンルの候補（v4.5。32-genre-suggest.js） -->
+        <section class="panel">
+          <span class="ui-label-tag ui-label-tag-onlight" style="top:6px;right:8px" onclick="copyUiLabel('ジャンルの候補（tools）', event)" title="クリックで「ジャンルの候補（tools）」をコピー">□</span>
+          <h2 class="panel-title">ジャンルの候補</h2>
+          <p class="panel-desc">曲情報の編集・アルバム情報の編集の「ジャンル」欄に出す候補です（自由に入れることもできます）。「↑」「↓」の順番で候補に出ます。設定はバックアップに含まれます。</p>
+          <div id="set-genre-suggest"></div>
+        </section>
+
+        <!-- Western music の設定（v5.0。36-western.js） -->
+        <section class="panel">
+          <span class="ui-label-tag ui-label-tag-onlight" style="top:6px;right:8px" onclick="copyUiLabel('Western music の設定（tools）', event)" title="クリックで「Western music の設定（tools）」をコピー">□</span>
+          <h2 class="panel-title">Western music の設定</h2>
+          <p class="panel-desc">Western music（洋楽）に出すアルバムの決め方です。設定はバックアップに含まれます。ファイルは変わりません。</p>
+          <div id="set-western"></div>
+        </section>
+
+        <!-- Seasons Song の設定（v7.4。46-seasons.js） -->
+        <section class="panel">
+          <span class="ui-label-tag ui-label-tag-onlight" style="top:6px;right:8px" onclick="copyUiLabel('Seasons Song の設定（tools）', event)" title="クリックで「Seasons Song の設定（tools）」をコピー">□</span>
+          <h2 class="panel-title">Seasons Song の設定</h2>
+          <p class="panel-desc">曲名と歌詞の季節の言葉で、曲を Spring／Summer／Fall／Winter に分けます。設定と手で決めた季節はバックアップに含まれます。ファイルは変わりません。</p>
+          <div id="set-seasons"></div>
+        </section>
+
+        <!-- 非表示のアルバム（v3.0。24-hidden-albums.js） -->
+        <section class="panel">
+          <span class="ui-label-tag ui-label-tag-onlight" style="top:6px;right:8px" onclick="copyUiLabel('非表示のアルバム（tools）', event)" title="クリックで「非表示のアルバム（tools）」をコピー">□</span>
+          <h2 class="panel-title">非表示のアルバム</h2>
+          <p class="panel-desc">album の一覧に出さないようにしたアルバムです（アルバムの見出しの「非表示にする」で追加）。ファイルは変わりません。曲は songs・artist・プレイリストなどにはそのまま出ます。設定はバックアップに含まれます。</p>
+          <div id="set-hidden-albums"></div>
+        </section>
+
+        <!-- 再生回数（20-heavy-rotation.js） -->
+        <section class="panel">
+          <span class="ui-label-tag ui-label-tag-onlight" style="top:6px;right:8px" onclick="copyUiLabel('再生回数のリセット', event)" title="クリックで「再生回数のリセット」をコピー">□</span>
+          <h2 class="panel-title">再生回数</h2>
+          <p class="panel-desc">曲を半分（または30秒）以上聞くと1回と数え、heavy rotation に使います。記録はバックアップに含まれ、ファイル整理で移動・名前変更しても引き継ぎます。</p>
+          <div class="btn-row"><button class="btn-inline-small btn-inline-danger" onclick="resetPlayCounts()"><span data-icon="trash"></span>再生回数をリセット</button></div>
+        </section>
+
+        <!-- タグ編集前の控え -->
+        <section class="panel">
+          <span class="ui-label-tag ui-label-tag-onlight" style="top:6px;right:8px" onclick="copyUiLabel('タグ編集前の控え', event)" title="クリックで「タグ編集前の控え」をコピー">□</span>
+          <h2 class="panel-title">タグ編集前の控え</h2>
+          <p class="panel-desc">
+            曲情報を音楽ファイルのタグに書き込む前に、元のファイルを音楽フォルダ直下の「タグ編集前の控え」フォルダへコピーしています（元のフォルダ構成のまま、名前に日時付き）。
+            「直前の操作を元に戻す」はこの控えから戻します。控えは自動では消えません。要らなくなったら、下のボタンで「削除フォルダ」へ移せます（ファイル整理の操作履歴から元に戻せます）。
+          </p>
+          <div id="set-tagbackup"></div>
+        </section>
+
+        <!-- 保存容量の使用状況（v8.2。53-storage-usage.js） -->
+        <section class="panel" id="set-storage-panel">
+          <span class="ui-label-tag ui-label-tag-onlight" style="top:6px;right:8px" onclick="copyUiLabel('保存容量の使用状況', event)" title="クリックで「保存容量の使用状況」をコピー">□</span>
+          <h2 class="panel-title">保存容量の使用状況</h2>
+          <div id="set-storage"></div>
+        </section>
+      </div>
+    </div>
+
+    <!-- ===================== バージョン管理 ===================== -->
+    <div id="page-versions" class="page">
+      <div class="page-header">
+        <span class="ui-label-tag ui-label-tag-ondark ui-label-tag-header-badge" style="top:8px;right:10px" onclick="copyUiLabel('バージョン管理のヘッダー', event)" title="クリックで「バージョン管理のヘッダー」をコピー">□</span>
+        <span class="page-header-icon" data-icon="versions"></span>
+        <h1>version</h1>
+      </div>
+      <div class="ui-label-bar"><span class="ui-label-tag ui-label-tag-onlight" style="top:4px;right:6px" onclick="copyUiLabel('バージョン管理の本文エリア', event)" title="クリックで「バージョン管理の本文エリア」をコピー">□</span></div>
+      <div class="page-body" id="ver-body"></div>
+    </div>
+
+  </main>
+</div>
+
+<!-- ===================== 読み込みの進み具合（v2.6。読み込み中だけ、再生バーの上に出る） ===================== -->
+<div id="load-progress" class="load-progress" aria-live="off" hidden>
+  <span class="ui-label-tag" style="top:3px;right:6px" onclick="copyUiLabel('読み込みの進み具合', event)" title="クリックで「読み込みの進み具合」をコピー">□</span>
+  <div class="lp-row">
+    <span class="lp-spin" data-icon="refresh"></span>
+    <span class="lp-text"></span>
+    <button class="btn-inline-small lp-stop" onclick="artPrebuildStop()" hidden>止める</button>
+  </div>
+  <div class="lp-bar"><div class="lp-fill"></div></div>
+</div>
+
+<!-- ===================== 再生バー ===================== -->
+<footer id="player-bar">
+  <span class="ui-label-tag ui-label-tag-ondark" style="top:4px;right:6px" onclick="copyUiLabel('再生バー', event)" title="クリックで「再生バー」をコピー">□</span>
+  <!-- 再生中の曲 -->
+  <div class="pb-now">
+    <!-- 再生バーのジャケット（v5.1 から押すと再生画面。ジャケット拡大表示は再生画面の大きなジャケットから） -->
+    <button class="pb-art art-thumb art-none" id="pb-art" onclick="openNowPlaying()" title="再生画面を開く（オーディオビジュアライザー付き）" aria-label="再生画面を開く"></button>
+    <div class="pb-now-text">
+      <div class="pb-title" id="pb-title">曲が選ばれていません</div>
+      <div class="pb-sub" id="pb-sub"></div>
+    </div>
+  </div>
+  <div class="pb-center">
+    <!-- 再生ボタン -->
+    <div class="pb-controls">
+      <button class="pb-btn" id="pb-prev" onclick="playPrev()" title="前の曲"><span data-icon="prev"></span></button>
+      <button class="pb-btn pb-play" id="pb-play" onclick="togglePlay()" title="再生 / 一時停止"></button>
+      <button class="pb-btn" id="pb-next" onclick="playNext(true)" title="次の曲"><span data-icon="next"></span></button>
+      <!-- シャッフルボタン -->
+      <button class="pb-btn pb-shuffle" id="pb-shuffle" onclick="toggleShuffle()" title="シャッフル" aria-pressed="false"><span data-icon="shuffle"></span></button>
+      <button class="pb-btn pb-repeat" id="pb-repeat" onclick="cycleRepeat()" title="リピート"></button>
+    </div>
+    <!-- シークバー -->
+    <div class="pb-seek">
+      <span class="pb-time" id="pb-time">0:00</span>
+      <input type="range" id="pb-seek" min="0" max="1000" value="0" step="1" aria-label="再生位置">
+      <span class="pb-time" id="pb-dur">0:00</span>
+    </div>
+  </div>
+  <!-- 音量（左端に歌詞ボタン） -->
+  <div class="pb-volume">
+    <button class="pb-lyrics-btn" id="pb-lyrics" onclick="toggleLyricsCollapsed()" title="歌詞パネルを縮小する / 元の大きさに戻す" aria-pressed="true"><span data-icon="lyrics"></span>歌詞</button>
+    <button class="pb-btn" id="pb-mute" onclick="toggleMute()" title="消音"></button>
+    <input type="range" id="pb-volume" min="0" max="100" value="80" aria-label="音量">
+  </div>
+  <audio id="audio-player" preload="auto"></audio>
+</footer>
+
+<!-- ===================== 歌詞パネル（15-lyrics.js） ===================== -->
+<aside id="lyrics-panel" class="lyrics-panel" aria-label="歌詞パネル">
+  <!-- 縮小した歌詞パネル（縮小中だけ見える。押すと元の大きさに戻る） -->
+  <div class="lyrics-mini-wrap">
+    <span class="ui-label-tag ui-label-tag-onlight" style="top:2px;right:2px" onclick="copyUiLabel('縮小した歌詞パネル', event)" title="クリックで「縮小した歌詞パネル」をコピー">□</span>
+    <button class="lyrics-mini" id="lyrics-mini" onclick="setLyricsCollapsed(false)" title="歌詞パネルを元の大きさに戻す" aria-label="歌詞パネルを元の大きさに戻す" aria-expanded="false">
+      <span class="lyrics-mini-icon" data-icon="lyrics"></span>
+      <span class="lyrics-mini-line" id="lyrics-mini-line"></span>
+      <span class="lyrics-mini-open" data-icon="collapse"></span>
+    </button>
+  </div>
+  <!-- 元の大きさの歌詞パネル -->
+  <div class="lyrics-full">
+  <span class="ui-label-tag ui-label-tag-onlight" style="top:4px;left:6px" onclick="copyUiLabel('歌詞パネル', event)" title="クリックで「歌詞パネル」をコピー">□</span>
+  <!-- 歌詞の見出し -->
+  <div class="lyrics-head">
+    <span class="ui-label-tag ui-label-tag-onlight" style="bottom:4px;right:6px" onclick="copyUiLabel('歌詞の見出し', event)" title="クリックで「歌詞の見出し」をコピー">□</span>
+    <div class="lyrics-head-text">
+      <div class="lyrics-title" id="lyrics-title">歌詞</div>
+      <div class="lyrics-sub" id="lyrics-sub"></div>
+      <div class="lyrics-source is-empty" id="lyrics-source">　</div>
+    </div>
+    <div class="lyrics-tools">
+      <button class="btn-icon lyrics-font-btn" onclick="changeLyricsFont(-1)" title="文字を小さく">A−</button>
+      <button class="btn-icon lyrics-font-btn" onclick="changeLyricsFont(1)" title="文字を大きく">A＋</button>
+      <!-- 歌詞の検索ボタン（Google を新しいタブで開く） -->
+      <span class="lyrics-search-wrap">
+        <button class="btn-icon" id="lyrics-search-btn" onclick="searchLyricsOnGoogle()" title="Googleで歌詞を検索" aria-label="Googleで歌詞を検索" disabled><span data-icon="search"></span></button>
+        <span class="ui-label-tag ui-label-tag-onlight" style="top:-9px;right:-3px" onclick="copyUiLabel('歌詞の検索ボタン', event)" title="クリックで「歌詞の検索ボタン」をコピー">□</span>
+      </span>
+      <button class="btn-icon" id="lyrics-edit-btn" onclick="openLyricsEditor()" title="歌詞を入力・編集"><span data-icon="edit"></span></button>
+      <button class="btn-icon lyrics-collapse-btn" onclick="setLyricsCollapsed(true)" title="歌詞パネルを縮小する" aria-label="歌詞パネルを縮小する"><span data-icon="collapse"></span></button>
+    </div>
+  </div>
+  <!-- 歌詞の本文 -->
+  <div class="ui-label-bar"><span class="ui-label-tag ui-label-tag-onlight" style="top:4px;right:14px" onclick="copyUiLabel('歌詞の本文', event)" title="クリックで「歌詞の本文」をコピー">□</span></div>
+  <div class="lyrics-body" id="lyrics-body" tabindex="0"></div>
+  </div>
+</aside>
+
+<!-- お知らせ（トースト） -->
+<div id="toast-area" class="toast-area"></div>
+<!-- 実行中の表示 -->
+<div id="busy-overlay" class="busy-overlay" hidden><div class="busy-box"><div class="busy-spinner"></div><div id="busy-text">実行中…</div></div></div>
+
+<!-- js は機能ごとのファイル。起動処理（12-init.js）は必ず最後（新しいファイルはその直前に足す） -->
+<script src="js/01-core.js?v=20261006-16"></script>
+<script src="js/02-folder-access.js?v=20261006-16"></script>
+<script src="js/03-tag-reader.js?v=20261006-16"></script>
+<script src="js/04-library.js?v=20261006-16"></script>
+<script src="js/05-library-page.js?v=20261006-16"></script>
+<script src="js/06-player.js?v=20261006-16"></script>
+<script src="js/07-playlists.js?v=20261006-16"></script>
+<script src="js/08-organizer.js?v=20261006-16"></script>
+<script src="js/09-file-ops.js?v=20261006-16"></script>
+<script src="js/10-settings-backup.js?v=20261006-16"></script>
+<script src="js/11-changelog.js?v=20261006-16"></script>
+<script src="js/13-artwork.js?v=20261006-16"></script>
+<script src="js/14-albums.js?v=20261006-16"></script>
+<script src="js/15-lyrics.js?v=20261006-16"></script>
+<script src="js/16-tag-writer.js?v=20261006-16"></script>
+<script src="js/17-tag-edit.js?v=20261006-16"></script>
+<script src="js/18-artwork-edit.js?v=20261006-16"></script>
+<script src="js/19-new-songs.js?v=20261006-16"></script>
+<script src="js/20-heavy-rotation.js?v=20261006-16"></script>
+<script src="js/21-artists.js?v=20261006-16"></script>
+<script src="js/22-load-progress.js?v=20261006-16"></script>
+<script src="js/23-library-index.js?v=20261006-16"></script>
+<script src="js/24-hidden-albums.js?v=20261006-16"></script>
+<script src="js/25-navigation.js?v=20261006-16"></script>
+<script src="js/26-pinned-albums.js?v=20261006-16"></script>
+<script src="js/27-card-actions.js?v=20261006-16"></script>
+<script src="js/28-pinned-artists.js?v=20261006-16"></script>
+<script src="js/29-album-sort.js?v=20261006-16"></script>
+<script src="js/30-album-sortkey.js?v=20261006-16"></script>
+<script src="js/31-album-tags.js?v=20261006-16"></script>
+<script src="js/32-genre-suggest.js?v=20261006-16"></script>
+<script src="js/33-album-genre.js?v=20261006-16"></script>
+<script src="js/34-duplicates.js?v=20261006-16"></script>
+<script src="js/35-album-folder.js?v=20261006-16"></script>
+<script src="js/36-western.js?v=20261006-16"></script>
+<script src="js/37-now-playing.js?v=20261006-16"></script>
+<script src="js/38-album-groups.js?v=20261006-16"></script>
+<script src="js/39-playlist-play.js?v=20261006-16"></script>
+<script src="js/40-coverflow.js?v=20261006-16"></script>
+<script src="js/41-album-bulk-edit.js?v=20261006-16"></script>
+<script src="js/42-sortkey-cover.js?v=20261006-16"></script>
+<script src="js/43-playlist-copy.js?v=20261006-16"></script>
+<script src="js/44-playlist-add-albums.js?v=20261006-16"></script>
+<script src="js/45-album-scroll.js?v=20261006-16"></script>
+<script src="js/46-seasons.js?v=20261006-16"></script>
+<script src="js/47-shuffle-play.js?v=20261006-16"></script>
+<script src="js/48-album-context-menu.js?v=20261006-16"></script>
+<script src="js/49-upbeat.js?v=20261006-16"></script>
+<script src="js/50-np-album.js?v=20261006-16"></script>
+<script src="js/51-album-reset.js?v=20261006-16"></script>
+<script src="js/52-data-store.js?v=20261006-16"></script>
+<script src="js/53-storage-usage.js?v=20261006-16"></script>
+<script src="js/54-spin-cd.js?v=20261006-16"></script>
+<script src="js/55-np-title-fit.js?v=20261006-16"></script>
+<script src="js/56-cassette.js?v=20261006-16"></script>
+<script src="js/57-record.js?v=20261006-16"></script>
+<script src="js/58-md.js?v=20261006-16"></script>
+<script src="js/59-mobile.js?v=20261006-16"></script>
+<script src="js/12-init.js?v=20261006-16"></script>
+</body>
+</html>

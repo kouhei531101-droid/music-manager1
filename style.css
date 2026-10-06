@@ -1,0 +1,2456 @@
+/* =========================================================
+   Music Manager ― style.css
+   色は必ず :root の変数で指定する（直接 #xxxxxx を書かない）。
+   部品を直すときは、末尾に上書きを足さず、既存の定義を探して直す。
+   ========================================================= */
+
+/* ---------- 1. 色・サイズ ---------- */
+:root {
+  --bg:            #f6f5fa;   /* 本文エリアの背景 */
+  --surface:       #ffffff;   /* カード・パネル・モーダルの背景 */
+  --surface-2:     #faf9fd;   /* 表の見出し・うすい面 */
+  --border:        rgba(60, 50, 110, 0.12);
+  --border2:       rgba(60, 50, 110, 0.24);
+  --primary-deep:  #2b2757;   /* サイドバー・再生バー */
+  --primary-mid:   #463f8c;   /* ページヘッダー・主要ボタン */
+  --primary:       #5b53a8;
+  --primary-dim:   rgba(91, 83, 168, 0.12);   /* フォーカスリング・うすい背景 */
+  --primary-pale:  #ecebf8;
+  --accent:        #d4682a;   /* 「＋追加」ボタン */
+  --new-ink:       #a84b17;   /* new songs の追加日の文字（白い面の上で 5:1 以上。v4.2） */
+  --accent-light:  #e8864a;
+  --gold:          #c8a060;
+  --text:          #1f1d2b;
+  --text-sub:      #6b6880;
+  --text-faint:    #9a97ad;   /* 推定した値（タグが無かった曲） */
+  --red:           #b04040;
+  --red-pale:      #fbecec;
+  --green:         #3f8a4f;
+  --yellow:        #d9a520;
+  --on-dark:       #ffffff;
+  --on-dark-sub:   rgba(255, 255, 255, 0.7);
+  --shadow-sm: 0 1px 4px rgba(40, 30, 90, 0.08);
+  --shadow:    0 4px 16px rgba(40, 30, 90, 0.10);
+  --shadow-md: 0 8px 28px rgba(40, 30, 90, 0.16);
+  --sidebar-w: 230px;
+  --player-h:  109px;   /* 再生バーの高さ（84px の1.3倍） */
+  --lyrics-w:  340px;   /* 歌詞パネルの幅（パソコン幅。画面の幅によらず固定） */
+  --lyrics-strip-w: 44px;   /* 縮小した歌詞パネルの幅（パソコン幅） */
+  --lyrics-mh: 300px;       /* 歌詞パネルの高さ（スマホ幅。固定） */
+  --lyrics-head-h: 104px;   /* 歌詞の見出しの高さ（固定。曲名の長さなどで変わらない） */
+  --lyrics-mini-h: 46px;    /* 縮小した歌詞パネルの高さ（スマホ幅） */
+  --lyr-right: 0px;         /* 歌詞パネルが本文の右にとる幅（body のクラスで決まる） */
+  --lyr-bottom: 0px;        /* 歌詞パネルが本文の下にとる高さ（スマホ幅） */
+  --load-h: 0px;            /* 読み込みの進み具合が本文の下にとる高さ（読み込み中だけ。v2.6） */
+  --r:    12px;
+  --r-sm: 8px;
+  --font: 'DM Sans', 'Hiragino Sans', 'Yu Gothic UI', 'Meiryo', sans-serif;
+  --font-heading: 'Cormorant Garamond', 'Hiragino Mincho ProN', 'Yu Mincho', serif;
+  /* v3.7：ブラックモードで変える必要のある色を、役割ごとの変数に分けた（ライトは今までと同じ値）。
+     ライトでは color-scheme を書かない（書くとスクロールバーの描き方が変わり、今までの見た目と違ってしまうため） */
+  --ink:          #2b2757;   /* 見出し・強調の文字（明るい面の上） */
+  --ink-mid:      #463f8c;   /* 小さな見出し・紫の文字（明るい面の上） */
+  --ink-soft:     #5b53a8;   /* リンク・アイコンの紫の文字 */
+  --on-light-ink: #2b2757;   /* 金・白の面の上の文字（どちらの色でも同じ） */
+  --header-a:     #463f8c;   /* ページヘッダーのグラデーション */
+  --header-b:     #5b53a8;
+  --chip-bg:      rgba(255, 255, 255, 0.92);   /* ジャケットの上の丸いボタン */
+  --chip-bg-soft: rgba(255, 255, 255, 0.88);
+  --chip-border:  rgba(0, 0, 0, 0.08);
+  --chip-border-soft: rgba(255, 255, 255, 0.7);
+  --chip-hover:   #ffffff;
+  --playing-bg:   rgba(212, 104, 42, 0.09);    /* 再生中の行 */
+  --label-bg:     rgba(43, 39, 87, 0.12);      /* 明るい面の上の□ラベル */
+  --label-fg:     #2b2757;
+  --toast-bg:     #2b2757;
+  --light-pale:   #ecebf8;   /* 白いボタンを乗せたときの色（どちらの色でも同じ。再生バーの再生ボタン） */
+  --g-blue: #4285f4; --g-green: #34a853; --g-yellow: #fbbc05; --g-red: #ea4335;   /* Google検索ボタンの「G」の4色（v3.8。どちらの色でも同じ） */
+  --abe-changed:  #fff3d1;   /* アルバムの一括編集で変えたセル（v5.9） */
+  --abe-changed-line: #d9a520;
+  /* 回転CD（v8.3。54-spin-cd.js）：画像の無い曲の銀色のディスク・透明のハブ・ふち・光沢 */
+  --cd-silver-1:  #e4e3ec;
+  --cd-silver-2:  #c7c5d4;
+  --cd-tint-1:    #d9d3f2;   /* ディスクの虹色の映り込み（紫） */
+  --cd-tint-2:    #f4dccb;   /* 同（オレンジ） */
+  --cd-hub:       rgba(255, 255, 255, 0.55);
+  --cd-hub-edge:  rgba(60, 50, 110, 0.28);
+  --cd-rim:       rgba(60, 50, 110, 0.30);
+  --cd-shine:     rgba(255, 255, 255, 0.55);
+  /* カセットテープ（v8.4。56-cassette.js）：本体・ラベルの紙・窓・テープ・リール・ねじ */
+  --cs-shell-1:   #3b3752;
+  --cs-shell-2:   #2b2840;
+  --cs-shell-3:   #221f35;
+  --cs-edge:      rgba(255, 255, 255, 0.16);
+  --cs-paper:     #faf6ec;
+  --cs-ink:       #2b2757;
+  --cs-ink-sub:   #6b6880;
+  --cs-window:    rgba(12, 10, 24, 0.80);
+  --cs-window-solid: #141222;
+  --cs-tape:      #4b3427;
+  --cs-tape-edge: #6e4d39;
+  --cs-hub:       #f4f2fa;
+  --cs-hole:      #100e1a;
+  --cs-screw:     #c9c6d6;
+  /* レコード（v8.5。57-record.js）：プレーヤー台（木目）・プラッター・盤・溝・光の反射・トーンアーム・ヘッドシェル・支点 */
+  --rc-plinth-1:  #6b4a35;
+  --rc-plinth-2:  #4a3223;
+  --rc-edge:      rgba(255, 255, 255, 0.16);
+  --rc-platter:   #cfccd9;
+  --rc-platter-2: #8e8a9e;
+  --rc-vinyl:     #15131a;
+  --rc-groove:    rgba(255, 255, 255, 0.06);
+  --rc-shine:     rgba(255, 255, 255, 0.20);
+  --rc-arm-1:     #f1eff6;
+  --rc-arm-2:     #a7a3b5;
+  --rc-head:      #1e1c26;
+  --rc-pivot:     #2b2834;
+  --rc-text:      rgba(255, 255, 255, 0.72);
+  /* MD（v8.6。v8.6.1 でカラースケルトン。58-md.js）：シェルの明るさ・奥と手前の透け具合・縁の光・刻印・ねじ穴・ラベルの紙と文字・中のディスク・ハブ。
+     シェルの色合い（--md-h）と鮮やかさ（--md-s）は曲のジャケットから 58-md.js が決める */
+  --md-l:         60%;
+  --md-back-a:    0.62;
+  --md-front-a:   0.30;
+  --md-edge:      rgba(255, 255, 255, 0.55);
+  --md-engrave:   rgba(255, 255, 255, 0.85);
+  --md-hole:      rgba(0, 0, 0, 0.18);
+  --md-paper:     #f6f6fa;
+  --md-paper-2:   #d9dae3;
+  --md-ink:       #23212f;
+  --md-ink-sub:   #5d5b6e;
+  --md-disc-1:    #f3f4f8;
+  --md-disc-2:    #b3b7c7;
+  --md-hub:       #d3d6e0;
+  --md-hub-dark:  #5b5e6e;
+}
+/* ブラックモード（v3.7）：<html data-theme="dark">。起動時は index.html の head、切り替えは 10-settings-backup.js の applyTheme() が付ける */
+:root[data-theme="dark"] {
+  color-scheme: dark;        /* スクロールバー・入力欄・選択肢もブラウザの暗い色に */
+  --bg:            #121216;
+  --surface:       #1c1c22;
+  --surface-2:     #25252d;
+  --border:        rgba(255, 255, 255, 0.10);
+  --border2:       rgba(255, 255, 255, 0.20);
+  --primary-deep:  #16141f;   /* サイドバー・再生バー（黒に近い紫） */
+  --primary-mid:   #5b53b8;   /* 主要ボタン（白い文字とのコントラスト 6:1 以上） */
+  --primary:       #7a72d6;
+  --primary-dim:   rgba(150, 140, 240, 0.20);
+  --primary-pale:  #2b2842;   /* 選んでいる行・うすい紫の面 */
+  --accent:        #b5541d;   /* オレンジ（白い文字とのコントラスト 4.9:1 になるよう少し暗く） */
+  --new-ink:       #f0a36e;   /* new songs の追加日の文字（暗い面の上で読みやすい明るいオレンジ。v4.2） */
+  --accent-light:  #f0a06a;
+  --gold:          #d9b778;
+  --text:          #ecebf3;
+  --text-sub:      #b6b3c8;
+  --text-faint:    #8d8aa1;
+  --red:           #e57b7b;
+  --red-pale:      #3b2326;
+  --green:         #62bf76;
+  --yellow:        #e9bd4a;
+  --shadow-sm: 0 1px 4px rgba(0, 0, 0, 0.35);
+  --shadow:    0 4px 16px rgba(0, 0, 0, 0.40);
+  --shadow-md: 0 8px 28px rgba(0, 0, 0, 0.55);
+  --ink:          #dcd8ff;
+  --ink-mid:      #b8b1ff;
+  --ink-soft:     #a9a1f6;
+  --header-a:     #2d2952;
+  --header-b:     #3e3874;
+  --chip-bg:      rgba(46, 46, 56, 0.92);
+  --chip-bg-soft: rgba(46, 46, 56, 0.88);
+  --chip-border:  rgba(255, 255, 255, 0.14);
+  --chip-border-soft: rgba(255, 255, 255, 0.22);
+  --chip-hover:   #3a3a46;
+  --playing-bg:   rgba(234, 138, 78, 0.16);
+  --label-bg:     rgba(255, 255, 255, 0.12);
+  --label-fg:     #dcd8ff;
+  --toast-bg:     #36324f;
+  --abe-changed:  rgba(233, 189, 74, 0.17);
+  --abe-changed-line: #e9bd4a;
+  --cd-silver-1:  #4a4957;
+  --cd-silver-2:  #2e2d38;
+  --cd-tint-1:    #3f3866;
+  --cd-tint-2:    #5a3f33;
+  --cd-hub:       rgba(255, 255, 255, 0.22);
+  --cd-hub-edge:  rgba(255, 255, 255, 0.30);
+  --cd-rim:       rgba(255, 255, 255, 0.22);
+  --cd-shine:     rgba(255, 255, 255, 0.30);
+  --cs-shell-1:   #45405e;
+  --cs-shell-2:   #312e46;
+  --cs-shell-3:   #27243a;
+  --cs-edge:      rgba(255, 255, 255, 0.20);
+  --cs-paper:     #ece6d6;
+  --cs-ink:       #2b2757;
+  --cs-ink-sub:   #5f5c72;
+  --cs-window:    rgba(5, 4, 12, 0.82);
+  --cs-window-solid: #0c0b14;
+  --cs-tape:      #3d2a20;
+  --cs-tape-edge: #5e4231;
+  --cs-hub:       #dedbe9;
+  --cs-hole:      #08070e;
+  --cs-screw:     #a9a6b8;
+  --rc-plinth-1:  #4a3427;
+  --rc-plinth-2:  #31221a;
+  --rc-edge:      rgba(255, 255, 255, 0.18);
+  --rc-platter:   #a5a2b4;
+  --rc-platter-2: #646075;
+  --rc-vinyl:     #0b0a0e;
+  --rc-groove:    rgba(255, 255, 255, 0.05);
+  --rc-shine:     rgba(255, 255, 255, 0.15);
+  --rc-arm-1:     #dedbe9;
+  --rc-arm-2:     #8f8ba0;
+  --rc-head:      #16141d;
+  --rc-pivot:     #1f1d27;
+  --rc-text:      rgba(255, 255, 255, 0.62);
+  --md-l:         52%;
+  --md-back-a:    0.55;
+  --md-front-a:   0.32;
+  --md-edge:      rgba(255, 255, 255, 0.38);
+  --md-engrave:   rgba(255, 255, 255, 0.70);
+  --md-hole:      rgba(0, 0, 0, 0.30);
+  --md-paper:     #e2e2ea;
+  --md-paper-2:   #b9bac6;
+  --md-ink:       #23212f;
+  --md-ink-sub:   #555366;
+  --md-disc-1:    #d6d8e2;
+  --md-disc-2:    #8d91a4;
+  --md-hub:       #b4b7c4;
+  --md-hub-dark:  #3e4050;
+}
+
+/* ---------- 2. 基本 ---------- */
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+/* スクロールバーの場所をいつも確保する（画面によってスクロールバーが出たり消えたりして、
+   右側に固定した歌詞パネルや本文の幅が 15px ほど動くのを防ぐ。v1.9） */
+html { scrollbar-gutter: stable; }
+body {
+  font-family: var(--font);
+  font-size: 14px;
+  color: var(--text);
+  background: var(--bg);
+  line-height: 1.5;
+}
+button { font-family: inherit; font-size: inherit; cursor: pointer; }
+button:disabled { cursor: default; opacity: 0.45; }
+button svg, a svg { vertical-align: middle; flex-shrink: 0; }
+code { background: var(--primary-pale); padding: 1px 5px; border-radius: 4px; font-size: 0.92em; }
+[hidden] { display: none !important; }
+
+#app { display: flex; min-height: 100vh; }
+
+/* ---------- 3. サイドバー ---------- */
+#sidebar {
+  position: sticky;
+  top: 0;
+  width: var(--sidebar-w);
+  flex-shrink: 0;
+  height: 100vh;
+  background: var(--primary-deep);
+  color: var(--on-dark);
+  display: flex;
+  flex-direction: column;
+  padding-bottom: 12px;
+  z-index: 20;
+}
+.sidebar-header { padding: 22px 18px 14px; border-bottom: 1px solid rgba(255, 255, 255, 0.08); }
+.logo { display: flex; align-items: center; gap: 12px; }
+.logo-mark { color: var(--gold); display: flex; }
+.logo-title { font-family: 'Cinzel', var(--font-heading); font-size: 26px; letter-spacing: 0.04em; }
+.logo-sub { display: none; }   /* v2.2：「音楽ファイル管理」は表示しない */
+.logo-text { display: flex; flex-direction: column; align-items: flex-end; }   /* バージョンを「MUSIC」の C の下（右端）にそろえる */
+.logo-version { font-size: 10.5px; color: var(--gold); margin-top: 2px; }
+
+.sidebar-nav { display: flex; flex-direction: column; padding: 12px 10px; gap: 2px; flex: 1; overflow-y: auto; }
+.nav-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 12px;
+  border-radius: var(--r-sm);
+  color: var(--on-dark-sub);
+  text-decoration: none;
+  font-size: 13.5px;
+  transition: background 0.15s, color 0.15s;
+}
+.nav-item:hover { background: rgba(255, 255, 255, 0.07); color: var(--on-dark); }
+.nav-item.active { background: rgba(255, 255, 255, 0.14); color: var(--on-dark); }
+.nav-icon { display: flex; }
+.nav-label { flex: 1; }
+.nav-badge { font-size: 11px; background: rgba(255, 255, 255, 0.14); border-radius: 10px; padding: 0 7px; }
+.nav-badge:empty { display: none; }
+/* メニューの区切り（heavy rotation と file の間）。線の上下に間をあけて、下の項目を下へずらす */
+.nav-sep { height: 1px; background: rgba(255, 255, 255, 0.14); margin: auto 8px 14px; flex: none; }   /* margin-top: auto で区切りから下（file・tools・version）をサイドバーの下（接続状態の枠のすぐ上）へ寄せる */
+
+/* 接続状態 */
+/* v6.3：サイドバーのいちばん下へ（再生バーはサイドバーの右から始まるので、下に再生バーの高さを空けなくてよい）。上のメニューがスクロールせずに全部見えるように */
+.conn-status-wrap { position: relative; margin: 0 12px 0; }
+.conn-status {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--r-sm);
+  padding: 10px 12px;
+  font-size: 12.5px;
+}
+.conn-line { display: flex; align-items: center; gap: 7px; font-weight: 500; }
+.conn-sub { font-size: 11.5px; color: var(--on-dark-sub); margin-top: 3px; word-break: break-all; }
+.conn-btn {
+  margin-top: 8px; width: 100%;
+  background: var(--gold); color: var(--on-light-ink);
+  border: none; border-radius: 6px; padding: 6px 8px; font-weight: 700; font-size: 12px;
+}
+.conn-btn:hover { filter: brightness(1.08); }
+.conn-dot { width: 9px; height: 9px; border-radius: 50%; display: inline-block; flex-shrink: 0; }
+.dot-on { background: var(--green); box-shadow: 0 0 0 3px rgba(63, 138, 79, 0.25); }
+.dot-wait { background: var(--yellow); box-shadow: 0 0 0 3px rgba(217, 165, 32, 0.25); }
+.dot-off { background: #aaa; }
+
+/* ---------- 4. 本文 ---------- */
+#main { flex: 1; min-width: 0; padding-right: var(--lyr-right); padding-bottom: calc(var(--player-h) + var(--lyr-bottom) + var(--load-h) + 24px); }
+.page { display: none; }
+.page.active { display: block; }
+
+.unsupported-banner {
+  margin: 16px 42px 0;
+  padding: 12px 16px;
+  background: var(--red-pale);
+  border: 1px solid rgba(176, 64, 64, 0.3);
+  border-radius: var(--r-sm);
+  color: var(--red);
+}
+
+/* ページヘッダー */
+.page-header {
+  position: relative;
+  display: flex; align-items: center; flex-wrap: wrap; gap: 10px;
+  background: linear-gradient(135deg, var(--header-a), var(--header-b));
+  color: var(--on-dark);
+  padding: 18px 48px 18px 42px;
+  min-height: 70px;
+}
+.page-header h1 { font-family: var(--font-heading); font-weight: 400; font-size: 30px; margin: 0; letter-spacing: 0.03em; }
+/* ヘッダーのタイトル（album など）はヘッダーの中央に置く。ボタンなどの押す邪魔をしないよう pointer-events: none */
+.page-header h1 { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); white-space: nowrap; pointer-events: none; }
+.page-header-icon { display: flex; opacity: 0.9; }
+.count-badge { font-size: 12px; background: rgba(255, 255, 255, 0.18); border-radius: 12px; padding: 1px 10px; }
+.count-badge:empty { display: none; }
+.header-actions { margin-left: auto; display: flex; gap: 8px; flex-wrap: wrap; }
+
+.page-body { padding: 20px 42px; }
+
+/* ---------- 5. ボタン ---------- */
+.btn-save, .btn-cancel, .btn-danger, .btn-add {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 8px 16px; border-radius: var(--r-sm); font-size: 13px; font-weight: 500;
+  border: 1px solid transparent; transition: filter 0.15s, background 0.15s;
+}
+.btn-save { background: var(--primary-mid); color: #fff; }
+.btn-save:hover:not(:disabled) { filter: brightness(1.12); }
+.btn-cancel { background: var(--surface); color: var(--text-sub); border-color: var(--border2); }
+.btn-cancel:hover:not(:disabled) { background: var(--surface-2); color: var(--text); }
+.btn-danger { background: var(--red); color: #fff; }
+.btn-danger:hover:not(:disabled) { filter: brightness(1.1); }
+.btn-add {
+  background: linear-gradient(135deg, var(--accent), var(--accent-light));
+  color: #fff; box-shadow: 0 2px 8px rgba(212, 104, 42, 0.35);
+}
+.btn-add:hover { filter: brightness(1.06); }
+.btn-inline-small {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 5px 10px; font-size: 12.5px; border-radius: 6px;
+  background: var(--primary-pale); color: var(--ink-mid); border: 1px solid var(--border2);
+}
+.btn-inline-small:hover:not(:disabled) { background: var(--primary-dim); }
+.btn-inline-danger { color: var(--red); background: var(--red-pale); border-color: rgba(176, 64, 64, 0.25); }
+.btn-inline-danger:hover:not(:disabled) { filter: brightness(0.96); }
+.btn-icon {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 30px; height: 30px; padding: 0; border: none; border-radius: 6px;
+  background: transparent; color: var(--text-sub);
+}
+.btn-icon:hover:not(:disabled) { background: var(--primary-dim); color: var(--ink-mid); }
+.btn-icon-danger:hover:not(:disabled) { background: var(--red-pale); color: var(--red); }
+.btn-ghost-small {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 6px 12px; font-size: 12.5px; border-radius: 6px;
+  background: rgba(255, 255, 255, 0.14); color: #fff; border: 1px solid rgba(255, 255, 255, 0.28);
+}
+.btn-ghost-small:hover:not(:disabled) { background: rgba(255, 255, 255, 0.24); }
+.btn-row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+
+/* ---------- 6. フォーム ---------- */
+.form-group { display: flex; flex-direction: column; gap: 5px; margin-bottom: 10px; }
+.form-group label { font-size: 11.5px; font-weight: 700; color: var(--text-sub); }
+.form-input {
+  padding: 9px 12px; border: 1px solid var(--border2); border-radius: var(--r-sm);
+  font-size: 13.5px; font-family: inherit; background: var(--surface); color: var(--text); width: 100%;
+}
+.form-input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-dim); }
+
+/* ---------- 7. フィルターバー・並べ替え・選択操作バー ---------- */
+.filter-bar {
+  position: relative;
+  display: flex; flex-wrap: wrap; align-items: center; gap: 10px 18px;
+  padding: 14px 42px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+}
+.search-box { position: relative; flex: 1 1 280px; max-width: 460px; }
+.search-box .search-icon { position: absolute; left: 11px; top: 50%; transform: translateY(-50%); color: var(--text-faint); display: flex; }
+.search-box .form-input { padding-left: 34px; }
+.sort-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.sort-caption { font-size: 12px; color: var(--text-sub); }
+.tab-row { display: flex; flex-wrap: wrap; gap: 4px; }
+.tab-btn {
+  padding: 5px 11px; font-size: 12.5px; border-radius: 16px;
+  border: 1px solid var(--border2); background: var(--surface); color: var(--text-sub);
+}
+.tab-btn:hover { background: var(--primary-pale); }
+.tab-btn.active { background: var(--primary-mid); border-color: var(--primary-mid); color: #fff; }
+
+.select-bar {
+  position: sticky; top: 0; z-index: 15;
+  display: flex; flex-wrap: wrap; align-items: center; gap: 8px;
+  padding: 9px 42px;
+  background: var(--primary-pale);
+  border-bottom: 1px solid var(--border2);
+}
+.select-count { font-size: 12.5px; font-weight: 700; color: var(--ink-mid); margin-right: 6px; }
+
+/* ---------- 8. 曲一覧の表 ---------- */
+.lib-table { width: 100%; border-collapse: collapse; table-layout: fixed; background: var(--surface); border-radius: var(--r); box-shadow: var(--shadow-sm); }
+.lib-table th {
+  text-align: left; font-size: 11.5px; font-weight: 700; color: var(--text-sub);
+  background: var(--surface-2); padding: 8px 8px; border-bottom: 1px solid var(--border);
+}
+.lib-table td { padding: 6px 8px; border-bottom: 1px solid var(--border); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 13px; }
+.lib-row:hover td { background: var(--surface-2); }
+.lib-row.is-selected td { background: var(--primary-pale); }
+.lib-row.is-playing td { background: var(--playing-bg); }
+.lib-row.is-playing .lib-title { color: var(--accent); font-weight: 700; }
+.col-check { width: 34px; text-align: center; }
+.col-play { width: 40px; }
+/* ボタン・チェックだけの細い列は「…」を出さない */
+.lib-table td.col-check, .lib-table td.col-play, .lib-table td.col-add { padding: 4px; text-overflow: clip; }
+.col-title { width: 32%; }
+.col-artist { width: 17%; }
+.col-album { width: 19%; }
+.col-dur { width: 60px; text-align: right; font-variant-numeric: tabular-nums; color: var(--text-sub); }
+.col-folder { width: 16%; color: var(--text-sub); font-size: 12px !important; }
+.col-add { width: 42px; }
+.lib-title { overflow: hidden; text-overflow: ellipsis; }
+.lib-sub { display: none; font-size: 11.5px; color: var(--text-sub); overflow: hidden; text-overflow: ellipsis; }
+.guessed, .lib-title.guessed { color: var(--text-faint); }
+.btn-play-row { color: var(--ink-soft); }
+.more-row { text-align: center; padding: 14px; }
+/* 一覧の最後の目印（下までスクロールすると続きを読み込む。v2.4） */
+.load-more { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 10px; padding: 18px 10px; font-size: 12px; color: var(--text-faint); }
+.load-more-btn { font-size: 11.5px; padding: 3px 10px; }
+/* 一覧に戻ったとき、開いていたカードを一瞬だけ強調（v2.4） */
+@keyframes card-flash { 0% { box-shadow: 0 0 0 0 rgba(212, 104, 42, 0); } 25% { box-shadow: 0 0 0 5px rgba(212, 104, 42, 0.75); } 100% { box-shadow: 0 0 0 0 rgba(212, 104, 42, 0); } }
+.card-flash .art-card, .card-flash.art-card { animation: card-flash 1.5s ease-out; }
+@media (prefers-reduced-motion: reduce) { .card-flash .art-card { animation: none; outline: 3px solid var(--accent); } }
+.lib-legend { font-size: 11.5px; color: var(--text-faint); margin: 10px 2px 0; }
+/* new songs のアルバム表示（v4.2）：新しいアルバムカードの追加日・新しい曲の数、アルバムの曲一覧の「NEW」の印 */
+.ns-mode-row { position: relative; }
+.ns-album-meta { display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 8px; font-size: 11.5px; color: var(--text-sub); }
+.ns-album-date { color: var(--new-ink); font-weight: 700; }
+.ns-album-count strong { color: var(--ink-mid); }
+.song-new-mark { flex: none; display: inline-flex; align-items: center; margin-left: 6px; padding: 0 5px; height: 16px; border-radius: 4px;
+  font-size: 10px; font-weight: 700; letter-spacing: 0.04em; background: var(--accent); color: #fff; }
+
+.empty-msg { padding: 36px 20px; text-align: center; color: var(--text-sub); }
+.empty-msg.small { padding: 18px 10px; font-size: 13px; }
+
+/* はじめにカード */
+.welcome-card {
+  max-width: 640px; margin: 10px auto; padding: 26px 30px;
+  background: var(--surface); border-radius: var(--r); box-shadow: var(--shadow);
+  border-top: 4px solid var(--primary);
+}
+.welcome-card h2 { font-family: var(--font-heading); font-weight: 600; font-size: 22px; margin: 0 0 10px; color: var(--ink); }
+.welcome-card ol { padding-left: 20px; line-height: 1.9; }
+.welcome-note { font-size: 12.5px; color: var(--text-sub); }
+
+/* ---------- 9. パネル（プレイリスト・ファイル整理・設定で共通） ---------- */
+.panel {
+  position: relative;
+  background: var(--surface); border-radius: var(--r); box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border); padding: 16px 18px; margin-bottom: 16px;
+}
+.panel-title { font-family: var(--font-heading); font-size: 18px; font-weight: 600; color: var(--ink); margin: 0 0 10px; }
+.panel-title-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 8px; padding-right: 22px; }
+.panel-title-row .panel-title { margin: 0; }
+.panel-desc { font-size: 12.5px; color: var(--text-sub); margin: 6px 0; }
+.panel-meta { font-size: 12px; color: var(--text-sub); margin-top: 10px; }
+.count-badge-sm { font-size: 11px; color: var(--text-sub); background: var(--primary-pale); border-radius: 10px; padding: 0 7px; white-space: nowrap; }
+.text-warn { color: var(--red); }
+
+/* ---------- 10. プレイリスト ---------- */
+.pl-layout { display: grid; grid-template-columns: 260px minmax(0, 1fr); gap: 16px; align-items: start; }
+.pl-list-panel { position: sticky; top: 12px; }
+.pl-item {
+  display: flex; align-items: center; gap: 8px; width: 100%;
+  text-align: left; padding: 9px 10px; margin-bottom: 3px;
+  border: 1px solid transparent; border-radius: var(--r-sm); background: transparent; color: var(--text);
+}
+.pl-item:hover { background: var(--surface-2); }
+.pl-item.active { background: var(--primary-pale); border-color: var(--border2); font-weight: 700; color: var(--ink); }
+.pl-item-name { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pl-detail-head { padding-right: 24px; margin-bottom: 12px; }
+.pl-detail-name { font-family: var(--font-heading); font-size: 24px; font-weight: 600; margin: 0; color: var(--ink); word-break: break-all; }
+.pl-detail-meta { font-size: 12.5px; color: var(--text-sub); }
+.pl-tracks { list-style: none; margin: 0; padding: 0; }
+.pl-track {
+  display: flex; align-items: center; gap: 6px;
+  padding: 5px 6px; border-bottom: 1px solid var(--border); background: var(--surface);
+}
+.pl-track:hover { background: var(--surface-2); }
+.pl-track.is-playing { background: var(--playing-bg); }
+.pl-track.is-playing .pl-track-title { color: var(--accent); font-weight: 700; }
+.pl-track.missing .pl-track-title { color: var(--text-faint); text-decoration: line-through; }
+.pl-track.missing .pl-track-sub { color: var(--red); }
+.pl-track.dragging { opacity: 0.4; }
+.pl-track.drag-over { box-shadow: inset 0 2px 0 var(--primary); }
+.pl-grip { color: var(--text-faint); cursor: grab; display: flex; }
+.pl-no { width: 26px; text-align: right; font-size: 12px; color: var(--text-sub); font-variant-numeric: tabular-nums; }
+.pl-track-text { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.pl-track-title, .pl-track-sub { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pl-track-sub { font-size: 11.5px; color: var(--text-sub); }
+.pl-dur { font-size: 12px; color: var(--text-sub); font-variant-numeric: tabular-nums; width: 48px; text-align: right; }
+.pl-track-btns { display: flex; }
+
+/* ---------- 11. ファイル整理 ---------- */
+.org-note {
+  font-size: 12.5px; color: var(--text-sub); background: var(--surface);
+  border-left: 4px solid var(--gold); border-radius: var(--r-sm); padding: 10px 14px; margin-bottom: 16px;
+}
+.org-layout { display: grid; grid-template-columns: minmax(220px, 320px) minmax(0, 1fr); gap: 16px; align-items: start; }
+.org-folder-list { max-height: 60vh; overflow-y: auto; }
+.org-folder {
+  display: flex; align-items: center; gap: 6px; width: 100%;
+  text-align: left; padding: 6px 10px; border: none; border-radius: 6px; background: transparent; color: var(--text);
+  font-size: 13px;
+}
+.org-folder:hover { background: var(--surface-2); }
+.org-folder.active { background: var(--primary-pale); color: var(--ink); font-weight: 700; }
+.org-folder-icon { color: var(--gold); display: flex; }
+.org-folder-name { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.org-trash-note { font-size: 11.5px; color: var(--text-sub); margin: 10px 4px 0; }
+.org-files-head { padding-right: 22px; }
+.org-files-head .panel-title { margin-bottom: 4px; }
+.org-path { display: flex; align-items: center; gap: 6px; font-size: 12.5px; color: var(--text-sub); word-break: break-all; }
+.org-path svg { color: var(--gold); }
+.org-toolbar {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 8px;
+  padding: 10px 0; margin: 8px 0 4px; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);
+}
+.org-checkall { display: inline-flex; align-items: center; gap: 5px; font-size: 12.5px; margin-right: 4px; }
+.org-file-list { list-style: none; margin: 0; padding: 0; }
+.org-file { display: flex; align-items: center; gap: 8px; padding: 6px 4px; border-bottom: 1px solid var(--border); }
+.org-file.is-selected { background: var(--primary-pale); }
+.org-file-text { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.org-file-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 13px; }
+.org-file-sub { font-size: 11.5px; color: var(--text-sub); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.org-file-size { font-size: 11.5px; color: var(--text-sub); white-space: nowrap; }
+.history-list { list-style: none; margin: 0; padding: 0; }
+.history-item { border-bottom: 1px solid var(--border); padding: 8px 2px; }
+.history-item.undone { opacity: 0.6; }
+.history-line { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; font-size: 12.5px; }
+.history-time { color: var(--text-sub); font-variant-numeric: tabular-nums; }
+.history-type { font-weight: 700; padding: 1px 8px; border-radius: 10px; background: var(--primary-pale); color: var(--ink-mid); }
+.history-type.type-trash { background: var(--red-pale); color: var(--red); }
+.history-count { color: var(--text-sub); }
+.history-state { color: var(--green); }
+.history-details summary { cursor: pointer; font-size: 12px; color: var(--text-sub); margin-top: 3px; word-break: break-all; }
+.history-details .change-table-wrap { margin-top: 6px; }
+
+/* ---------- 12. 設定・バックアップ／バージョン管理 ---------- */
+.settings-body { max-width: 860px; }
+.set-dl { display: grid; grid-template-columns: 110px 1fr; gap: 6px 12px; margin: 0; font-size: 13px; }
+.set-dl dt { color: var(--text-sub); }
+.set-dl dd { margin: 0; word-break: break-all; }
+.set-state { display: flex; align-items: center; gap: 7px; }
+.storage-bar { height: 10px; background: var(--primary-pale); border-radius: 6px; overflow: hidden; }
+.storage-fill { height: 100%; background: var(--primary); }
+.storage-fill.warn { background: var(--red); }
+.storage-list { font-size: 12.5px; color: var(--text-sub); padding-left: 18px; }
+.changelog-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 10px; }
+.changelog-version { font-weight: 700; color: var(--ink-mid); }
+.changelog-date { font-size: 12px; color: var(--text-sub); }
+.changelog-title { font-weight: 500; }
+.changelog-item ul { font-size: 13px; padding-left: 20px; margin: 8px 0 0; }
+
+/* ---------- 13. 再生バー ---------- */
+#player-bar {
+  position: fixed; left: var(--sidebar-w); right: 0; bottom: 0; z-index: 30;
+  height: var(--player-h);
+  display: grid; grid-template-columns: minmax(160px, 1fr) minmax(280px, 2fr) minmax(200px, 260px); align-items: center; gap: 18px;
+  padding: 0 24px;
+  background: var(--primary-deep); color: var(--on-dark);
+  box-shadow: 0 -4px 18px rgba(20, 15, 50, 0.25);
+}
+.pb-now { min-width: 0; }
+.pb-title { font-size: 14px; font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pb-sub { font-size: 11.5px; color: var(--on-dark-sub); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pb-center { display: flex; flex-direction: column; align-items: center; gap: 4px; min-width: 0; }
+.pb-controls { display: flex; align-items: center; gap: 10px; }
+.pb-btn {
+  position: relative;
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 34px; height: 34px; border-radius: 50%; border: none;
+  background: transparent; color: var(--on-dark-sub);
+}
+.pb-btn span { display: flex; }
+.pb-btn:hover { color: #fff; background: rgba(255, 255, 255, 0.1); }
+.pb-play { width: 42px; height: 42px; background: #fff; color: var(--on-light-ink); }
+.pb-play:hover { background: var(--light-pale); color: var(--on-light-ink); }
+.pb-repeat.active, .pb-shuffle.active { color: var(--gold); }
+.pb-repeat-one { position: absolute; right: 3px; bottom: 3px; font-size: 9px; font-weight: 700; }
+.pb-seek { display: flex; align-items: center; gap: 8px; width: 100%; }
+.pb-seek input { flex: 1; }
+.pb-time { font-size: 11px; color: var(--on-dark-sub); font-variant-numeric: tabular-nums; min-width: 36px; text-align: center; }
+.pb-volume { display: flex; align-items: center; gap: 6px; }
+.pb-volume input { flex: 1; min-width: 60px; }
+#player-bar input[type=range] { accent-color: var(--gold); height: 4px; cursor: pointer; }
+
+/* ---------- 13b. ジャケット画像 ---------- */
+/* サムネイル（曲リスト・プレイリストの曲・再生バー共通）。画像が無いときは音符の仮画像 */
+.art-thumb {
+  display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0;
+  width: 36px; height: 36px; border-radius: 5px; overflow: hidden;
+  background: var(--primary-pale); color: var(--text-faint);
+}
+.art-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.art-thumb svg { width: 16px; height: 16px; }
+.art-thumb.art-pending svg { opacity: 0.5; }
+.col-art { width: 46px; }
+.lib-table td.col-art { padding: 3px 4px; text-overflow: clip; }
+.lib-table td.col-art .art-thumb { vertical-align: middle; }
+.pl-track .art-thumb { width: 34px; height: 34px; }
+.art-prebuild { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 10px; margin-top: 8px; font-size: 12.5px; }   /* ジャケットの控えを前もって作る（v2.5） */
+.art-prebuild .storage-bar { flex: 1 1 100%; margin: 0; }
+.art-cache-row { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; font-size: 12.5px; margin-top: 12px; padding-top: 10px; border-top: 1px solid var(--border); }
+/* 再生バーのジャケット */
+.pb-now { display: flex; align-items: center; gap: 12px; }
+.pb-now-text { min-width: 0; }
+.pb-art {
+  width: 56px; height: 56px; padding: 0; border: none; border-radius: 6px; cursor: pointer;
+  background: rgba(255, 255, 255, 0.1); color: var(--on-dark-sub);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+.pb-art svg { width: 22px; height: 22px; }
+.pb-art:hover { outline: 2px solid var(--gold); }
+/* ジャケット拡大表示 */
+.art-viewer-overlay {
+  position: fixed; inset: 0; z-index: 1100;
+  background: rgba(15, 12, 35, 0.82);
+  display: flex; align-items: center; justify-content: center; padding: 16px;
+}
+.art-viewer-box {
+  position: relative; text-align: center; color: var(--on-dark);
+  max-width: min(92vw, 720px);
+  animation: modal-in 0.18s ease-out;
+}
+.art-viewer-image img {
+  display: block; margin: 0 auto;
+  max-width: min(88vw, 640px); max-height: calc(100vh - 190px);
+  border-radius: 8px; box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
+}
+.art-viewer-placeholder {
+  width: min(70vw, 320px); height: min(70vw, 320px); margin: 0 auto; border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(255, 255, 255, 0.08); color: var(--on-dark-sub);
+}
+.art-viewer-placeholder svg { width: 72px; height: 72px; }
+.art-viewer-title { font-size: 17px; font-weight: 700; margin-top: 14px; word-break: break-all; }
+.art-viewer-sub { font-size: 13px; color: var(--on-dark-sub); margin-top: 2px; }
+.art-viewer-source { font-size: 11.5px; color: var(--gold); margin-top: 6px; }
+.art-viewer-close {
+  position: absolute; top: -8px; right: -8px; z-index: 2;
+  width: 34px; height: 34px; border-radius: 50%; border: none;
+  background: var(--surface); color: var(--text); display: flex; align-items: center; justify-content: center;
+  box-shadow: var(--shadow-md);
+}
+
+/* ---------- 13c. アルバム ---------- */
+/* アルバム一覧（アルバムカードのグリッド） */
+.album-grid { position: relative; display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 22px 18px; }
+/* ピン止めの区切りのアルバムは通常の 2/3 の大きさ（170px → 113px） */
+.album-grid.album-pin-grid { grid-template-columns: repeat(auto-fill, minmax(113px, 1fr)); gap: 16px 12px; }
+.album-card {
+  position: relative; display: flex; flex-direction: column; gap: 2px; min-width: 0;
+  padding: 0; border: none; background: none; color: var(--text); text-align: left; cursor: pointer;
+}
+.art-thumb.art-card {
+  width: 100%; height: auto; aspect-ratio: 1 / 1; border-radius: 10px;
+  box-shadow: var(--shadow); transition: transform 0.15s, box-shadow 0.15s; margin-bottom: 6px;
+}
+.art-thumb.art-card svg { width: 44px; height: 44px; }
+.album-card:hover .art-card { transform: translateY(-3px); box-shadow: var(--shadow-md); }
+.album-card-name { font-weight: 700; font-size: 13.5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.album-card-artist { font-size: 12px; color: var(--text-sub); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.album-card-count { font-size: 11px; color: var(--text-faint); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }   /* v4.6：ジャンル・発売年を続けるので1行で「…」 */
+.album-card-genre { color: var(--text-sub); }
+/* 重複チェック（v4.7。file 画面） */
+.dup-panel { position: relative; }
+.dup-options { display: flex; flex-direction: column; gap: 8px; margin-bottom: 10px; }
+.dup-opt-row { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 14px; }
+.dup-opt-cap { font-size: 12px; font-weight: 700; color: var(--text-sub); min-width: 2.5em; }
+.dup-opt { display: inline-flex; align-items: center; gap: 5px; font-size: 13px; cursor: pointer; }
+.dup-progress { margin: 8px 0 12px; }
+.dup-progress-bar { height: 8px; border-radius: 999px; background: var(--surface-2); border: 1px solid var(--border); overflow: hidden; }
+.dup-progress-bar span { display: block; height: 100%; width: 0; background: var(--primary-mid); transition: width 0.2s; }
+.dup-progress-text { font-size: 12px; color: var(--text-sub); margin-top: 4px; }
+.dup-summary { margin: 6px 0 10px; font-size: 13px; color: var(--text); }
+.dup-bulk { position: relative; display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; margin-bottom: 12px; }
+.dup-danger { color: var(--red); border-color: var(--red); }
+.dup-groups { display: flex; flex-direction: column; gap: 14px; }
+.dup-group { position: relative; border: 1px solid var(--border2); border-radius: var(--r-sm); padding: 10px; background: var(--surface); min-width: 0; }
+.dup-group-head { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; padding-right: 18px; }
+.dup-group-no { font-size: 12px; color: var(--text-sub); }
+.dup-group-title { font-weight: 700; color: var(--ink); min-width: 0; overflow-wrap: anywhere; }
+.dup-group-count { font-size: 12px; color: var(--text-sub); }
+.dup-group-btns { display: inline-flex; flex-wrap: wrap; gap: 6px; margin-left: auto; }
+.dup-rec { font-size: 12px; color: var(--text-sub); margin: 4px 0 6px; }
+.dup-table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+.dup-table { table-layout: auto; min-width: 860px; font-size: 12.5px; }   /* 列の幅は中身に合わせる（.lib-table の fixed を戻す） */
+.dup-table th, .dup-table td { white-space: nowrap; padding: 6px 8px; }
+.dup-table .dup-title, .dup-table .dup-album { white-space: normal; min-width: 150px; max-width: 220px; }
+.dup-table th.dup-th-wide { min-width: 150px; }
+.dup-table .dup-keep { min-width: 104px; }
+.dup-table .dup-path { max-width: 260px; overflow: hidden; text-overflow: ellipsis; color: var(--text-sub); }
+.dup-row.is-keep { background: var(--primary-pale); }
+.dup-row.is-move td:not(.dup-keep) { opacity: 0.75; }
+.dup-keep label { display: inline-flex; align-items: center; gap: 4px; cursor: pointer; }
+.dup-keep-label { font-weight: 700; color: var(--ink); font-size: 12px; }
+.dup-move-label { color: var(--red); font-size: 12px; }
+.dup-rec-mark { display: inline-block; margin-left: 4px; padding: 0 5px; border-radius: 4px; background: var(--accent); color: #fff; font-size: 10px; font-weight: 700; }
+.history-note { font-size: 12px; color: var(--text-sub); }
+/* グループ表示（v5.3。album 一覧） */
+.album-group-tools { position: relative; display: flex; flex-wrap: wrap; align-items: center; gap: 6px 8px; margin: 0 0 10px; }
+.album-group-caption { font-size: 12px; color: var(--text-sub); margin-right: auto; }
+.album-group { position: relative; margin-bottom: 18px; }
+.album-group-head { display: flex; align-items: center; gap: 8px; width: 100%; padding: 8px 6px; margin-bottom: 10px; border: none; border-bottom: 1px solid var(--border2); background: transparent; color: var(--ink);
+  font-family: var(--font-heading); font-size: 17px; font-weight: 600; text-align: left; cursor: pointer; }
+.album-group-head:hover { background: var(--surface-2); }
+.album-group-head:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+.album-group-chev { display: inline-flex; color: var(--text-sub); transition: transform 0.15s; }
+.album-group.is-closed .album-group-chev { transform: rotate(-90deg); }
+.album-group.is-closed .album-group-head { margin-bottom: 0; }
+.album-group-badge { height: 22px; padding: 0 9px; font-family: var(--font); font-size: 13px; border-radius: 5px; }
+.album-group-label { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.album-group-select { max-width: 150px; }
+/* ソートキーのまとまり・ソートキーの枠（v5.4）：グリッドの幅いっぱいの1ブロック。色はソートキーから決まる色相 --sk-h */
+.album-sk-cluster { position: relative; grid-column: 1 / -1; padding: 10px 12px 14px; border-radius: 12px;
+  border: 2px solid hsl(var(--sk-h) 45% 70%); background: hsl(var(--sk-h) 65% 95%); }
+.album-sk-label { display: inline-flex; align-items: center; gap: 5px; max-width: 100%; margin: 0 0 10px; padding: 3px 10px; border-radius: 999px;
+  background: hsl(var(--sk-h) 55% 88%); color: hsl(var(--sk-h) 55% 25%); font-size: 12.5px; font-weight: 700; }
+.album-sk-label svg { flex: none; width: 13px; height: 13px; }
+.album-sk-name { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.album-sk-count { flex: none; font-weight: 400; opacity: 0.85; }
+/* プレイリストの play画面（v5.6。39-playlist-play.js）：上にプレイリストの表紙と名前、右（スマホは下）にキュー */
+.np-pl-head { position: relative; z-index: 1; display: none; align-items: center; gap: 14px; padding: 6px clamp(16px, 5vw, 56px) 0; }
+.np.np-pl-mode .np-pl-head { display: flex; }
+.plp-cover { flex: none; width: 64px; height: 64px; border-radius: 10px; overflow: hidden; display: grid; background: var(--surface-2); box-shadow: 0 4px 14px rgba(0, 0, 0, 0.18); }
+.plp-cover-4 { grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; }
+.plp-cover-none { align-items: center; justify-items: center; color: var(--text-sub); }
+.art-thumb.art-plp { width: 100%; height: 100%; border-radius: 0; }
+.art-thumb.art-plp img { width: 100%; height: 100%; object-fit: cover; }
+.art-thumb.art-plp svg { width: 40%; height: 40%; }
+.plp-head-text { min-width: 0; }
+.plp-kicker { font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-sub); }
+.plp-name { font-family: var(--font-heading); font-size: 22px; font-weight: 600; color: var(--ink); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.plp-meta { font-size: 12.5px; color: var(--text-sub); }
+.np-queue { display: none; }
+.np.np-pl-mode .np-main { justify-content: space-between; gap: clamp(16px, 3vw, 36px); }
+.np.np-pl-mode .np-art { width: min(30vw, 46vh, 360px); }
+.np.np-pl-mode .np-info { width: min(380px, 32vw); }
+.np.np-pl-mode .np-queue { position: relative; display: flex; flex-direction: column; width: min(380px, 30vw); max-height: 100%; min-height: 0; align-self: stretch;
+  background: var(--surface); border: 1px solid var(--border2); border-radius: 14px; box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1); }
+.plp-q-head { position: relative; display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; padding: 10px 12px; border-bottom: 1px solid var(--border); }
+.plp-q-title { font-weight: 700; color: var(--ink); }
+.plp-q-count { font-size: 12px; color: var(--text-sub); }
+.plp-q-views { display: inline-flex; gap: 2px; margin-left: auto; padding: 2px; border-radius: 999px; background: var(--surface-2); }
+.plp-q-views .np-mode { font-size: 11.5px; padding: 3px 9px; }
+.plp-q-list { list-style: none; margin: 0; padding: 4px; overflow-y: auto; flex: 1; min-height: 0; }
+.plp-q-row { display: flex; align-items: center; gap: 8px; padding: 6px 8px; border-radius: 8px; cursor: pointer; }
+.plp-q-row:hover { background: var(--surface-2); }
+.plp-q-row.is-current { background: var(--primary-pale); }
+.plp-q-row.is-current .plp-q-name { color: var(--ink); font-weight: 700; }
+.plp-q-row.missing { opacity: 0.55; }
+.plp-q-no { flex: none; width: 1.8em; text-align: right; font-size: 12px; color: var(--text-sub); font-variant-numeric: tabular-nums; display: inline-flex; justify-content: flex-end; }
+.plp-q-no svg { width: 14px; height: 14px; color: var(--accent); }
+.plp-q-text { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.plp-q-name { font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.plp-q-sub { font-size: 11px; color: var(--text-sub); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.plp-q-next { flex: none; font-size: 10.5px; font-weight: 700; padding: 1px 6px; border-radius: 4px; background: var(--accent); color: #fff; }
+.plp-q-dur { flex: none; font-size: 11.5px; color: var(--text-sub); font-variant-numeric: tabular-nums; }
+.plp-q-btns { flex: none; display: inline-flex; }
+.plp-q-btns .btn-icon { width: 26px; height: 26px; }
+.plp-open-wrap { position: relative; display: inline-flex; }
+@media (max-width: 760px) {
+  .np-pl-head { padding: 4px 18px 0; }
+  .plp-cover { width: 52px; height: 52px; }
+  .plp-name { font-size: 18px; }
+  .np.np-pl-mode .np-main { justify-content: flex-start; }
+  .np.np-pl-mode .np-art { width: min(52vw, 30vh); }
+  .np.np-pl-mode .np-info { width: 100%; }
+  .np.np-pl-mode .np-queue { flex: none; width: 100%; max-width: 480px; max-height: none; align-self: center; }   /* 縦に並ぶので縮めない */
+  .np.np-pl-mode .plp-q-list { flex: none; max-height: 60vh; }
+}
+/* ジャケットの並び（カバーフロー。v5.7。40-coverflow.js）：中央が見ている曲、左右に前の曲・次の曲（小さく・薄く・暗く、後ろに重なる） */
+.np-flow-wrap { --c: min(32vw, 52vh, 380px); position: relative; flex: none; width: calc(var(--c) * 1.62); display: flex; flex-direction: column; align-items: center; }
+.np-flow-wrap + .np-art { display: none; }   /* v5.1 の1枚のジャケットは、ジャケットの並びに置き換えた */
+.np-flow { position: relative; width: 100%; height: calc(var(--c) + 40px); touch-action: pan-y; outline: none; user-select: none; -webkit-user-select: none; cursor: grab;
+  overflow: hidden; -webkit-mask-image: linear-gradient(to right, transparent 0, #000 9%, #000 91%, transparent 100%); mask-image: linear-gradient(to right, transparent 0, #000 9%, #000 91%, transparent 100%); }   /* 外側のジャケットが文字と重ならないよう、並びの幅で切って端をぼかす */
+.np-flow:active { cursor: grabbing; }
+.np-flow:focus-visible { outline: 2px solid var(--primary); outline-offset: 6px; border-radius: 16px; }
+.np-flow-item { position: absolute; top: 14px; left: 50%; width: var(--c); height: var(--c); margin-left: calc(var(--c) / -2); padding: 0; border: none; border-radius: 14px; overflow: hidden;
+  background: var(--surface-2); box-shadow: 0 14px 38px rgba(0, 0, 0, 0.28); cursor: pointer;
+  transform: translateX(calc(var(--fx, 0) * var(--c))) scale(var(--fs, 1)); transition: transform 0.38s cubic-bezier(0.2, 0.7, 0.2, 1), opacity 0.38s, filter 0.38s; will-change: transform; }
+.np-flow-item.is-center { cursor: zoom-in; }
+.np-flow-item:not(.is-playing).is-center { cursor: pointer; box-shadow: 0 0 0 3px var(--accent), 0 14px 38px rgba(0, 0, 0, 0.28); }
+.np-flow-item.is-hidden { visibility: hidden; }
+.np-flow-item.no-anim { transition: none; }
+.np-flow.reduced .np-flow-item { transition-duration: 0.12s; }
+.np-flow-item .art-thumb, .np-flow-item img { pointer-events: none; -webkit-user-drag: none; }
+.np-flow-caption { min-height: 2.4em; margin-top: 2px; display: flex; flex-wrap: wrap; justify-content: center; align-items: baseline; gap: 2px 8px; font-size: 13px; color: var(--text-sub); text-align: center; }
+.np-flow-caption.is-other { color: var(--text); }
+.np-flow-cap-kind { font-size: 11px; font-weight: 700; padding: 1px 7px; border-radius: 999px; background: var(--accent); color: #fff; }
+.np-flow-cap-title { font-weight: 700; color: var(--ink); }
+.np-flow-cap-hint { flex-basis: 100%; font-size: 11px; color: var(--text-faint); }
+.np.np-pl-mode .np-flow-wrap { --c: min(20vw, 42vh, 300px); }
+.np.np-pl-mode .np-info { width: min(340px, 26vw); }
+.np.np-pl-mode .np-queue { width: min(360px, 26vw); }
+@media (max-width: 760px) {
+  .np-flow-wrap { --c: min(58vw, 34vh); width: 100%; }
+  .np.np-pl-mode .np-flow-wrap { --c: min(50vw, 28vh); }
+  .np.np-pl-mode .np-info, .np.np-pl-mode .np-queue { width: 100%; }
+}
+.album-sk-rest-head { grid-column: 1 / -1; margin: 6px 0 0; }   /* 枠に入らないアルバムの見出し（v5.5） */
+.album-sk-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 18px 14px; }
+:root[data-theme="dark"] .album-sk-cluster { border-color: hsl(var(--sk-h) 35% 42%); background: hsl(var(--sk-h) 30% 16%); }
+:root[data-theme="dark"] .album-sk-label { background: hsl(var(--sk-h) 35% 26%); color: hsl(var(--sk-h) 70% 85%); }
+@media (max-width: 700px) {
+  .album-sk-cluster { padding: 8px 8px 10px; }
+  .album-sk-cards { grid-template-columns: repeat(auto-fill, minmax(118px, 1fr)); gap: 12px 10px; }
+}
+/* 再生画面（v5.1。37-now-playing.js）：全画面。後ろにオーディオビジュアライザー（canvas） */
+.np { position: fixed; inset: 0; z-index: 900; display: flex; flex-direction: column; background: var(--bg); color: var(--text); overflow: hidden; }
+.np-viz { position: absolute; left: 0; right: 0; bottom: 0; width: 100%; height: 100%; pointer-events: none; }
+.np-top { position: relative; z-index: 1; display: flex; align-items: center; gap: 8px; padding: 14px 18px 0 40px; }
+.np-modes { display: inline-flex; gap: 4px; padding: 3px; border-radius: 999px; background: var(--surface); border: 1px solid var(--border2); }
+.np-mode { border: none; background: transparent; color: var(--text-sub); font-size: 12.5px; padding: 5px 12px; border-radius: 999px; cursor: pointer; }
+.np-mode.active { background: var(--primary-mid); color: #fff; font-weight: 700; }
+.np-lyr-toggle { margin-left: auto; display: inline-flex; align-items: center; gap: 5px; border: 1px solid var(--border2); background: var(--surface); color: var(--text-sub); border-radius: 999px; padding: 6px 12px; cursor: pointer; font-size: 12.5px; }
+.np-lyr-toggle svg { width: 15px; height: 15px; }
+.np-lyr-toggle.active { color: var(--ink); border-color: var(--primary); }
+.np-close { width: 40px; height: 40px; border-radius: 50%; border: 1px solid var(--border2); background: var(--surface); color: var(--text); display: inline-flex; align-items: center; justify-content: center; cursor: pointer; }
+.np-close:hover, .np-mode:hover, .np-lyr-toggle:hover { filter: brightness(0.97); }
+.np-main { position: relative; z-index: 1; flex: 1; min-height: 0; display: flex; align-items: center; justify-content: center; gap: clamp(20px, 5vw, 56px); padding: 12px clamp(16px, 5vw, 56px) 32px; }
+.np-art { flex: none; width: min(40vw, 58vh, 420px); aspect-ratio: 1; padding: 0; border: none; border-radius: 14px; overflow: hidden; background: var(--surface-2); box-shadow: 0 16px 44px rgba(0, 0, 0, 0.28); cursor: zoom-in; }
+.np-art:disabled { cursor: default; }
+.art-thumb.art-np { width: 100%; height: 100%; border-radius: 0; }
+.art-thumb.art-np svg { width: 30%; height: 30%; }
+.art-thumb.art-np img { width: 100%; height: 100%; object-fit: cover; }
+.np-info { width: min(460px, 46vw); min-width: 0; display: flex; flex-direction: column; gap: 8px; }
+.np-title { font-family: var(--font-heading); font-size: clamp(22px, 3vw, 34px); font-weight: 600; color: var(--ink); line-height: 1.25;
+  min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }   /* v8.3.4：いつも1行。長いときは 55-np-title-fit.js が文字を小さくし、それでも入らなければ「…」 */
+.np-sub { font-size: 15px; color: var(--text-sub); overflow-wrap: anywhere; }
+.np-link { color: var(--ink-mid); text-decoration: none; }
+.np-link:hover { text-decoration: underline; }
+.np-label { font-size: 12px; color: var(--text-faint); }
+.np-lyrics { min-height: 7.5em; margin: 6px 0; }
+.np-lyr { margin: 0; padding: 2px 0; font-size: 14px; color: var(--text-sub); opacity: 0.7; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.np-lyr.active { font-size: 19px; font-weight: 700; color: var(--ink); opacity: 1; white-space: normal; }
+.np-lyr-none { margin: 0; font-size: 12.5px; color: var(--text-faint); }
+/* v8.6.3：曲名・アーティストとアルバム・再生元・歌詞を中央揃えに（上のジャケットの並び・下のシークバーと操作に合わせる。
+   ブロックの位置と幅は変えず、文字の揃えだけ。スマホ幅は前から中央） */
+.np-title, .np-sub, .np-label, .np-lyrics { text-align: center; }
+.np-seek { display: flex; align-items: center; gap: 10px; }
+.np-seek input { flex: 1; min-width: 0; accent-color: var(--primary-mid); }
+.np-time { font-size: 12px; color: var(--text-sub); font-variant-numeric: tabular-nums; min-width: 3em; text-align: center; }
+.np-controls { display: flex; align-items: center; justify-content: center; gap: clamp(8px, 2vw, 18px); }
+.np-btn { position: relative; width: 44px; height: 44px; border-radius: 50%; border: none; background: transparent; color: var(--ink); display: inline-flex; align-items: center; justify-content: center; cursor: pointer; }
+.np-btn:hover { background: var(--primary-pale); }
+.np-btn svg { width: 22px; height: 22px; }
+.np-btn.active { color: var(--accent); }
+.np-btn.np-play { width: 64px; height: 64px; background: var(--primary-mid); color: #fff; box-shadow: 0 6px 18px rgba(0, 0, 0, 0.2); }
+.np-btn.np-play svg { width: 28px; height: 28px; }
+.np-btn.np-play:hover { filter: brightness(1.08); background: var(--primary-mid); }
+.np-btn-sm { width: 36px; height: 36px; }
+.np-btn-sm svg { width: 18px; height: 18px; }
+.np-volume { display: flex; align-items: center; gap: 8px; justify-content: center; }
+.np-volume input { width: min(220px, 50%); accent-color: var(--primary-mid); }
+.np .pb-repeat-one { position: absolute; font-size: 9px; font-weight: 700; right: 9px; top: 8px; }
+body.np-open { overflow: hidden; }
+@media (max-width: 760px) {
+  .np-top { padding: 10px 12px 0 34px; }
+  .np-main { flex-direction: column; justify-content: flex-start; gap: 14px; padding: 10px 18px 20px; overflow-y: auto; }
+  .np-art { width: min(64vw, 36vh); }
+  .np-info { width: 100%; max-width: 480px; }
+  .np-title { font-size: 21px; text-align: center; }
+  .np-sub, .np-label { text-align: center; }
+  .np-lyrics { min-height: 6.5em; text-align: center; }
+  .np-lyr.active { font-size: 17px; }
+  .np-viz { opacity: 0.55; }   /* 文字と重なるので、スマホ幅はうすく */
+}
+/* Western music（v5.0） */
+.album-western-wrap { position: relative; flex: none; display: inline-flex; margin: -6px 0; }
+.album-western-btn svg { width: 16px; height: 16px; color: var(--text-sub); }
+.album-western-btn.is-western svg { color: var(--primary); }
+.album-western-btn.is-manual { box-shadow: 0 0 0 2px var(--accent) inset; }
+.head-art-western.is-western { background: var(--primary-mid); color: #fff; border-color: var(--primary-mid); }
+.head-art-western.is-not-western { background: var(--text-sub); color: #fff; border-color: var(--text-sub); }
+.western-menu-check { flex: none; width: 1.2em; color: var(--primary); }
+.western-menu-sub { font-size: 11.5px; color: var(--text-sub); }
+.folder-menu-item.is-current { border-color: var(--primary); }
+.te-western-group { position: relative; }
+.te-western-opts { display: flex; flex-wrap: wrap; gap: 4px 14px; }
+.wes-mode-row { position: relative; }
+.wes-artist-list { position: relative; padding: 8px; }
+.wes-set-title { font-size: 14px; font-weight: 700; color: var(--ink); margin: 14px 0 6px; display: flex; align-items: center; }
+.wes-genre-chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 6px 0 8px; }
+.wes-chip { display: inline-flex; align-items: center; gap: 4px; padding: 2px 4px 2px 10px; border-radius: 999px; border: 1px solid var(--border2); background: var(--surface-2); font-size: 12.5px; }
+.wes-chip-x { border: none; background: transparent; color: var(--text-sub); cursor: pointer; font-size: 14px; line-height: 1; padding: 2px 6px; border-radius: 999px; }
+.wes-chip-x:hover { background: var(--primary-pale); color: var(--ink); }
+/* フォルダを開くボタン・フォルダの場所をコピーボタン（v4.8。アルバムの見出しのボタン列の最後。アイコンだけ） */
+.album-folder-btns { position: relative; display: inline-flex; gap: 5px; }
+.btn-icon-only { width: 32px; justify-content: center; padding-left: 0; padding-right: 0; }
+.btn-icon-only svg { margin: 0; }
+.folder-menu { width: min(340px, calc(100vw - 16px)); }
+.folder-menu-list { display: flex; flex-direction: column; gap: 4px; max-height: 50vh; overflow-y: auto; }
+.folder-menu-item { display: flex; align-items: center; gap: 8px; width: 100%; text-align: left; padding: 8px 10px; border: 1px solid var(--border); border-radius: var(--r-sm); background: var(--surface); color: var(--text); cursor: pointer; }
+.folder-menu-item:hover, .folder-menu-item:focus-visible { background: var(--primary-pale); border-color: var(--border2); outline: none; }
+.folder-menu-name { flex: 1; min-width: 0; overflow-wrap: anywhere; font-size: 13px; }
+.org-folder.card-flash { animation: art-item-flash 1.5s ease-out; }
+/* 音楽フォルダの場所（tools。v4.8） */
+.win-path-row { position: relative; margin: 12px 0 4px; padding: 10px 12px; border: 1px solid var(--border); border-radius: var(--r-sm); background: var(--surface-2); }
+.win-path-label { display: block; font-size: 12.5px; font-weight: 700; color: var(--ink); margin-bottom: 6px; }
+.win-path-row .form-input { width: 100%; box-sizing: border-box; font-family: Consolas, 'Courier New', monospace; font-size: 13px; }
+/* 並べ替えの選択・カスタム順の編集モード */
+.album-sort-row { position: relative; }
+/* 並べ替えボタン（v4.0）：アイコン＋「並べ替え：今の並び」。長いときは「…」、狭い幅では「並べ替え：」を省く */
+.album-sort-wrap { position: relative; display: inline-flex; min-width: 0; max-width: 100%; }
+.album-sort-btn { display: inline-flex; align-items: center; gap: 5px; min-width: 0; max-width: 100%; white-space: nowrap; }
+.album-sort-btn svg { flex: none; }
+.album-sort-sum { overflow: hidden; text-overflow: ellipsis; font-weight: 700; color: var(--ink-mid); }
+.album-sort-btn.is-custom .album-sort-sum { color: var(--accent); }
+@media (max-width: 480px) { .album-sort-label { display: none; } }
+/* 並べ替えの設定ダイアログ（v4.0） */
+.asort-modes { display: flex; flex-wrap: wrap; gap: 6px 18px; margin: 2px 0 10px; }
+.asort-mode { display: inline-flex; align-items: center; gap: 6px; font-weight: 700; color: var(--ink); cursor: pointer; }
+.asort-list { list-style: none; margin: 6px 0 10px; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.asort-row { display: grid; grid-template-columns: 1.6em minmax(0, 1fr) auto; grid-template-areas: "no check move" ". dir dir"; align-items: center; gap: 4px 8px;
+  padding: 8px 10px; border: 1px solid var(--border); border-radius: var(--r-sm); background: var(--surface); }
+.asort-row.is-on { border-color: var(--border2); background: var(--surface-2); }
+.asort-no { grid-area: no; font-weight: 700; color: var(--accent); text-align: center; }
+.asort-check { grid-area: check; display: inline-flex; align-items: center; gap: 6px; font-weight: 700; color: var(--text); cursor: pointer; min-width: 0; }
+.asort-row:not(.is-on) .asort-check { color: var(--text-sub); font-weight: 400; }
+.asort-move { grid-area: move; display: inline-flex; gap: 4px; }
+.asort-move .btn-inline-small { min-width: 34px; justify-content: center; }
+.asort-dir { grid-area: dir; display: inline-flex; flex-wrap: wrap; gap: 4px; }
+.asort-dir-btn { font-size: 12px; padding: 4px 10px; border-radius: 999px; border: 1px solid var(--border2); background: var(--surface); color: var(--text-sub); cursor: pointer; }
+.asort-dir-btn.active { background: var(--primary-mid); border-color: var(--primary-mid); color: #fff; }
+.asort-dir-btn:disabled { opacity: 0.45; cursor: default; }
+.asort-preview-wrap { margin-top: 12px; padding: 8px 10px; border-radius: var(--r-sm); background: var(--surface-2); border: 1px dashed var(--border2); }
+.asort-preview-title { font-size: 12px; color: var(--text-sub); margin-bottom: 4px; }
+.asort-preview { margin: 0; padding-left: 1.6em; font-size: 12.5px; }
+.asort-preview li { margin: 2px 0; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.asort-pv-name { font-weight: 700; color: var(--text); }
+.asort-pv-sub { color: var(--text-sub); margin-left: 6px; }
+.asort-pv-empty { list-style: none; color: var(--text-sub); }
+.album-custom-bar {
+  position: relative; display: flex; flex-wrap: wrap; align-items: center; gap: 10px 16px;
+  background: var(--primary-pale); border: 1px dashed var(--primary); border-radius: var(--r-sm);
+  padding: 12px 34px 12px 16px; margin-bottom: 20px; font-size: 13px;
+}
+.album-custom-text { flex: 1 1 320px; }
+.album-grid.is-editing .album-card { cursor: grab; }
+.album-grid.is-editing .album-card.dragging { opacity: 0.4; }
+.album-grid.is-editing .album-card.drag-over .art-card { outline: 3px solid var(--accent); outline-offset: 2px; }
+.album-move-btns { display: flex; gap: 6px; margin-top: 6px; }
+.album-move-btns .btn-inline-small { flex: 1; justify-content: center; padding: 5px 4px; }
+.filter-bar .form-input:disabled { background: var(--surface-2); color: var(--text-faint); cursor: not-allowed; }
+/* アルバムの曲一覧：アルバムの見出し */
+.album-detail, .artist-detail { container-type: inline-size; container-name: albumdetail; }   /* アーティストの画面の見出しも同じ決まり（v2.8） */
+/* v2.8：ジャケット（左）と、アルバム名・アーティスト・曲数と時間・ボタン列（右の列）を横に並べて、見出しを低くした */
+.album-head {
+  position: relative; display: flex; align-items: center; gap: 18px;
+  background: var(--surface); border: 1px solid var(--border); border-radius: var(--r); box-shadow: var(--shadow-sm);
+  padding: 14px 26px 14px 14px; margin-bottom: 20px;
+}
+.album-head-art { width: 150px; height: 150px; flex-shrink: 0; padding: 0; border: none; background: none; cursor: zoom-in; display: block; }
+.art-thumb.art-large { width: 100%; height: 100%; border-radius: 10px; box-shadow: var(--shadow-md); }
+.art-thumb.art-large svg { width: 48px; height: 48px; }
+.album-head-info { min-width: 0; flex: 1; }
+.album-head-info .btn-row { margin-top: 8px; gap: 6px; }
+/* アルバム名は右の列の一番上に1行（文字の大きさは fitAlbumHeadName() が右の列の幅から決める。入らなければ「…」） */
+.album-head-name { font-family: var(--font-heading); font-size: 24px; font-weight: 600; color: var(--ink); margin: 0; line-height: 1.25; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.album-head-artist { font-size: 14px; font-weight: 500; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.album-head-meta { font-size: 12.5px; color: var(--text-sub); margin-top: 1px; }
+.album-head-byfolder { color: var(--text-faint); }
+/* v3.1：アルバムへのリンク・アーティストへのリンク（ふだんは文字の色のまま、マウスを乗せると下線） */
+.nav-link { color: inherit; text-decoration: none; cursor: pointer; border-radius: 3px; }
+.nav-link:hover { text-decoration: underline; color: var(--ink-soft); }
+.nav-link:focus-visible { outline: 2px solid var(--primary); outline-offset: 1px; }
+#player-bar .nav-link:hover { color: #fff; }
+.album-head-meta { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.album-genre-year { color: var(--text-sub); }
+/* 戻るボタン（各画面のヘッダーの左） */
+.nav-back-wrap { position: relative; display: inline-flex; margin-right: 10px; flex: none; }
+.nav-back-btn:disabled { opacity: 0.35; cursor: default; }
+/* 非表示のアルバム（v3.0） */
+.hidden-toggle-wrap { position: relative; display: inline-flex; }
+.album-hidden-toggle { width: 32px; justify-content: center; padding-left: 0; padding-right: 0; }   /* アイコンだけ */
+.album-hidden-toggle svg { margin: 0; }
+.album-hidden-toggle.active { background: var(--primary-mid); color: #fff; border-color: var(--primary-mid); }
+/* Pin のみボタン（v4.1）：オンはオレンジ（Pin の色） */
+.album-pin-only.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+.album-pin-only:disabled { opacity: 0.45; cursor: default; }
+/* Pin の並べ替え（v4.1）：見出しの「並べ替え」ボタン、説明、ドラッグ中の見た目、← → ボタン */
+.pin-sort-wrap { position: relative; display: inline-flex; margin-left: auto; font-family: var(--font); }
+.pin-sort-btn { font-size: 12px; font-weight: 400; }
+.pin-sort-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); font-weight: 700; }
+.pin-sort-hint { margin: -6px 0 10px; font-size: 12px; color: var(--text-sub); }
+.album-pin-grid .album-card[draggable="true"] { -webkit-user-drag: element; }
+.album-pin-grid .album-card.dragging { opacity: 0.4; }
+.album-pin-grid .album-card.drag-over .art-card { outline: 3px solid var(--accent); outline-offset: 2px; }
+.album-pin-grid.is-editing .album-card { cursor: grab; }
+.pin-move-btns { gap: 4px; margin-top: 4px; }
+.pin-move-btns .btn-inline-small { padding: 4px 2px; min-height: 30px; font-size: 14px; }
+.art-item.dragging { opacity: 0.4; }
+.art-item.drag-over { box-shadow: inset 0 2px 0 var(--accent); }
+/* 下の4行は v3.8 から使っていない（ボタンは写真の上の .head-art-pin / .head-art-hide へ移した）。念のため残す */
+.btn-hide-album { color: var(--text-sub); width: 32px; justify-content: center; padding-left: 0; padding-right: 0; }   /* 非表示にするボタン（アイコンだけ） */
+.btn-hide-album svg { margin: 0; }
+.btn-hide-album.is-hidden { color: var(--ink-mid); background: var(--primary-pale); }
+/* ピン止め（v3.4）：見出しのピン止めボタン（ピン止め中は色付き）、カードの目印、ピン止めの区切り */
+.btn-pin-album.is-pinned { color: #fff; background: var(--accent); border-color: var(--accent); }
+/* v3.5：アルバムカードのボタン（カードの再生ボタン・カードのピン止めボタン）。ジャケットの上に重ねる */
+.card-art-wrap { position: relative; display: block; }
+.card-act {
+  position: absolute; z-index: 3; display: inline-flex; align-items: center; justify-content: center; border-radius: 50%;
+  cursor: pointer; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3); transition: opacity 0.15s, transform 0.15s, background 0.15s;
+}
+.card-act:hover { transform: scale(1.08); }
+.card-act:focus-visible { outline: 2px solid #fff; outline-offset: 2px; opacity: 1; }
+.card-act-play { right: 8px; bottom: 8px; width: 42px; height: 42px; background: var(--primary-mid); color: #fff; }
+.card-act-play svg { width: 18px; height: 18px; }
+.card-act-play.is-current { background: var(--accent); }
+.card-act-pin { left: 6px; top: 6px; width: 32px; height: 32px; background: var(--chip-bg); color: var(--text-sub); border: 1px solid var(--chip-border); }
+.card-act-pin svg { width: 15px; height: 15px; }
+.card-act-pin.is-pinned { background: var(--accent); color: #fff; border-color: var(--accent); }
+/* カードの非表示ボタン（v3.6。右上）。非表示のアルバムを見ているときは「表示に戻す」（目のアイコン・いつも見える） */
+.card-act-hide { right: 6px; top: 6px; width: 32px; height: 32px; background: var(--chip-bg); color: var(--text-sub); border: 1px solid var(--chip-border); }
+.card-act-hide svg { width: 16px; height: 16px; }
+.card-act-hide.is-hidden-state { background: var(--primary-mid); color: #fff; border-color: var(--primary-mid); }
+/* マウスのある環境：ピン止め中のピン・再生中のアルバムの ▷ はいつも、そのほかはマウスを乗せたとき・フォーカスしたときだけ */
+@media (hover: hover) {
+  .card-act-play:not(.is-current), .card-act-pin:not(.is-pinned), .card-act-hide:not(.is-hidden-state) { opacity: 0; }
+  .album-card:hover .card-act, .album-card:focus-within .card-act, .album-card:focus-visible .card-act { opacity: 1; }
+}
+@media (max-width: 700px) {
+  .card-act-play { width: 38px; height: 38px; right: 6px; bottom: 6px; }
+  .card-act-pin { width: 30px; height: 30px; left: 5px; top: 5px; }
+  .card-act-hide { width: 30px; height: 30px; right: 5px; top: 5px; }
+}
+.album-pin-mark { position: absolute; top: 6px; left: 6px; z-index: 3; display: inline-flex; align-items: center; justify-content: center;
+  width: 24px; height: 24px; border-radius: 50%; background: var(--accent); color: #fff; box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3); pointer-events: none; }
+.album-pin-mark svg { width: 13px; height: 13px; }
+/* ソートキーボタン（v4.3。カードの左下。見せ方はほかのカードのボタンと同じ） */
+.card-act-sortkey { left: 6px; bottom: 6px; width: 32px; height: 32px; background: var(--chip-bg); color: var(--text-sub); border: 1px solid var(--chip-border); }
+.card-act-sortkey svg { width: 15px; height: 15px; }
+.card-act-sortkey.has-key { color: var(--ink-mid); }
+@media (hover: hover) {
+  .card-act-sortkey { opacity: 0; }
+  .album-card:hover .card-act-sortkey, .album-card:focus-within .card-act-sortkey, .album-card:focus-visible .card-act-sortkey { opacity: 1; }
+}
+@media (max-width: 700px) { .card-act-sortkey { width: 30px; height: 30px; left: 5px; bottom: 5px; } }
+.album-pin-grid .card-act-sortkey { width: 21px; height: 21px; left: 4px; bottom: 4px; }
+.album-pin-grid .card-act-sortkey svg { width: 10px; height: 10px; }
+@media (max-width: 700px) { .album-pin-grid .card-act-sortkey { width: 20px; height: 20px; left: 3px; bottom: 3px; } }
+/* カードのソートキーの表示（入っていれば、アルバム名の下に小さく） */
+.album-card-sortkey { display: inline-flex; align-items: center; gap: 3px; max-width: 100%; font-size: 11px; color: var(--ink-mid); min-width: 0; }
+.album-card-sortkey svg { flex: none; width: 11px; height: 11px; }
+.album-card-sortkey-text { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+/* ソートキーの入力（小さな入力欄。カードの近くに浮かせる） */
+.sortkey-pop { position: fixed; z-index: 1200; width: min(300px, calc(100vw - 16px)); padding: 12px; border-radius: var(--r-sm);
+  background: var(--surface); color: var(--text); border: 1px solid var(--border2); box-shadow: 0 8px 28px rgba(0, 0, 0, 0.28); }
+.sortkey-pop-title { display: flex; align-items: center; gap: 5px; font-weight: 700; color: var(--ink); margin-bottom: 8px; padding-right: 18px; min-width: 0; }
+.sortkey-pop-album { font-weight: 400; font-size: 12px; color: var(--text-sub); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+.sortkey-pop-input { width: 100%; box-sizing: border-box; }
+.sortkey-pop-hint { font-size: 11.5px; color: var(--text-sub); margin: 6px 0 8px; }
+.sortkey-pop-btns { display: flex; justify-content: flex-end; gap: 6px; }
+.sortkey-pop-btns button { padding: 6px 14px; }
+.te-sortkey-group { position: relative; }
+/* 並べ替えの設定ダイアログ：ソートキーが無いアルバムの扱い（v4.3） */
+.asort-missing { grid-column: 2 / -1; display: inline-flex; flex-wrap: wrap; align-items: center; gap: 4px; }
+.asort-missing-cap { font-size: 12px; color: var(--text-sub); }
+/* アルバムのタグ（v4.4）：タグのバッジ（色は --tag-c。白い文字）、カードの名前の下の行、見出し、選ぶボタン、絞り込み、tools */
+.album-tag-badge { display: inline-flex; align-items: center; flex: none; max-width: 100%; height: 17px; padding: 0 6px; border-radius: 4px;
+  background: var(--tag-c, #5b6470); color: #fff; font-size: 10.5px; font-weight: 700; letter-spacing: 0.02em; line-height: 1;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.album-card-labels { display: flex; align-items: center; gap: 6px; min-width: 0; max-width: 100%; }
+.album-card-labels .album-card-sortkey { min-width: 0; }
+.album-head-tag { margin-right: 6px; vertical-align: 1px; }
+/* 見出しのソートキー（v4.9。曲数の行の先頭、タグのバッジの右。カードと同じタグのアイコン＋文字。長いと「…」。押すと変更） */
+.album-head-sortkey { display: inline-flex; align-items: center; gap: 3px; max-width: 45%; margin-right: 8px; padding: 0 4px; border: none; border-radius: 4px;
+  background: transparent; color: var(--ink-mid); font: inherit; font-size: 12px; line-height: 1.3; vertical-align: -2px; cursor: pointer; }
+.album-head-sortkey:hover { background: var(--primary-pale); }
+.album-head-sortkey:focus-visible { outline: 2px solid var(--primary); outline-offset: 1px; }
+.album-head-sortkey svg { flex: none; width: 12px; height: 12px; }
+.album-head-sortkey-text { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tag-choices { display: flex; flex-wrap: wrap; gap: 10px 8px; margin: 2px 0 6px; padding: 4px; }
+.tag-choice { display: inline-flex; align-items: center; cursor: pointer; }
+.tag-choice input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+.tag-choice .album-tag-badge, .tag-choice-none { height: 26px; padding: 0 10px; font-size: 12px; border-radius: 999px; border: 2px solid var(--tag-c, var(--border2)); }
+/* 選んでいないタグは枠だけ（文字はふつうの色で読める）、選んだタグは色で塗る */
+.tag-choice .album-tag-badge { background: transparent; color: var(--text); }
+.tag-choice-none { display: inline-flex; align-items: center; background: transparent; color: var(--text-sub); font-weight: 700; }
+.tag-choice input:checked + .album-tag-badge { background: var(--tag-c); color: #fff; box-shadow: 0 0 0 2px var(--surface), 0 0 0 4px var(--tag-c); }
+.tag-choice input:checked + .tag-choice-none { background: var(--surface-2); color: var(--ink); border-color: var(--ink); box-shadow: 0 0 0 2px var(--surface), 0 0 0 4px var(--ink); }
+.tag-choice input:focus-visible + span { outline: 2px solid var(--primary); outline-offset: 2px; }
+.sortkey-pop-sub { font-size: 12px; font-weight: 700; color: var(--text-sub); margin: 4px 0 2px; }
+.te-tag-group { position: relative; }
+.album-tag-filter-wrap { position: relative; display: inline-flex; }
+.album-tag-filter { width: auto; max-width: 160px; height: 30px; padding: 2px 8px; font-size: 12.5px; }
+.album-tag-filter.active { border-color: var(--accent); color: var(--ink); font-weight: 700; }
+.tag-set-list li { flex-wrap: wrap; gap: 6px; }
+.tag-set-name { width: 9em; max-width: 40vw; height: 30px; padding: 2px 8px; }
+.tag-set-color { width: auto; height: 30px; padding: 2px 6px; }
+.tag-set-add { flex-wrap: wrap; gap: 6px; }
+.tag-set-add .form-input { width: 14em; max-width: 60vw; height: 30px; }
+/* ジャンルの候補（tools。v4.5） */
+.genre-set-list li { gap: 6px 10px; }
+.genre-set-name { width: 12em; max-width: 48vw; height: 30px; padding: 2px 8px; }
+/* ピン止めの区切りのカードのボタンも 2/3 の大きさ（v4.0。カードに合わせる）。見た目は小さくしても、
+   押せる範囲は ::before で周りに 5px 広げる（ボタン同士の押せる範囲は重ならない） */
+.album-pin-grid .card-act { box-shadow: 0 1px 5px rgba(0, 0, 0, 0.3); }
+.album-pin-grid .card-act::before { content: ''; position: absolute; inset: -5px; border-radius: 50%; }
+.album-pin-grid .card-act-play { width: 28px; height: 28px; right: 5px; bottom: 5px; }
+.album-pin-grid .card-act-play svg { width: 12px; height: 12px; }
+.album-pin-grid .card-act-pin { width: 21px; height: 21px; left: 4px; top: 4px; }
+.album-pin-grid .card-act-pin svg { width: 10px; height: 10px; }
+.album-pin-grid .card-act-hide { width: 21px; height: 21px; right: 4px; top: 4px; }
+.album-pin-grid .card-act-hide svg { width: 11px; height: 11px; }
+.album-pin-grid .album-pin-mark { width: 16px; height: 16px; top: 4px; left: 4px; }
+.album-pin-grid .album-pin-mark svg { width: 9px; height: 9px; }
+@media (max-width: 700px) {
+  .album-pin-grid .card-act-play { width: 25px; height: 25px; right: 4px; bottom: 4px; }
+  .album-pin-grid .card-act-play svg { width: 11px; height: 11px; }
+  .album-pin-grid .card-act-pin { width: 20px; height: 20px; left: 3px; top: 3px; }
+  .album-pin-grid .card-act-hide { width: 20px; height: 20px; right: 3px; top: 3px; }
+}
+.album-section-head { position: relative; display: flex; align-items: center; gap: 6px; margin: 4px 0 12px; font-family: var(--font-heading); font-size: 18px; font-weight: 600; color: var(--ink); }
+.album-section-head + .album-grid { margin-bottom: 26px; }
+.album-section-icon { display: inline-flex; color: var(--accent); }
+.album-section-count { font-family: var(--font); font-size: 12px; font-weight: 400; color: var(--text-sub); margin-left: 4px; }
+.album-pin-grid { padding-bottom: 20px; border-bottom: 1px dashed var(--border2); }
+.pinned-album-no { flex: none; width: 1.6em; text-align: right; font-size: 12px; color: var(--text-sub); }
+.pinned-album-btns { flex: none; display: inline-flex; gap: 4px; }
+.album-unhide { display: inline-flex; align-items: center; gap: 4px; align-self: flex-start; margin-top: 6px; padding: 3px 9px; font-size: 11.5px; font-weight: 600;
+  color: var(--ink-mid); background: var(--primary-pale); border: 1px solid var(--border2); border-radius: 6px; cursor: pointer; }
+.album-unhide:hover { background: var(--surface); }
+.album-unhide svg { width: 13px; height: 13px; }
+.hidden-album-list { list-style: none; margin: 6px 0 0; padding: 0; max-height: 340px; overflow-y: auto; border: 1px solid var(--border); border-radius: var(--r-sm); }
+.hidden-album-list li { display: flex; flex-wrap: wrap; align-items: center; gap: 2px 10px; padding: 8px 10px; border-bottom: 1px solid var(--border); font-size: 13px; }
+.hidden-album-list li:last-child { border-bottom: none; }
+.hidden-album-name { font-weight: 600; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1 1 200px; }
+.hidden-album-sub { font-size: 12px; color: var(--text-sub); flex: 1 1 200px; min-width: 0; }
+.hidden-album-list .btn-inline-small { flex: none; }
+/* v2.9：アーティストの画面の「参加アルバム」、アルバム情報の編集の「コンピレーションにする」 */
+.artist-section-sub { font-family: var(--font); font-size: 12px; font-weight: 400; color: var(--text-sub); margin-left: 6px; }
+.te-compilation-btn { margin-top: 6px; font-size: 11.5px; }
+/* 曲情報の編集のジャンル・発売年（v3.2）：2つを横に並べる */
+.form-group-half { display: inline-block; width: calc(50% - 6px); vertical-align: top; }
+.form-group-half + .form-group-half { margin-left: 12px; }
+@media (max-width: 700px) { .form-group-half { display: block; width: auto; } .form-group-half + .form-group-half { margin-left: 0; } }
+/* アルバムの曲一覧の幅が狭いとき（歌詞パネルを開いた狭いウィンドウ・スマホ幅）：写真を小さくして、横並びのまま */
+@container albumdetail (max-width: 560px) {
+  .album-head { gap: 14px; padding: 12px 24px 12px 12px; }
+  .album-head-art { width: 112px; height: 112px; }
+  .art-thumb.art-large svg { width: 36px; height: 36px; }
+  .album-head-info .btn-row { margin-top: 6px; gap: 5px; }
+  .album-head-info .btn-row button { font-size: 12px; padding: 5px 9px; }
+  .album-head .album-art-overlay { right: 5px; bottom: 5px; gap: 4px; }
+  .album-head .art-overlay-btn { width: 32px; height: 32px; }
+  .album-head .art-overlay-btn svg { width: 16px; height: 16px; }
+}
+@container albumdetail (max-width: 400px) {
+  .album-head { gap: 12px; }
+  .album-head-art { width: 96px; height: 96px; }
+  .album-head .album-art-overlay { right: 4px; bottom: 4px; }
+  .album-head .art-overlay-btn { width: 29px; height: 29px; }   /* 写真に合わせて小さく（96px の写真に4つのボタンが重ならない大きさ） */
+  .album-head .head-art-pin-wrap, .album-head .head-art-hide-wrap { top: 4px; }
+  .album-head .head-art-pin-wrap { left: 4px; }
+  .album-head .head-art-hide-wrap { right: 4px; }
+  .album-head .album-google-btn { width: 28px; height: 28px; }
+  .album-head-info .btn-row button { font-size: 11.5px; padding: 4px 8px; }
+  .album-head-info .btn-row button svg { width: 13px; height: 13px; }
+}
+/* 極端に狭いときだけ縦に並べる */
+@container albumdetail (max-width: 280px) {
+  .album-head { flex-direction: column; align-items: flex-start; }
+}
+/* アルバムの曲リスト */
+.album-tracks-wrap { position: relative; }
+.album-yt-wrap { position: relative; display: inline-flex; }
+.btn-youtube svg { color: var(--red); }
+.album-track-table .col-no { width: 64px; text-align: right; color: var(--text-sub); font-variant-numeric: tabular-nums; padding-right: 10px; }
+.album-track-table .col-title { width: auto; }
+/* 列の見出し（No／song title／song length）は1行で。長さの列は見出しが入る幅に（v2.1） */
+.album-track-table th { white-space: nowrap; }
+.album-track-table .col-dur { width: 96px; }
+.album-row { cursor: pointer; }
+.album-row-artist { font-size: 11.5px; color: var(--text-sub); overflow: hidden; text-overflow: ellipsis; }
+.album-disc-row td { background: var(--surface-2); color: var(--ink-mid); font-weight: 700; font-size: 12px; padding: 7px 12px; }
+
+/* ---------- 13d. 歌詞 ---------- */
+/* 歌詞ボタン（再生バー） */
+.pb-lyrics-btn {
+  display: inline-flex; align-items: center; gap: 4px; flex-shrink: 0;
+  padding: 5px 10px; border-radius: 14px; font-size: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.28); background: transparent; color: var(--on-dark-sub);
+}
+.pb-lyrics-btn span { display: flex; }
+.pb-lyrics-btn:hover { color: #fff; background: rgba(255, 255, 255, 0.1); }
+.pb-lyrics-btn.active { background: var(--gold); border-color: var(--gold); color: var(--on-light-ink); font-weight: 700; }
+/* 歌詞パネル（常に表示）。パソコン幅は右側、縮小すると細い帯。本文エリアは歌詞パネルの分だけ右に余白をとる */
+body.lyr-expanded { --lyr-right: var(--lyrics-w); }
+body.lyr-collapsed { --lyr-right: var(--lyrics-strip-w); }
+.lyrics-panel {
+  /* z-index は本文の□ラベル（60）より上、ダイアログ（1000）より下 */
+  position: fixed; top: 0; right: 0; bottom: var(--player-h); z-index: 65;
+  width: var(--lyr-right);
+  display: flex; flex-direction: column;
+  background: var(--surface); border-left: 1px solid var(--border2); box-shadow: -6px 0 24px rgba(40, 30, 90, 0.10);
+}
+.lyrics-full { position: relative; flex: 1; min-height: 0; display: flex; flex-direction: column; }
+.lyrics-mini-wrap { position: relative; display: none; flex: 1; min-height: 0; }
+.lyrics-panel.is-collapsed .lyrics-full { display: none; }
+.lyrics-panel.is-collapsed .lyrics-mini-wrap { display: flex; }
+/* 縮小した歌詞パネル（パソコン幅：縦書きの「歌詞」の帯） */
+.lyrics-mini {
+  flex: 1; display: flex; flex-direction: column; align-items: center; gap: 10px;
+  padding: 18px 0; border: none; cursor: pointer;
+  background: linear-gradient(180deg, var(--primary-pale), var(--surface)); color: var(--ink-mid);
+}
+.lyrics-mini:hover { background: var(--primary-pale); color: var(--ink); }
+.lyrics-mini > span { display: flex; }
+.lyrics-mini-line { display: none !important; }
+.lyrics-mini-open svg { transform: rotate(180deg); }   /* 左向き＝開く */
+.lyrics-search-wrap { position: relative; display: inline-flex; }
+.lyrics-empty-btns { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin-top: 8px; }
+.lyrics-empty-btns .btn-save { margin-top: 0; }
+/* 歌詞の見出し */
+.lyrics-head {
+  position: relative; display: flex; align-items: flex-start; gap: 8px; flex-shrink: 0;
+  height: var(--lyrics-head-h); overflow: hidden;   /* 中身の長さで高さが変わらないように固定 */
+  padding: 18px 12px 14px 20px; border-bottom: 1px solid var(--border);
+  background: linear-gradient(135deg, var(--primary-pale), var(--surface));
+}
+.lyrics-head-text { flex: 1; min-width: 0; }
+.lyrics-title { font-family: var(--font-heading); font-size: 20px; font-weight: 600; color: var(--ink); line-height: 1.3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.lyrics-sub { font-size: 12px; color: var(--text-sub); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.lyrics-source.is-empty { visibility: hidden; }   /* 出どころが無いときも場所は確保（高さを変えない） */
+.lyrics-source { display: inline-block; max-width: 100%; vertical-align: top; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 5px; font-size: 11px; line-height: 1.5; padding: 2px 8px; border-radius: 8px; background: var(--surface); border: 1px solid var(--border2); color: var(--ink-mid); }
+.lyrics-tools { display: flex; flex-shrink: 0; }
+.lyrics-font-btn { font-size: 12px; font-weight: 700; width: 32px; }
+/* 歌詞の本文 */
+.lyrics-body { flex: 1; min-height: 0; overflow-y: auto; overflow-x: hidden; scrollbar-gutter: stable; padding: 18px 20px 40vh; line-height: 1.8; outline: none; }
+.lyrics-plain { white-space: pre-wrap; word-break: break-word; }
+.lyr-line {
+  margin: 0 0 0.35em; padding: 2px 8px; border-radius: 6px; cursor: pointer;
+  color: var(--text-sub); transition: color 0.2s, background 0.2s, transform 0.2s; transform-origin: left center;
+}
+.lyr-line:hover { background: var(--surface-2); }
+.lyr-line.lyr-blank { color: var(--text-faint); }
+.lyr-line.active { color: var(--ink); font-weight: 700; background: var(--primary-pale); transform: scale(1.03); }
+.lyrics-empty { text-align: center; color: var(--text-sub); padding: 40px 10px; font-size: 14px; }
+.lyrics-empty .btn-save { margin-top: 8px; }
+/* 歌詞の入力ダイアログ */
+.form-textarea {
+  width: 100%; padding: 10px 12px; border: 1px solid var(--border2); border-radius: var(--r-sm);
+  font-family: inherit; font-size: 13.5px; line-height: 1.7; color: var(--text); background: var(--surface); resize: vertical;
+}
+.form-textarea:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-dim); }
+.lyrics-edit-text { min-height: 42vh; }
+.btn-cancel-danger { color: var(--red); border-color: rgba(176, 64, 64, 0.35); }
+.btn-cancel-danger:hover:not(:disabled) { background: var(--red-pale); color: var(--red); }
+
+/* ---------- 13e. 曲情報の編集 ---------- */
+/* 編集ボタン（曲一覧・アルバムの曲リスト共通）：鉛筆＋「編集」、いつも見える */
+.col-edit { width: 76px; }
+.lib-table td.col-edit { padding: 4px 6px; text-overflow: clip; }
+.btn-row-edit {
+  display: inline-flex; align-items: center; justify-content: center; gap: 3px;
+  padding: 4px 10px; min-height: 30px; border-radius: 15px; white-space: nowrap;
+  border: 1px solid var(--border2); background: var(--surface); color: var(--ink-mid); font-size: 12px; font-weight: 500;
+}
+.btn-row-edit:hover { background: var(--primary-pale); border-color: var(--primary); }
+.btn-row-edit svg { width: 14px; height: 14px; }
+/* 曲名の横の小さな鉛筆（曲名を編集） */
+.lib-title-row { display: flex; align-items: center; gap: 4px; min-width: 0; }
+.lib-title-row .lib-title { min-width: 0; white-space: nowrap; }
+.title-edit {
+  flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center;
+  width: 22px; height: 22px; padding: 0; border: none; border-radius: 5px; background: none;
+  color: var(--text-faint); opacity: 0.75;
+}
+.title-edit svg { width: 13px; height: 13px; }
+.title-edit:hover, .title-edit:focus-visible { color: var(--ink-mid); background: var(--primary-pale); opacity: 1; }
+@media (hover: none) { .title-edit { opacity: 1; } }
+/* アルバム情報の編集ダイアログ：曲名の一覧 */
+.te-album-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 0 14px; }
+.te-tracks { position: relative; margin: 6px 0 12px; border: 1px solid var(--border); border-radius: var(--r-sm); padding: 10px 12px; background: var(--surface-2); }
+.te-tracks-title { font-size: 11.5px; font-weight: 700; color: var(--text-sub); margin-bottom: 6px; }
+.te-track-row { display: grid; grid-template-columns: 20px 52px minmax(0, 3fr) minmax(0, 2fr) 42px; gap: 6px; align-items: center; margin-bottom: 5px; }
+.te-track-row .form-input { padding: 6px 9px; font-size: 13px; }
+.te-track-head { font-size: 11px; color: var(--text-sub); font-weight: 700; margin-bottom: 3px; }
+.te-track-no { text-align: right; font-size: 12px; color: var(--text-sub); font-variant-numeric: tabular-nums; }
+.te-track-kind { font-size: 10.5px; color: var(--text-faint); text-align: center; }
+.tagedit-file {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 6px;
+  font-size: 12px; color: var(--text-sub); background: var(--surface-2); border: 1px solid var(--border);
+  border-radius: var(--r-sm); padding: 7px 10px; margin-bottom: 12px; word-break: break-all;
+}
+.tagedit-file svg { color: var(--gold); }
+.tagedit-kind { width: 100%; font-size: 11.5px; color: var(--ink-mid); }
+.tagedit-override-note { font-size: 12px; color: var(--accent); margin: 0 0 10px; }
+/* 画面の色の設定（v3.7。tools の表示の設定） */
+.theme-choice { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 16px; margin: 4px 0 12px; font-size: 13.5px; }
+.theme-choice-label { font-weight: 700; margin-right: 4px; }
+.theme-choice label { display: inline-flex; align-items: center; gap: 5px; cursor: pointer; }
+.tagedit-write { display: flex; align-items: center; gap: 8px; font-size: 13.5px; font-weight: 700; margin-top: 6px; cursor: pointer; }
+.tagedit-write input { width: 17px; height: 17px; }
+.tagedit-itunes { font-size: 11px; }
+
+/* ---------- 13f. ジャケットの設定（v2.0） ---------- */
+.album-head-art-wrap { position: relative; flex-shrink: 0; }
+/* ジャケットの右下に重ねるボタン（YouTube検索ボタン・ジャケットの設定ボタン） */
+.album-art-overlay { position: absolute; right: 6px; bottom: 6px; display: flex; gap: 5px; z-index: 2; }
+.art-overlay-btn {
+  display: inline-flex; align-items: center; justify-content: center; width: 34px; height: 34px; padding: 0;
+  border-radius: 50%; border: 1px solid var(--chip-border-soft); background: var(--chip-bg-soft);
+  color: var(--ink-mid); box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35); cursor: pointer;
+}
+.art-overlay-btn:hover { background: var(--chip-hover); transform: scale(1.06); }
+.art-overlay-btn svg { width: 17px; height: 17px; }
+/* 見出しの写真のピン止めボタン（左上）・非表示ボタン（右上）（v3.8。いつも見える。大きさは右下の丸ボタンと同じ） */
+.head-art-pin-wrap, .head-art-hide-wrap { position: absolute; top: 6px; z-index: 2; }
+.head-art-pin-wrap { left: 6px; }
+.head-art-hide-wrap { right: 6px; }
+.head-art-pin.is-pinned { background: var(--accent); color: #fff; border-color: var(--accent); }
+.head-art-hide.is-hidden-state { background: var(--primary-mid); color: #fff; border-color: var(--primary-mid); }
+/* マウスのある環境：見出しの写真の上のボタンは、写真にマウスを乗せたとき・フォーカスしたときだけ出す。
+   Pin 中のピンと「表示に戻す」はいつも見える（カードのボタンと同じ決まり）。タッチの環境ではいつも見える */
+@media (hover: hover) {
+  .album-head-art-wrap .art-overlay-btn, .album-head-art-wrap .head-art-pin:not(.is-pinned), .album-head-art-wrap .head-art-hide:not(.is-hidden-state) { opacity: 0; transition: opacity 0.15s; }
+  .album-head-art-wrap:hover .art-overlay-btn, .album-head-art-wrap:focus-within .art-overlay-btn,
+  .album-head-art-wrap:hover .head-art-pin, .album-head-art-wrap:focus-within .head-art-pin,
+  .album-head-art-wrap:hover .head-art-hide, .album-head-art-wrap:focus-within .head-art-hide { opacity: 1; }
+}
+/* アルバム名＋Google検索ボタン（v3.8） */
+.album-head-title { display: flex; align-items: center; gap: 6px; min-width: 0; }
+.album-head-title .album-head-name { flex: 0 1 auto; min-width: 0; }
+.album-google-wrap { position: relative; flex: none; display: inline-flex; margin: -6px 0 -6px 20px; }   /* 左に約1文字分（20px）の間をあける */   /* 上下にはみ出させて、見出しを高くしない（v3.8） */
+.album-google-btn {
+  display: inline-flex; align-items: center; justify-content: center; width: 30px; height: 30px; padding: 0;
+  border-radius: 50%; border: 1px solid var(--border2); background: var(--surface); cursor: pointer;
+}
+.album-google-btn:hover { background: var(--surface-2); transform: scale(1.06); }
+.album-google-btn:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+.icon-google-g .g-blue { stroke: var(--g-blue); } .icon-google-g .g-green { stroke: var(--g-green); }
+.icon-google-g .g-yellow { stroke: var(--g-yellow); } .icon-google-g .g-red { stroke: var(--g-red); }
+/* アイコンだけのボタン（ヘッダーの「読み直す」・アルバムの曲リストの編集ボタン） */
+.btn-ghost-icon { width: 34px; height: 32px; padding: 0; justify-content: center; }
+.btn-row-edit.btn-row-edit-icon { width: 36px; height: 32px; padding: 0; border-radius: 10px; }
+.album-art-set-wrap { position: relative; display: inline-flex; }
+.tagedit-art { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+.tagedit-art .art-thumb { width: 56px; height: 56px; }
+.tagedit-art-label { font-size: 11.5px; font-weight: 700; color: var(--text-sub); margin-bottom: 4px; }
+.aw-compare { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); gap: 14px; align-items: center; margin: 4px 0 10px; }
+.aw-box { display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 10px; border-radius: var(--r-sm); border: 1px solid var(--border); background: var(--surface-2); min-width: 0; }
+.aw-drop { border: 2px dashed var(--border2); }
+.aw-drop.drag-over { border-color: var(--primary); background: var(--primary-pale); }
+.aw-label { font-size: 12px; font-weight: 700; color: var(--text-sub); }
+.aw-img {
+  width: 220px; height: 220px; max-width: 100%; border-radius: 8px; overflow: hidden;
+  display: flex; align-items: center; justify-content: center; background: var(--primary-pale); color: var(--text-faint);
+}
+.aw-img img { width: 100%; height: 100%; object-fit: contain; display: block; background: var(--surface); }
+.aw-img svg { width: 44px; height: 44px; }
+.aw-drop-hint { font-size: 12px; text-align: center; line-height: 1.7; padding: 0 10px; }
+.aw-cap { font-size: 11.5px; color: var(--text-sub); text-align: center; word-break: break-all; min-height: 2.6em; }
+.aw-arrow { font-size: 22px; color: var(--accent); }
+.aw-pick-row { justify-content: center; margin-top: 0; }
+
+/* ---------- 13g. artist・new songs・heavy rotation（v2.2） ---------- */
+.song-sub { display: block; font-size: 11.5px; color: var(--text-sub); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.song-table .col-album { width: 24%; }
+.song-table .col-extra { width: 118px; font-size: 12px; color: var(--text-sub); }
+.song-table .col-dur { width: 70px; }
+.play-count { font-weight: 700; color: var(--accent); font-size: 13px; }
+.artist-section-title { font-family: var(--font-heading); font-size: 20px; font-weight: 600; color: var(--ink); margin: 24px 0 12px; }
+.artist-head-art { cursor: default; }
+/* artist（v3.3）：playlist と同じ2列。左＝アーティスト一覧（縦のリスト。sticky・中だけスクロール）、右＝アーティストの内容 */
+.art-layout.is-wide { display: grid; grid-template-columns: 280px minmax(0, 1fr); gap: 16px; align-items: start; }
+.art-layout.is-wide .art-list-panel {
+  position: sticky; top: 12px; padding: 8px;
+  max-height: calc(100vh - var(--player-h) - var(--lyr-bottom) - var(--load-h) - 36px); overflow-y: auto; overscroll-behavior: contain;
+}
+.art-layout.is-narrow .art-list-panel { padding: 8px; }
+.art-layout.is-narrow.has-detail .art-list-panel { display: none; }
+.art-layout.is-narrow:not(.has-detail) .art-detail-panel { display: none; }
+.art-detail-panel { position: relative; min-width: 0; }
+.art-detail-panel .album-grid { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 16px 12px; }   /* 右の列は狭いので、カードを少し小さく */
+.art-item { padding: 6px 8px; gap: 10px; }
+.art-thumb.art-item-thumb { width: 40px; height: 40px; flex: none; border-radius: 6px; }
+.art-thumb.art-item-thumb svg { width: 18px; height: 18px; }
+.art-item-text { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.art-item-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.art-item-name.guessed { color: var(--text-faint); font-style: italic; }
+@keyframes art-item-flash { 0% { background: var(--primary-pale); } 30% { background: rgba(212, 104, 42, 0.22); } 100% { background: transparent; } }
+.art-item.card-flash { animation: art-item-flash 1.5s ease-out; }   /* 一覧に戻ったときの強調（v2.4 の決まり） */
+/* アーティストのピン止め（v3.9）：一覧の区切りと、行の右端のピン止めボタン */
+.art-section-head { position: relative; display: flex; align-items: center; gap: 6px; margin: 6px 4px 6px; font-family: var(--font-heading); font-size: 15px; font-weight: 600; color: var(--ink); }
+.art-rest-head { margin-top: 12px; padding-top: 10px; border-top: 1px dashed var(--border2); }
+.art-item { position: relative; }
+.art-item-pin {
+  flex: none; display: inline-flex; align-items: center; justify-content: center; width: 30px; height: 30px; border-radius: 50%;
+  background: var(--chip-bg); color: var(--text-sub); border: 1px solid var(--chip-border); cursor: pointer;
+  transition: opacity 0.15s, transform 0.15s, background 0.15s;
+}
+.art-item-pin svg { width: 14px; height: 14px; }
+.art-item-pin:hover { background: var(--chip-hover); transform: scale(1.08); }
+.art-item-pin:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; opacity: 1; }
+.art-item-pin.is-pinned { background: var(--accent); color: #fff; border-color: var(--accent); }   /* ピン止め中の印（いつも見える） */
+@media (hover: hover) {   /* マウスのある環境：ピン止め中はいつも、そのほかは行にマウスを乗せたとき・フォーカスしたときだけ */
+  .art-item-pin:not(.is-pinned) { opacity: 0; }
+  .art-item:hover .art-item-pin, .art-item:focus-within .art-item-pin, .art-item:focus-visible .art-item-pin { opacity: 1; }
+}
+.art-item-meta { font-size: 11.5px; font-weight: 400; color: var(--text-sub); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.artist-songs { margin-bottom: 20px; }
+.ac-choices { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 12px; max-height: 52vh; overflow-y: auto; padding: 2px; }
+.ac-choice { position: relative; display: flex; flex-direction: column; gap: 4px; padding: 8px; border: 2px solid var(--border); border-radius: var(--r-sm); cursor: pointer; background: var(--surface); }
+.ac-choice:has(input:checked) { border-color: var(--primary); background: var(--primary-pale); }
+.ac-choice input { position: absolute; top: 12px; left: 12px; z-index: 2; }
+.ac-choice.drag-over { border-color: var(--accent); }
+.ac-name { font-size: 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ac-custom .ac-name { white-space: normal; }
+
+/* ---------- 14. モーダル（ダイアログ） ---------- */
+.modal-overlay {
+  position: fixed; inset: 0; z-index: 1000;
+  background: rgba(20, 15, 45, 0.45);
+  display: flex; align-items: center; justify-content: center; padding: 16px;
+}
+.modal-box {
+  background: var(--surface); border-radius: 16px; box-shadow: var(--shadow-md);
+  width: 100%; max-height: calc(100vh - 32px); display: flex; flex-direction: column;
+  animation: modal-in 0.18s ease-out;
+}
+.modal-small { max-width: 460px; }
+.modal-large { max-width: 840px; }
+@keyframes modal-in { from { transform: translateY(12px); opacity: 0; } to { transform: none; opacity: 1; } }
+.modal-header { display: flex; align-items: center; justify-content: space-between; padding: 16px 20px 10px 26px; border-bottom: 1px solid var(--border); }
+.modal-header h2 { font-family: var(--font-heading); font-size: 21px; font-weight: 600; margin: 0; color: var(--ink); }
+.modal-body { padding: 18px 26px; overflow-y: auto; }
+.modal-footer { display: flex; justify-content: flex-end; flex-wrap: wrap; gap: 10px; padding: 12px 20px 16px; border-top: 1px solid var(--border); }
+.dialog-message { font-size: 13.5px; margin-bottom: 10px; line-height: 1.7; }
+.dialog-hint { font-size: 12px; color: var(--text-sub); }
+.dialog-error { font-size: 12.5px; color: var(--red); min-height: 1em; margin-top: 6px; }
+.prompt-row { display: flex; align-items: center; gap: 6px; }
+.dialog-suffix { font-size: 13px; color: var(--text-sub); white-space: nowrap; }
+.error-list { font-size: 12.5px; color: var(--red); padding-left: 18px; word-break: break-all; }
+
+/* 変更前 → 変更後 の表 */
+.change-table-wrap { max-height: 50vh; overflow: auto; border: 1px solid var(--border); border-radius: var(--r-sm); }
+.change-table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+.change-table th { position: sticky; top: 0; background: var(--surface-2); text-align: left; padding: 6px 10px; font-size: 11.5px; color: var(--text-sub); }
+.change-table td { padding: 6px 10px; border-top: 1px solid var(--border); word-break: break-all; vertical-align: top; }
+.change-table td:first-child { color: var(--text-sub); }
+.change-table td:last-child { color: var(--ink); font-weight: 500; }
+.change-arrow { color: var(--accent); width: 20px; text-align: center; }
+
+/* 選択肢（プレイリストに追加ダイアログ・移動先選択ダイアログ） */
+.choice-list { display: flex; flex-direction: column; gap: 3px; max-height: 50vh; overflow-y: auto; }
+.choice-item { display: flex; align-items: center; gap: 8px; padding: 7px 10px; border-radius: 6px; cursor: pointer; font-size: 13px; }
+.choice-item:hover { background: var(--surface-2); }
+.choice-item.disabled { opacity: 0.5; cursor: default; }
+.choice-item svg { color: var(--gold); }
+.choice-name { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.choice-new { margin-top: 6px; border-top: 1px dashed var(--border2); padding-top: 10px; }
+.kv-table { width: 100%; border-collapse: collapse; font-size: 12.5px; margin: 6px 0 10px; }
+.kv-table th, .kv-table td { text-align: left; padding: 5px 8px; border-bottom: 1px solid var(--border); }
+.kv-table th { color: var(--text-sub); font-weight: 500; }
+
+/* ---------- 15. トースト・実行中 ---------- */
+.toast-area { position: fixed; right: calc(var(--lyr-right) + 20px); bottom: calc(var(--player-h) + var(--lyr-bottom) + var(--load-h) + 16px); z-index: 2000; display: flex; flex-direction: column; gap: 8px; align-items: flex-end; }
+.toast {
+  max-width: 420px; background: var(--toast-bg); color: #fff; padding: 10px 16px;
+  border-radius: var(--r-sm); box-shadow: var(--shadow-md); font-size: 13px;
+  transition: opacity 0.4s, transform 0.4s;
+}
+.toast-error { background: var(--red); }
+/* トーストの中のボタン（「元に戻す」など。v3.0） */
+.toast-has-action { display: flex; align-items: center; gap: 12px; }
+.toast-action { flex: none; font: inherit; font-weight: 700; color: var(--gold); background: none; border: 1px solid rgba(255, 255, 255, 0.35); border-radius: 6px; padding: 3px 10px; cursor: pointer; }
+.toast-action:hover { background: rgba(255, 255, 255, 0.12); }
+.toast-hide { opacity: 0; transform: translateY(6px); }
+.busy-overlay { position: fixed; inset: 0; z-index: 1500; background: rgba(20, 15, 45, 0.35); display: flex; align-items: center; justify-content: center; }
+.busy-box { background: var(--surface); border-radius: var(--r); padding: 20px 28px; box-shadow: var(--shadow-md); display: flex; align-items: center; gap: 14px; font-size: 13.5px; }
+.busy-spinner { width: 22px; height: 22px; border: 3px solid var(--primary-pale); border-top-color: var(--primary); border-radius: 50%; animation: spin 0.8s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ---------- 読み込みの進み具合（v2.6）：再生バー（スマホ幅は歌詞パネル）のすぐ上の細い帯。読み込み中だけ ---------- */
+body.load-progress-on { --load-h: 34px; }
+.load-progress {
+  position: fixed; left: var(--sidebar-w); right: var(--lyr-right); bottom: calc(var(--player-h) + var(--lyr-bottom)); z-index: 64;
+  height: var(--load-h); display: flex; flex-direction: column; justify-content: center; gap: 4px;
+  padding: 0 40px 0 16px; background: var(--primary-pale); border-top: 1px solid var(--border2);
+  font-size: 12px; color: var(--ink);
+}
+.load-progress[hidden] { display: none; }
+.lp-row { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.lp-text { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.lp-spin { display: inline-flex; color: var(--ink-soft); }
+/* 帯のアイコンは回さない（回るのは「読み直す」ボタンだけ。描き直しを減らして読み込みを遅くしないため） */
+.lp-spin svg { width: 13px; height: 13px; }
+.lp-stop { flex: none; font-size: 11px; padding: 1px 8px; }
+.lp-bar { height: 3px; background: rgba(91, 83, 168, 0.18); border-radius: 2px; overflow: hidden; }
+.lp-fill { height: 100%; width: 100%; background: var(--primary); border-radius: 2px; transform-origin: left center; transform: scaleX(0); }   /* 長さは transform で（描き直しを少なく） */
+.load-progress.is-indeterminate .lp-fill {   /* 全体の数がまだ分からない（① フォルダの中を探す） */
+  background: linear-gradient(90deg, transparent 0%, var(--primary) 50%, transparent 100%); background-size: 40% 100%; background-repeat: no-repeat;
+  animation: lp-slide 1.2s steps(12) infinite; transform: none;
+}
+@keyframes lp-slide { from { background-position: -40% 0; } to { background-position: 140% 0; } }
+/* 読み込み中の「読み直す」ボタン：アイコンが回り、押せない */
+body.library-loading [data-rescan] { pointer-events: none; opacity: 0.6; }
+body.library-loading [data-rescan] svg { animation: spin 1s steps(8) infinite; }
+.last-load-warn { color: var(--red); }
+/* 読み込みの設定（v2.7。tools の音楽フォルダ設定の中） */
+.load-settings { position: relative; margin-top: 14px; padding: 12px 14px; border: 1px solid var(--border); border-radius: var(--r-sm); background: var(--surface-2); }
+.load-days { display: inline-flex; align-items: center; gap: 6px; margin-left: 16px; font-size: 13px; }
+.load-days select { font: inherit; padding: 2px 6px; border: 1px solid var(--border2); border-radius: 6px; background: var(--surface); }
+@media (max-width: 700px) { .load-days { margin-left: 0; margin-top: 6px; } }
+
+/* ---------- 16. 呼び方コピーのラベル（□） ---------- */
+.ui-label-tag {
+  position: absolute; cursor: pointer; user-select: none; line-height: 1; z-index: 60;
+  border-radius: 3px; padding: 2px 4px; font-size: 8px; opacity: 0.32;
+  transition: opacity 0.15s, background 0.15s;
+}
+.ui-label-tag:hover { opacity: 1; }
+.ui-label-tag-ondark { background: rgba(255, 255, 255, 0.18); color: #fff; }
+.ui-label-tag-onlight { background: var(--label-bg); color: var(--label-fg); }
+.ui-label-tag-header-badge {
+  width: 22px; height: 22px; padding: 0; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center; font-size: 11px; opacity: 1;
+  background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.3); color: rgba(255, 255, 255, 0.85);
+}
+.ui-label-tag-header-badge:hover { background: rgba(255, 255, 255, 0.24); color: #fff; }
+/* □の表示設定：オフのときは全部隠す（v2.2） */
+body.hide-ui-labels .ui-label-tag { display: none !important; }
+/* JS が中身を丸ごと書き換える本文エリアの直前に置く、高さ0のラベル置き場 */
+.ui-label-bar { position: relative; height: 0; }
+#player-bar > .ui-label-tag { z-index: 31; }
+
+/* ---------- 17. スマホ幅 ---------- */
+@media (max-width: 900px) {
+  .col-album, .col-folder { display: none; }
+  .col-title { width: 50%; }
+  .pl-layout, .org-layout { grid-template-columns: minmax(0, 1fr); }   /* 中身の長さで横にはみ出さない（v2.2） */
+  .pl-list-panel { position: static; }
+}
+@media (max-width: 700px) {
+  :root { --player-h: 150px; }
+  #app { flex-direction: column; }
+  #sidebar { position: static; width: 100%; height: auto; padding-bottom: 6px; }
+  .sidebar-header { padding: 10px 16px; }
+  .logo-mark svg { width: 28px; height: 28px; }
+  .sidebar-nav { flex-direction: row; overflow-x: auto; padding: 6px 10px; }
+  .nav-item { flex-direction: column; gap: 2px; padding: 6px 10px; font-size: 11px; white-space: nowrap; }
+  .nav-badge { display: none; }
+  .nav-sep { width: 1px; height: auto; margin: 6px 6px; align-self: stretch; }   /* スマホ幅は横並びなので縦の線 */
+  .conn-status-wrap { margin: 0 16px 4px; }
+  .page-header { padding: 14px 44px 14px 16px; }
+  /* スマホ幅はボタンの列が2行目に回るので、タイトルは1行目の残りの幅の中央に置く */
+  .page-header h1 { position: static; transform: none; flex: 1; text-align: center; }
+  .header-actions { margin-left: 0; width: 100%; }
+  .filter-bar, .select-bar { padding-left: 16px; padding-right: 16px; }
+  .page-body { padding: 14px 16px; }
+  .unsupported-banner { margin: 12px 16px 0; }
+  .col-artist { display: none; }
+  .col-title { width: auto; }
+  .lib-sub { display: block; }
+  .col-dur { width: 48px; }
+  #player-bar {
+    left: 0; grid-template-columns: 1fr; grid-template-rows: auto auto auto; gap: 2px;
+    padding: 8px 16px; height: var(--player-h);
+  }
+  .pb-now { justify-content: center; text-align: left; }
+  .pb-art { width: 40px; height: 40px; }
+  .pb-volume { justify-content: center; }
+  .pb-volume input { max-width: 180px; }
+  .toast-area { left: 16px; right: 16px; align-items: stretch; }
+  .load-progress { left: 0; padding-left: 12px; }
+  .toast { max-width: none; }
+  .modal-body { padding: 14px 16px; }
+  .set-dl { grid-template-columns: 90px 1fr; }
+  /* 歌詞パネルはスマホ幅では再生バーの上の帯（画面の4割ほど）。縮小すると1行（今の行）だけ。本文は隠さない */
+  body.lyr-expanded { --lyr-right: 0px; --lyr-bottom: var(--lyrics-mh); }
+  body.lyr-collapsed { --lyr-right: 0px; --lyr-bottom: var(--lyrics-mini-h); }
+  .lyrics-panel {
+    top: auto; left: 0; right: 0; width: auto; height: var(--lyr-bottom);
+    border-left: none; border-top: 1px solid var(--border2); box-shadow: 0 -6px 18px rgba(40, 30, 90, 0.12);
+  }
+  .lyrics-head { --lyrics-head-h: 80px; padding: 8px 6px 8px 14px; }
+  .lyrics-title { font-size: 16px; }
+  .lyrics-source { margin-top: 2px; }
+  .lyrics-body { padding: 10px 14px 20vh; }
+  .lyrics-collapse-btn svg { transform: rotate(90deg); }   /* 下向き＝縮小 */
+  .lyrics-mini { flex-direction: row; gap: 8px; padding: 0 30px 0 14px; }
+  .lyrics-mini-line { display: block !important; flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-align: left; color: var(--text); font-size: 14px; }
+  .lyrics-mini-open svg { transform: rotate(-90deg); }   /* 上向き＝開く */
+  .album-grid { grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 16px 12px; }
+  .album-grid.album-pin-grid { grid-template-columns: repeat(auto-fill, minmax(87px, 1fr)); gap: 12px 8px; }   /* スマホ幅も 2/3（130px → 87px） */
+
+  .album-track-table .col-no { width: 46px; }
+  .album-track-table .col-dur { width: 78px; }
+  .song-table .col-album, .song-table .col-art { display: none; }
+  .song-table .col-extra { width: 84px; }
+  .album-track-table th.col-dur { font-size: 10.5px; }
+  .col-add { width: 34px; }
+  /* スマホ幅の編集ボタン：文字を隠し、押しやすい大きさの枠付きアイコンに */
+  .col-edit { width: 46px; }
+  .lib-table td.col-edit { padding: 4px; }
+  .btn-row-edit { width: 38px; height: 36px; padding: 0; border-radius: 10px; }
+  .btn-row-edit-label { display: none; }
+  .btn-row-edit svg { width: 16px; height: 16px; }
+  .title-edit { width: 28px; height: 28px; }
+  .te-album-fields { grid-template-columns: 1fr; }
+  .aw-compare { grid-template-columns: 1fr; gap: 8px; }
+  .aw-arrow { transform: rotate(90deg); text-align: center; }
+  .aw-img { width: 160px; height: 160px; }
+  .te-track-row { grid-template-columns: 20px 38px minmax(0, 1fr); }
+  .te-track-row .te-track-artist { grid-column: 3; }
+  .te-track-row .te-track-kind { display: none; }
+  .te-track-head span:nth-child(4) { display: none; }
+}
+
+/* 高さの低いスマホ幅（横向きなど）では、歌詞パネルを低めの固定値にする（v1.9） */
+@media (max-width: 700px) and (max-height: 640px) {
+  :root { --lyrics-mh: 220px; }
+}
+/* 動きを減らす設定の人には、今の行の拡大を行わない */
+@media (prefers-reduced-motion: reduce) {
+  body.library-loading [data-rescan] svg, .load-progress.is-indeterminate .lp-fill { animation: none; }
+  .lyr-line { transition: none; }
+  .lyr-line.active { transform: none; }
+}
+
+/* ---------- アルバムの一括編集（v5.9。41-album-bulk-edit.js） ---------- */
+.abe { position: fixed; inset: 0; z-index: 950; display: flex; flex-direction: column; background: var(--bg); color: var(--text); }
+.abe[hidden] { display: none; }
+body.abe-open { overflow: hidden; }
+/* 一括編集のヘッダー */
+.abe-head { position: relative; display: flex; align-items: center; flex-wrap: wrap; gap: 10px; padding: 12px 16px 10px 30px;
+  background: linear-gradient(135deg, var(--header-a), var(--header-b)); color: var(--on-dark); }
+.abe-title { margin: 0; font-size: 18px; font-weight: 700; color: var(--on-dark); }
+.abe-count { font-size: 12.5px; padding: 2px 9px; border-radius: 999px; background: rgba(255, 255, 255, 0.18); }
+.abe-search-box { flex: 1 1 220px; max-width: 360px; }
+.abe-cols-wrap { position: relative; }
+.abe-cols-pop { position: absolute; top: calc(100% + 6px); right: 0; z-index: 5; min-width: 190px; padding: 10px 12px; border-radius: var(--r-sm);
+  background: var(--surface); color: var(--text); border: 1px solid var(--border2); box-shadow: var(--shadow-md); display: flex; flex-direction: column; gap: 6px; }
+.abe-cols-pop[hidden] { display: none; }
+.abe-cols-title { font-size: 12px; color: var(--text-sub); font-weight: 600; }
+.abe-cols-item { display: flex; align-items: center; gap: 7px; font-size: 13px; cursor: pointer; }
+.abe-close { margin-left: auto; color: var(--on-dark); }
+.abe-close:hover { background: rgba(255, 255, 255, 0.16); }
+/* 一括入力バー */
+.abe-bulk { position: relative; display: flex; align-items: center; flex-wrap: wrap; gap: 8px; padding: 8px 16px; background: var(--primary-pale); border-bottom: 1px solid var(--border2); }
+.abe-bulk[hidden] { display: none; }
+.abe-bulk-n { font-size: 13px; font-weight: 700; color: var(--ink-mid); }
+.abe-bulk .form-input { width: auto; min-width: 150px; padding: 6px 10px; font-size: 13px; }
+.abe-bulk-val { display: inline-flex; }
+.abe-bulk .btn-save { padding: 6px 14px; font-size: 13px; }
+/* 一括編集の表（横にもスクロール。見出しは上に固定） */
+.abe-scroll { position: relative; flex: 1; min-height: 0; overflow: auto; }
+.abe-table-label { position: sticky; float: right; top: 4px; margin-right: 6px; }
+.abe-table { border-collapse: separate; border-spacing: 0; min-width: 100%; font-size: 13px; }
+.abe-table th { position: sticky; top: 0; z-index: 2; background: var(--surface-2); color: var(--text-sub); font-size: 12px; font-weight: 600; text-align: left;
+  padding: 8px 6px; border-bottom: 1px solid var(--border2); white-space: nowrap; }
+.abe-table td { padding: 3px 4px; border-bottom: 1px solid var(--border); background: var(--surface); vertical-align: middle; }
+.abe-row.is-checked td { background: var(--primary-pale); }
+.abe-c-chk { width: 34px; text-align: center; }
+.abe-c-art { width: 44px; }
+.abe-art { width: 36px; height: 36px; }
+.abe-in { width: 100%; box-sizing: border-box; padding: 6px 8px; font: inherit; font-size: 13px; color: var(--text); background: transparent;
+  border: 1px solid transparent; border-radius: 5px; }
+.abe-in:hover { border-color: var(--border2); }
+.abe-in:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-dim); background: var(--surface); }
+select.abe-in { cursor: pointer; padding-right: 4px; }
+select.abe-in option { background: var(--surface); color: var(--text); }
+.abe-in::placeholder { color: var(--text-faint); }
+td.abe-c-name { min-width: 200px; }
+td.abe-c-albumArtist { min-width: 170px; }
+td.abe-c-genre { min-width: 120px; }
+td.abe-c-year { width: 72px; }
+td.abe-c-year .abe-in { width: 64px; }
+td.abe-c-tag { min-width: 110px; }
+td.abe-c-sortKey { min-width: 140px; }
+td.abe-c-western { min-width: 172px; }
+.abe-c-count { white-space: nowrap; color: var(--text-sub); text-align: right; padding-right: 10px !important; }
+.abe-c-kind { white-space: nowrap; }
+.abe-kind { display: inline-block; margin-right: 4px; padding: 1px 6px; border-radius: 4px; font-size: 11px; background: var(--surface-2); color: var(--text-sub); border: 1px solid var(--border); }
+.abe-kind.is-app { color: var(--new-ink); border-color: var(--accent-light); cursor: help; }
+.abe-c-reset { width: 36px; }
+/* 行の取り消しの列は右端に固定（横にスクロールしても見える） */
+.abe-table th.abe-c-reset, .abe-table td.abe-c-reset { position: sticky; right: 0; z-index: 1; box-shadow: -1px 0 0 var(--border); }
+.abe-table th.abe-c-reset { z-index: 3; }
+/* 変更ありの印（セルの色と左の線） */
+.abe-table td.is-changed { background: var(--abe-changed); box-shadow: inset 3px 0 0 var(--abe-changed-line); }
+.abe-table td.is-invalid { background: var(--red-pale); box-shadow: inset 3px 0 0 var(--red); }
+.abe-row.is-changed .abe-c-chk { box-shadow: inset 3px 0 0 var(--abe-changed-line); }
+.abe-row-reset { color: var(--ink-soft); }
+.abe-row-reset:hover { background: var(--primary-dim); }
+.abe-empty td { padding: 30px 16px; text-align: center; color: var(--text-sub); }
+.abe-more { padding: 14px; text-align: center; font-size: 12px; color: var(--text-faint); min-height: 1px; }
+/* 列の表示／非表示 */
+.abe-hide-art .abe-c-art, .abe-hide-albumArtist .abe-c-albumArtist, .abe-hide-genre .abe-c-genre, .abe-hide-year .abe-c-year, .abe-hide-tag .abe-c-tag,
+.abe-hide-sortKey .abe-c-sortKey, .abe-hide-western .abe-c-western, .abe-hide-count .abe-c-count, .abe-hide-kind .abe-c-kind { display: none !important; }
+/* 更新バー */
+.abe-foot { position: relative; display: flex; align-items: center; flex-wrap: wrap; gap: 10px; padding: 10px 16px; background: var(--surface); border-top: 1px solid var(--border2); box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.06); }
+.abe-summary { flex: 1 1 280px; font-size: 13px; color: var(--text); }
+.abe-sum-none { color: var(--text-sub); }
+.abe-sum-sub { color: var(--text-sub); font-size: 12px; margin-left: 4px; }
+.abe-sum-bad { display: inline-block; margin-left: 10px; color: var(--red); font-weight: 600; }
+.abe-update-wrap { position: relative; }
+.abe-update { min-width: 120px; }
+.abe-update:disabled, .abe-foot .btn-cancel:disabled { opacity: 0.5; cursor: default; }
+
+/* スマホ幅：1アルバム1カードの縦並び（見出しは隠し、セルの前に項目名） */
+@media (max-width: 760px) {
+  .abe-head { padding: 10px 12px 10px 26px; gap: 8px; }
+  .abe-title { font-size: 16px; }
+  .abe-search-box { order: 5; flex: 1 1 100%; max-width: none; }
+  .abe-bulk { padding: 8px 12px; }
+  .abe-bulk .form-input { min-width: 0; flex: 1 1 130px; }
+  .abe-table, .abe-table tbody { display: block; min-width: 0; }
+  .abe-table thead { display: block; }
+  .abe-table thead tr { display: flex; align-items: center; }
+  .abe-table thead th { display: none; }
+  .abe-table thead th.abe-c-chk { display: block; position: static; width: auto; background: none; border: none; padding: 8px 2px 0; font-weight: 400; }
+  .abe-table thead th.abe-c-chk::after { content: '表示している行を全部選ぶ'; margin-left: 6px; vertical-align: middle; }
+  .abe-scroll { padding: 0 12px 12px; }
+  .abe-row { display: grid; grid-template-columns: 30px 44px minmax(0, 1fr) minmax(0, 1fr) 36px; column-gap: 4px; margin-top: 10px; padding: 8px 6px;
+    background: var(--surface); border: 1px solid var(--border2); border-radius: var(--r-sm); }
+  .abe-row.is-changed { border-color: var(--abe-changed-line); }
+  .abe-row.is-checked { background: var(--primary-pale); }
+  .abe-row td, .abe-row.is-checked td { display: block; border: none; background: transparent; padding: 3px 2px; min-width: 0 !important; width: auto !important; }
+  .abe-row td[data-label]::before { content: attr(data-label); display: block; font-size: 11px; color: var(--text-sub); padding: 0 2px 1px; }
+  .abe-row .abe-c-chk { grid-column: 1; grid-row: 1; align-self: center; }
+  .abe-row .abe-c-art { grid-column: 2; grid-row: 1; align-self: center; }
+  .abe-row .abe-c-name { grid-column: 3 / 5; grid-row: 1; }
+  .abe-table .abe-row td.abe-c-reset { grid-column: 5; grid-row: 1; align-self: center; position: static; box-shadow: none; }
+  .abe-row .abe-c-albumArtist, .abe-row .abe-c-genre, .abe-row .abe-c-tag, .abe-row .abe-c-sortKey, .abe-row .abe-c-western { grid-column: 1 / 4; }
+  .abe-row .abe-c-year, .abe-row .abe-c-count, .abe-row .abe-c-kind { grid-column: 4 / 6; }
+  .abe-row .abe-c-count, .abe-row .abe-c-kind { text-align: left; padding-right: 2px !important; }
+  .abe-row .abe-c-year .abe-in { width: 100%; }
+  .abe-row .abe-in { border-color: var(--border); background: var(--surface); }
+  .abe-row td.is-changed { background: var(--abe-changed); border-radius: 5px; }
+  .abe-row td.is-changed .abe-in { background: transparent; }
+  .abe-row td.is-invalid { background: var(--red-pale); border-radius: 5px; }
+  .abe-empty, .abe-empty td { display: block; }
+  .abe-foot { padding: 8px 12px; gap: 8px; }
+  .abe-summary { flex-basis: 100%; font-size: 12.5px; }
+  .abe-foot .btn-cancel { flex: 1; }
+  .abe-update-wrap { flex: 1; display: flex; }
+  .abe-update { flex: 1; }
+}
+
+/* ---------- ソートキーの枠の背景（v6.0。42-sortkey-cover.js） ----------
+   枠の色（ソートキーの色相の背景・枠線・ラベル）はそのまま。その上に代表ジャケットを枠いっぱいにぼかして薄く敷き、カード・ラベルはさらに上 */
+.album-sk-bg { position: absolute; inset: 0; z-index: 0; overflow: hidden; border-radius: 10px; pointer-events: none; }
+.album-sk-bg img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; filter: saturate(1.15); transform: none; opacity: 0.32; }
+:root[data-theme="dark"] .album-sk-bg img { opacity: 0.38; filter: saturate(1.1) brightness(0.85); }
+.album-sk-cluster > .album-sk-label, .album-sk-cluster > .album-sk-cards { position: relative; z-index: 1; }
+/* ラベルは押すと代表ジャケットを選ぶ（button） */
+button.album-sk-label { border: none; font-family: inherit; line-height: inherit; cursor: pointer; text-align: left; }
+button.album-sk-label:hover { filter: brightness(0.96); }
+:root[data-theme="dark"] button.album-sk-label:hover { filter: brightness(1.15); }
+button.album-sk-label:focus-visible, .album-sk-cover-btn:focus-visible { outline: 2px solid hsl(var(--sk-h) 60% 45%); outline-offset: 2px; }
+/* 代表ジャケットを選ぶボタン（枠の右上の小さなボタン） */
+.album-sk-cover-wrap { position: absolute; top: 8px; right: 10px; z-index: 2; }
+.album-sk-cover-btn { display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; padding: 0; border-radius: 50%;
+  border: 1px solid hsl(var(--sk-h) 45% 72%); background: hsl(var(--sk-h) 60% 97% / 0.85); color: hsl(var(--sk-h) 50% 32%); cursor: pointer; }
+.album-sk-cover-btn svg { width: 14px; height: 14px; }
+.album-sk-cover-btn:hover { background: hsl(var(--sk-h) 60% 92%); }
+:root[data-theme="dark"] .album-sk-cover-btn { border-color: hsl(var(--sk-h) 35% 42%); background: hsl(var(--sk-h) 30% 20% / 0.85); color: hsl(var(--sk-h) 70% 85%); }
+:root[data-theme="dark"] .album-sk-cover-btn:hover { background: hsl(var(--sk-h) 30% 28%); }
+.album-sk-cluster .album-sk-label { margin-right: 40px; max-width: calc(100% - 40px); }
+@media (max-width: 760px) {
+  .album-sk-cover-wrap { top: 6px; right: 6px; }
+  .album-sk-cover-btn { width: 26px; height: 26px; }
+  .album-sk-bg img { filter: saturate(1.15); }
+  :root[data-theme="dark"] .album-sk-bg img { filter: saturate(1.1) brightness(0.85); }
+}
+
+/* ---------- ソートキーの枠の背景の表示位置（v6.1。42-sortkey-cover.js） ----------
+   枠ごとの --sk-x / --sk-y（見せる位置 0〜100%）と --sk-z（拡大率 1〜2 倍。1 倍のときは is-zoomed を付けない＝transform は今のまま） */
+.album-sk-bg img { object-position: var(--sk-x, 50%) var(--sk-y, 50%); }
+.album-sk-bg.is-zoomed img { transform: scale(var(--sk-z, 1)); transform-origin: var(--sk-x, 50%) var(--sk-y, 50%); }
+/* 代表ジャケットを選ぶダイアログの「表示位置」 */
+.sk-cover-choices { max-height: 30vh; }
+.sk-pos { position: relative; margin-top: 14px; padding: 12px; border: 1px solid var(--border); border-radius: var(--r-sm); background: var(--surface-2); }
+.sk-pos-title { margin-bottom: 8px; font-size: 13px; font-weight: 700; color: var(--ink-mid); }
+.sk-pos-body { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(220px, 1fr); gap: 14px; align-items: start; }
+.sk-pos-preview-wrap { min-width: 0; }
+.sk-pos-preview { margin: 0 auto; padding: 8px 10px; overflow: hidden; cursor: grab; touch-action: none; user-select: none; -webkit-user-select: none; }
+.sk-pos-preview.is-dragging { cursor: grabbing; }
+.sk-pos-preview .album-sk-bg img { pointer-events: none; }
+.sk-pos-hint { margin-top: 6px; }
+.sk-pos-quick { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; margin-bottom: 10px; }
+.sk-pos-quick .btn-inline-small { justify-content: center; }
+.sk-pos-range { display: grid; grid-template-columns: 34px minmax(0, 1fr) 52px; align-items: center; gap: 6px; margin: 4px 0; font-size: 12.5px; }
+.sk-pos-range input { width: 100%; }
+.sk-pos-range output { font-size: 12px; color: var(--text-sub); text-align: right; }
+.sk-pos-reset { margin: 6px 0; }
+@media (max-width: 760px) {
+  .sk-pos-body { grid-template-columns: 1fr; }
+  .sk-cover-choices { max-height: 24vh; }
+}
+
+/* ---------- album のフィルターバーの検索欄（v6.2）：今の半分の幅にして、並べ替え・タグ・ジャンル・グループなどを同じ行に上げる
+   （ほかの画面の検索欄は .search-box のまま。スマホ幅も半分にして、並べ替えボタンなどと同じ行に並べる） */
+#alb-filter-bar .search-box { flex: 1 1 170px; max-width: 230px; min-width: 150px; }
+#alb-filter-bar .search-box .form-input { text-overflow: ellipsis; }
+@media (max-width: 760px) {
+  #alb-filter-bar .search-box { flex: 1 1 150px; max-width: 50%; }
+}
+
+/* ---------- アルバムの一括編集：選んだアルバムを削除（v6.6） ---------- */
+.abe-bulk-delete-wrap { position: relative; margin-left: auto; }
+.abe-bulk .abe-bulk-delete { display: inline-flex; align-items: center; gap: 5px; padding: 6px 12px; font-size: 13px; }
+.abe-bulk .abe-bulk-delete svg { width: 15px; height: 15px; }
+.abe-del-summary { margin-top: 8px; }
+.abe-del-list { margin: 6px 0 6px 1.2em; padding: 0; max-height: 180px; overflow-y: auto; font-size: 13px; }
+.abe-del-list li { margin: 2px 0; }
+.abe-del-artist { color: var(--text-sub); }
+.abe-del-more { color: var(--text-sub); list-style: none; margin-left: -1.2em !important; }
+@media (max-width: 760px) {
+  .abe-bulk-delete-wrap { margin-left: 0; flex: 1 1 100%; }
+  .abe-bulk .abe-bulk-delete { width: 100%; justify-content: center; }
+}
+
+/* ---------- プレイリストをフォルダにコピー（v6.7。43-playlist-copy.js） ---------- */
+.plc-sum { border-collapse: collapse; margin: 8px 0 10px; font-size: 13px; }
+.plc-sum th { text-align: left; font-weight: 600; color: var(--text-sub); padding: 3px 14px 3px 0; white-space: nowrap; vertical-align: top; }
+.plc-sum td { padding: 3px 0; word-break: break-all; }
+.plc-warn { margin: 8px 0; padding: 8px 10px; border-radius: var(--r-sm); background: var(--red-pale); color: var(--red); font-size: 13px; }
+.plc-opts { display: flex; flex-direction: column; gap: 8px; margin-top: 8px; }
+.plc-dup { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 12px; font-size: 13px; }
+.plc-prog { padding: 4px 0; }
+.plc-prog-text { font-size: 14px; font-weight: 600; margin-bottom: 8px; }
+.plc-bar { height: 8px; border-radius: 4px; background: var(--primary-pale); overflow: hidden; }
+.plc-bar-fill { height: 100%; width: 0; background: var(--primary); transition: width 0.15s; }
+.plc-prog-sub { margin-top: 8px; font-size: 12px; color: var(--text-sub); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-height: 1.2em; }
+.plc-h { font-size: 13.5px; margin: 12px 0 4px; }
+.plc-list { margin: 0 0 4px 1.2em; padding: 0; max-height: 160px; overflow-y: auto; font-size: 12.5px; }
+
+/* ---------- プレイリストに追加（v6.8）：チェック式のダイアログ ---------- */
+.pl-check-list { max-height: 50vh; overflow-y: auto; }
+.choice-item.is-added { opacity: 0.6; cursor: default; }
+.choice-current, .choice-added { display: inline-block; margin-left: 6px; padding: 0 6px; border-radius: 999px; font-size: 10.5px; vertical-align: 1px; }
+.choice-current { background: var(--primary-pale); color: var(--ink-mid); }
+.choice-added { background: var(--surface-2); color: var(--text-sub); border: 1px solid var(--border); }
+/* （v6.8 の曲の行の「＋」は v6.9 で外した） */
+
+/* ---------- アルバム追加ダイアログ（v6.9。44-playlist-add-albums.js） ---------- */
+.paa-top { display: flex; align-items: center; gap: 10px; margin: 6px 0 8px; }
+.paa-search { flex: 1 1 auto; max-width: none; }
+.paa-count { flex: none; font-size: 12px; color: var(--text-sub); }
+.paa-list { height: min(46vh, 420px); overflow-y: auto; border: 1px solid var(--border); border-radius: var(--r-sm); background: var(--surface); }
+.paa-row { display: flex; align-items: center; gap: 10px; padding: 6px 10px; border-bottom: 1px solid var(--border); cursor: pointer; font-size: 13px; }
+.paa-row:hover { background: var(--surface-2); }
+.paa-row.is-on { background: var(--primary-pale); }
+.paa-row.is-added { opacity: 0.55; cursor: default; }
+.paa-row input { flex: none; width: 16px; height: 16px; }
+.paa-art { width: 36px; height: 36px; flex: none; }
+.paa-text { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.paa-name, .paa-sub { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.paa-sub { font-size: 11.5px; color: var(--text-sub); }
+.paa-n { flex: none; font-size: 12px; color: var(--text-sub); min-width: 38px; text-align: right; }
+.paa-order { flex: none; display: inline-flex; align-items: center; justify-content: center; min-width: 20px; height: 20px; border-radius: 10px; background: var(--primary); color: #fff; font-size: 11px; font-weight: 700; }
+.paa-more { padding: 12px; text-align: center; font-size: 12px; color: var(--text-faint); }
+.paa-picked { margin-top: 8px; font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+@media (max-width: 760px) {
+  /* スマホ幅：チェック・ジャケット・名前・曲数の1段目、その下に「追加済み」 */
+  .paa-row { display: grid; grid-template-columns: 16px 36px minmax(0, 1fr) auto auto; column-gap: 8px; row-gap: 2px; padding: 6px 8px; }
+  .paa-row input { grid-row: 1; grid-column: 1; }
+  .paa-row .paa-art { grid-row: 1; grid-column: 2; }
+  .paa-row .paa-text { grid-row: 1; grid-column: 3; }
+  .paa-row .paa-order { grid-row: 1; grid-column: 4; }
+  .paa-row .paa-n { grid-row: 1; grid-column: 5; }
+  .paa-row .choice-added { grid-row: 2; grid-column: 3 / 6; justify-self: start; margin-left: 0; }
+}
+/* アルバム追加のタブ・並べ替え（v7.0） */
+.paa-tabs { margin: 4px 0 2px; }
+.paa-sort { flex: none; width: auto; max-width: 190px; padding: 7px 8px; font-size: 13px; }
+.paa-name .album-tag-badge { font-size: 12px; }
+@media (max-width: 760px) {
+  .paa-top { flex-wrap: wrap; }
+  .paa-search { flex: 1 1 100%; }
+  .paa-sort { flex: 1 1 auto; max-width: none; }
+}
+
+/* ---------- プレイリストの曲の見出しのアイコンだけのボタン（v7.1） ---------- */
+.pl-detail-head .btn-row { align-items: center; }
+.pl-icon-btn { width: 36px; height: 34px; justify-content: center; padding: 0; }
+.pl-icon-btn svg { width: 18px; height: 18px; margin: 0; }
+.pl-head-sep { flex: 1 1 0; min-width: 12px; height: 1px; margin: 0; background: none; }   /* 削除の前のすき間（削除ボタンを右寄せ） */
+@media (max-width: 760px) {
+  .pl-detail-head .btn-row { gap: 6px; }
+  .pl-icon-btn { width: 34px; }
+  .pl-detail-head { padding-right: 0; }
+  .pl-detail-head .btn-row .btn-save { padding-left: 12px; padding-right: 12px; }
+}
+
+/* ---------- album の一覧のスクロールボタン（v7.2。45-album-scroll.js） ---------- */
+.alb-scroll { position: fixed; z-index: 55; right: calc(var(--lyr-right) + 18px); bottom: calc(var(--player-h) + var(--lyr-bottom) + var(--load-h) + 18px);
+  display: flex; flex-direction: column; gap: 6px; }
+.alb-scroll[hidden] { display: none; }
+.alb-scroll-btn { width: 38px; height: 38px; padding: 0; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center;
+  background: var(--chip-bg-soft); color: var(--ink-mid); border: 1px solid var(--chip-border); box-shadow: var(--shadow-sm);
+  opacity: 0.72; backdrop-filter: blur(4px); cursor: pointer; transition: opacity 0.15s, background 0.15s; }
+.alb-scroll-btn svg { width: 17px; height: 17px; }
+.alb-scroll-btn:hover:not(:disabled), .alb-scroll-btn:focus-visible { opacity: 1; background: var(--chip-hover); }
+.alb-scroll-btn:disabled { opacity: 0.28; cursor: default; box-shadow: none; }
+.alb-scroll-btn.is-loading { opacity: 1; }
+.alb-scroll-btn.is-loading svg { animation: alb-scroll-pulse 0.8s ease-in-out infinite alternate; }
+@keyframes alb-scroll-pulse { from { transform: translateY(-3px); } to { transform: translateY(3px); } }
+@media (max-width: 760px) {
+  /* スマホ幅：画面の右端の余白に寄せて小さめに（カードのボタンにかかりにくく） */
+  .alb-scroll { right: 2px; bottom: calc(var(--player-h) + var(--lyr-bottom) + var(--load-h) + 10px); gap: 10px; }
+  .alb-scroll-btn { width: 34px; height: 34px; opacity: 0.6; }
+}
+@media (prefers-reduced-motion: reduce) { .alb-scroll-btn.is-loading svg { animation: none; } }
+
+/* ---------- Seasons Song（v7.4。46-seasons.js） ---------- */
+.sea-tabs { display: flex; flex-wrap: wrap; gap: 6px; }
+.sea-tab { display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 999px; font-size: 13px; font-weight: 600;
+  border: 1.5px solid color-mix(in srgb, var(--sea-c) 55%, transparent); background: var(--surface); color: var(--text); cursor: pointer; }
+.sea-tab svg { color: var(--sea-c); width: 16px; height: 16px; }
+.sea-tab:hover { background: color-mix(in srgb, var(--sea-c) 10%, var(--surface)); }
+.sea-tab.active { background: var(--sea-c); border-color: var(--sea-c); color: #fff; }
+.sea-tab.active svg { color: #fff; }
+.sea-tab-n { font-size: 11px; font-weight: 500; padding: 0 6px; border-radius: 999px; background: color-mix(in srgb, var(--sea-c) 16%, transparent); }
+.sea-tab.active .sea-tab-n { background: rgba(255, 255, 255, 0.25); }
+.sea-search-box { flex: 1 1 200px; max-width: 300px; }
+.sea-progress { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; flex: 1 1 100%; font-size: 12.5px; color: var(--text-sub); }
+.sea-progress:empty { display: none; }
+.sea-bar { flex: 0 1 200px; height: 6px; border-radius: 3px; background: var(--primary-pale); overflow: hidden; }
+.sea-bar-fill { display: block; height: 100%; background: var(--primary); transition: width 0.3s; }
+.sea-head { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; color: var(--sea-c); }
+.sea-head svg { width: 22px; height: 22px; }
+.sea-head-name { font-family: var(--font-heading); font-size: 24px; font-weight: 600; }
+.sea-head-n { font-size: 13px; color: var(--text-sub); }
+.sea-play-all { margin-left: auto; }
+.sea-select { width: 100%; max-width: 130px; padding: 3px 4px; font: inherit; font-size: 12px; color: var(--text); background: var(--surface); border: 1px solid var(--border2); border-radius: 5px; }
+#page-seasons .song-table .col-extra { width: 140px; }
+.sea-set-icon { display: inline-flex; vertical-align: -3px; margin-right: 6px; }
+.wes-chip.sea-chip-weak { border-style: dashed; }
+.wes-chip.sea-chip-ex { opacity: 0.75; text-decoration: line-through; text-decoration-thickness: 1px; }
+@media (max-width: 760px) {
+  .sea-tab { padding: 5px 9px; font-size: 12px; }
+  .sea-search-box { max-width: none; }
+  #page-seasons .song-table .col-extra { width: 84px; }
+  .sea-select { font-size: 11px; padding: 2px; }
+}
+
+/* ---------- シャッフル再生ボタン（v7.5。47-shuffle-play.js） ---------- */
+.shuffle-play-btn:disabled { opacity: 0.4; cursor: default; }
+.btn-row .shuffle-play-btn { align-self: center; }
+
+/* ---------- アルバムの右クリックメニュー（v7.6。48-album-context-menu.js） ---------- */
+.acm { position: fixed; z-index: 1300; min-width: 200px; max-width: min(280px, calc(100vw - 12px)); padding: 6px; border-radius: var(--r-sm);
+  background: var(--surface); color: var(--text); border: 1px solid var(--border2); box-shadow: var(--shadow-md); }
+.acm-head { padding: 6px 10px 8px; font-size: 12.5px; font-weight: 700; border-bottom: 1px solid var(--border); margin-bottom: 4px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.acm-sub { margin-left: 6px; font-weight: 400; color: var(--text-sub); }
+.acm-item { display: flex; align-items: center; gap: 10px; width: 100%; padding: 8px 10px; border: none; border-radius: 6px; background: none; color: var(--text); font: inherit; font-size: 13.5px; text-align: left; cursor: pointer; }
+.acm-item svg { width: 16px; height: 16px; color: var(--ink-soft); flex: none; }
+.acm-item:hover, .acm-item:focus-visible { background: var(--primary-pale); outline: none; }
+@media (max-width: 760px) { .acm-item { padding: 11px 12px; font-size: 14.5px; } }
+/* 長押しのとき、スマホのブラウザの画像のメニューを出さない */
+.album-card .card-art-wrap, .album-card .art-card, .album-head-art { -webkit-touch-callout: none; }
+
+/* ---------- アルバムの曲リストの曲の YouTube ボタン（v7.7） ---------- */
+.album-track-table .col-yt { width: 42px; }
+.lib-table td.col-yt { padding: 4px; text-overflow: clip; }
+.btn-row-youtube svg { color: var(--red); width: 18px; height: 18px; }
+.btn-row-youtube:hover { background: var(--red-pale); }
+@media (max-width: 760px) {
+  /* スマホ幅：曲名の幅をとるため、曲番号・長さ・ボタンの列を詰める */
+  .album-track-table .col-yt, .album-track-table .col-add { width: 30px; }
+  .album-track-table .col-no { width: 30px; padding-right: 4px; }
+  .album-track-table .col-dur { width: 42px; }
+  .album-track-table th.col-dur { font-size: 0; }
+  .album-track-table th.col-dur::after { content: '長さ'; font-size: 10.5px; }
+  .album-track-table .col-edit { width: 40px; }
+  .album-track-table td.col-yt, .album-track-table td.col-add { padding: 2px; }
+  .album-track-table .btn-row-youtube, .album-track-table td.col-add .btn-icon { width: 26px; }
+}
+
+/* ---------- upbeat music（v7.8。49-upbeat.js） ---------- */
+.upb-min-wrap { position: relative; display: inline-flex; align-items: center; gap: 6px; }
+.upb-min { width: 72px; padding: 6px 8px; text-align: center; }
+.upb-step { width: 30px; justify-content: center; padding-left: 0; padding-right: 0; }
+.upb-head { color: var(--accent); }
+#page-upbeat .song-table .col-extra { width: 104px; }
+.upb-bpm { display: inline-flex; align-items: baseline; gap: 5px; padding: 2px 6px; border: 1px solid transparent; border-radius: 6px; background: none; color: var(--text); font: inherit; cursor: pointer; }
+.upb-bpm:hover { border-color: var(--border2); background: var(--surface-2); }
+.upb-bpm-n { font-size: 14px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.upb-src { font-size: 10.5px; padding: 0 5px; border-radius: 999px; background: var(--surface-2); color: var(--text-sub); border: 1px solid var(--border); }
+.upb-src-manual .upb-src { background: var(--primary-pale); color: var(--ink-mid); border-color: var(--primary-dim); }
+.upb-src-tag .upb-src { background: var(--abe-changed); color: var(--text); }
+@media (max-width: 760px) {
+  #page-upbeat .song-table .col-extra { width: 64px; }
+  .upb-src { display: none; }
+}
+#upb-sort { max-width: none; width: auto; }
+.sea-head { flex-wrap: wrap; }
+.sea-head-name { white-space: nowrap; }
+.sea-play-all { white-space: nowrap; }
+@media (max-width: 760px) {
+  .sea-head-name { font-size: 19px; }
+  .sea-head .sea-play-all { padding-left: 12px; padding-right: 12px; }
+}
+
+/* ---------- 再生画面のアルバムの曲リスト（v8.0。50-np-album.js）：プレイリストの play画面のキューと同じ形。PC は右、スマホ幅は下 ---------- */
+.np-al-toggle { margin-left: 0; }
+.np-al-toggle[hidden] { display: none; }
+.np.np-al-mode .np-main { justify-content: space-between; gap: clamp(16px, 3vw, 36px); }
+.np.np-al-mode .np-flow-wrap { --c: min(22vw, 44vh, 320px); }
+.np.np-al-mode .np-info { width: min(360px, 28vw); }
+.np.np-al-mode .np-al-list { position: relative; display: flex; flex-direction: column; width: min(360px, 28vw); max-height: 100%; min-height: 0; align-self: stretch;
+  background: var(--surface); border: 1px solid var(--border2); border-radius: 14px; box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1); }
+.npal-head { flex-wrap: nowrap; gap: 10px; }
+.art-thumb.npal-art { width: 44px; height: 44px; flex: none; border-radius: 6px; }
+.npal-head-text { min-width: 0; display: flex; flex-direction: column; }
+.npal-name { font-weight: 700; color: var(--ink); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+@media (max-width: 760px) {
+  .np.np-al-mode .np-main { justify-content: flex-start; }
+  .np.np-al-mode .np-flow-wrap { --c: min(50vw, 28vh); }
+  .np.np-al-mode .np-info { width: 100%; }
+  .np.np-al-mode .np-al-list { flex: none; width: 100%; max-width: 480px; max-height: none; align-self: center; }
+  .np.np-al-mode .np-al-list .plp-q-list { flex: none; max-height: 50vh; }
+}
+.np:not(.np-al-mode) .np-al-list { display: none !important; }   /* プレイリストの play画面・隠したときは出さない */
+@media (max-width: 760px) {
+  .np-top { flex-wrap: nowrap; gap: 6px; padding-left: 28px; padding-right: 12px; }
+  .np-top .np-lyr-toggle { white-space: nowrap; padding: 6px 9px; }
+  .np-top .np-mode { white-space: nowrap; }
+}
+@media (max-width: 400px) {
+  .np-top .np-lyr-toggle { font-size: 0; gap: 0; }   /* 狭いときは歌詞・曲リストのボタンをアイコンだけに（名前は title） */
+  .np-top .np-lyr-toggle svg { width: 16px; height: 16px; }
+}
+
+/* ---------- album のタイトルで最初の状態に戻す（v8.1。51-album-reset.js）：中央に置いた h1 のうち、album だけ押せる ---------- */
+#page-albums .page-header h1 { pointer-events: auto; cursor: pointer; border-radius: 6px; padding: 0 6px; }
+#page-albums .page-header h1:hover { background: rgba(255, 255, 255, 0.12); }
+#page-albums .page-header h1:focus-visible { outline: 2px solid var(--on-dark); outline-offset: 2px; }
+
+/* ---------- 保存容量の使用状況（v8.2。53-storage-usage.js）：小さな保存場所・大きな保存場所の表、キャッシュの削除 ---------- */
+.su-mode { margin-top: 0; }
+.su-section { margin-top: 14px; padding-top: 10px; border-top: 1px solid var(--border); }
+.su-title { font-size: 13.5px; font-weight: 600; margin: 0 0 8px; color: var(--ink-mid); display: flex; align-items: center; }
+.su-table { width: 100%; border-collapse: collapse; font-size: 12.5px; margin-top: 6px; table-layout: fixed; }
+.su-table td { padding: 4px 6px; border-bottom: 1px solid var(--border); vertical-align: top; overflow-wrap: anywhere; }
+.su-table td:first-child { width: 38%; }
+.su-table .su-size { width: 80px; text-align: right; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.su-table .su-note { color: var(--text-sub); }
+.su-table .su-note .btn-inline-small { margin-left: 6px; padding: 2px 8px; }
+.su-table tr.su-sub td { color: var(--text-sub); }
+.su-table tr.su-warn td:first-child, .su-table tr.su-warn .su-size { color: var(--red); font-weight: 600; }
+.su-actions { margin-bottom: 4px; }
+.cc-list { display: flex; flex-direction: column; gap: 10px; margin-top: 10px; }
+.cc-item { display: block; font-size: 13px; cursor: pointer; }
+.cc-item input { margin-right: 6px; vertical-align: middle; }
+.cc-note { display: block; margin: 2px 0 0 22px; font-size: 11.5px; color: var(--text-sub); }
+@media (max-width: 600px) {
+  .su-table td:first-child { width: 46%; }
+  .su-table .su-note { display: block; width: auto; }
+  .su-table tr { display: grid; grid-template-columns: 1fr auto; }
+  .su-table td:first-child { width: auto; border-bottom: none; }
+  .su-table .su-size { border-bottom: none; }
+  .su-table .su-note { grid-column: 1 / -1; padding-top: 0; }
+}
+
+/* ---------- 回転CD（v8.3。v8.3.1 で大きく。54-spin-cd.js）：再生中の曲を大きな CD にして、再生中は回す ----------
+   ・CD の直径 --cdD はジャケットの約2倍。画面の左端から 1/3 はみ出す（.np が overflow: hidden なので横スクロールは出ない）
+   ・PC 幅：CD は .np-main の左に重ねて置き（position: absolute）、.np-main の左の余白を CD の見える幅（2/3）＋すきま にして、
+     ジャケットの並び（小さめ）を上・曲名と操作を下に縦に並べ、その右に曲リスト・キュー。ほかの部品と重ならない
+   ・スマホ幅：縦に並ぶ一番上に CD（左に 1/3 見切れ）、その下にジャケットの並び（小さめ）・曲名・操作
+   ・回すのは .np-cd-spin（ジャケットの絵）の transform だけ。穴・ハブ・ふち・光沢（.np-cd-deco）は回さない（光の映り込みは動かないので自然）
+   ・一時停止・停止中は animation-play-state: paused で、その角度のまま止める（再開するとそこから回る）
+   ・回転CD ボタンをオフ（.np-cd-mode が無い）なら、今までの表示のまま。再生画面を閉じている（display:none）ときは回らない */
+.np-cd-big { display: none; }
+.np.np-cd-mode .np-cd-big { display: block; position: absolute; z-index: 0; left: calc(var(--cdD) / -3); top: 50%; width: var(--cdD); height: var(--cdD); margin-top: calc(var(--cdD) / -2); pointer-events: none; }   /* プレイヤー表示の枠の中。左に 1/3 見切れ */
+.np-cd-disc { position: absolute; inset: 0; padding: 0; border: none; border-radius: 50%; overflow: hidden; pointer-events: auto; cursor: zoom-in;
+  background: var(--cd-silver-2); box-shadow: 0 18px 50px rgba(0, 0, 0, 0.30), 0 0 0 1px var(--cd-rim); }
+.np-cd-disc:disabled { cursor: default; }
+.np-cd-disc:focus-visible { outline: 3px solid var(--primary); outline-offset: 4px; }
+.np-cd-label { top: 12%; right: 10%; left: auto; pointer-events: auto; }
+.np-cd-spin { position: absolute; inset: 0; border-radius: 50%; overflow: hidden; will-change: transform;
+  animation: np-cd-spin 10s linear infinite; animation-play-state: paused; }
+.np.np-is-playing .np-cd-spin { animation-play-state: running; }
+@keyframes np-cd-spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+.np-cd-spin .art-thumb { width: 100%; height: 100%; border-radius: 0; }
+/* 画像の無い曲（読み込み中も）：銀色に虹色が少し映るディスク。左右で違う色なので回っているのが分かる */
+.np-cd-spin .art-thumb.art-none, .np-cd-spin .art-thumb.art-pending {
+  background: conic-gradient(from 20deg, var(--cd-silver-1), var(--cd-tint-1) 12%, var(--cd-silver-2) 26%, var(--cd-silver-1) 40%,
+    var(--cd-tint-2) 55%, var(--cd-silver-2) 68%, var(--cd-silver-1) 80%, var(--cd-tint-1) 92%, var(--cd-silver-1)); }
+.np-cd-spin .art-thumb.art-none svg, .np-cd-spin .art-thumb.art-pending svg { display: none; }
+/* 穴・透明のハブ・ふち（closest-side：100% ＝ ディスクの半径） */
+.np-cd-deco { position: absolute; inset: 0; border-radius: 50%; pointer-events: none;
+  background: radial-gradient(circle closest-side,
+    var(--bg) 0 9%,                               /* 中心の穴（後ろの背景が見える） */
+    var(--cd-hub-edge) 9% 10.5%,
+    var(--cd-hub) 10.5% 24%,                      /* 透明のハブ */
+    var(--cd-hub-edge) 24% 25.5%,
+    transparent 25.5% 98%,
+    var(--cd-rim) 98% 100%); }                    /* 外周のふち */
+/* 光沢（斜めの2本の映り込み。回さない） */
+.np-cd-deco::after { content: ''; position: absolute; inset: 0; border-radius: 50%;
+  background: conic-gradient(from 300deg, transparent 0deg, var(--cd-shine) 22deg, transparent 50deg, transparent 180deg, var(--cd-shine) 202deg, transparent 230deg);
+  mix-blend-mode: soft-light;
+  -webkit-mask-image: radial-gradient(circle closest-side, transparent 25%, #000 26%); mask-image: radial-gradient(circle closest-side, transparent 25%, #000 26%); }
+/* ---------- プレイヤー表示の枠と、共通の並び（v8.4 で共通に。v8.5 で枠を固定。.np-vis-mode）----------
+   ・v8.5：左に「プレイヤー表示の枠」（.np-vis-frame）をいつも同じ大きさでとり、回転CD・カセットテープ・レコードはその中に収める。
+     「なし」でも枠は残すので、表示を切り替えても、ジャケットの並び・曲名と操作・曲リスト（キュー）の大きさと位置は変わらない
+   ・枠の大きさは回転CD の直径 --cdD から決める（見えている幅 --visW ＝ 直径の 2/3。CD は左に 1/3 見切れ）。
+     曲リストの有無・プレイリストの play画面・画面の幅と高さでは変わる（表示の種類では変わらない） */
+.np.np-vis-mode { --cdGap: clamp(16px, 3vw, 36px); --cdD: min(60vw, calc(100vh - 110px), 760px); --visW: calc(var(--cdD) * 2 / 3); --visL: clamp(16px, 3vw, 48px); }
+.np.np-vis-mode.np-al-mode, .np.np-vis-mode.np-pl-mode { --cdD: min(44vw, calc(100vh - 110px), 620px); }
+.np.np-vis-mode.np-pl-mode { --cdD: min(44vw, calc(100vh - 190px), 620px); }   /* 上にプレイリストの見出しがある分 */
+.np-vis-frame { display: none; }
+.np.np-vis-mode .np-vis-frame { display: block; position: absolute; z-index: 0; left: 0; top: 0; bottom: 0; width: var(--visW); pointer-events: none; }
+/* PC 幅の並び：プレイヤー表示の右に「ジャケットの並び（上）・曲名と操作（下）」、さらに右に曲リスト・キュー */
+@media (min-width: 761px) {
+  /* v8.3.2：列は「ジャケットの並び・曲名と操作」（残りの幅の中央）＋「曲リスト・キュー」（右端に寄せる。プレイヤー表示がなしのときと同じ右の余白） */
+  .np.np-vis-mode .np-main { display: grid; grid-template-columns: minmax(0, 1fr); grid-template-rows: auto auto; grid-auto-flow: column; grid-auto-columns: auto; align-content: center; justify-content: stretch; align-items: center;
+    column-gap: var(--cdGap); row-gap: 2px; padding-left: calc(var(--visW) + var(--cdGap)); }
+  /* v8.6.4：ジャケットの並びを約1.5倍に（v8.3.3 は min(18.2vw, 28.6vh, 260px)。max() で v8.3.3 の大きさより小さくはしない）。曲名・操作が下にはみ出さないよう、画面の高さからの上限 calc(100vh - 480px)
+     （曲名と操作の高さ・上のボタン・余白の分）を付ける。並びの幅は列の幅を超えない（max-width。前後のジャケットが少し多く隠れるだけ） */
+  .np.np-vis-mode .np-flow-wrap { --c: max(min(18.2vw, 28.6vh, 260px), min(27.3vw, 42.9vh, 390px, calc(100vh - 480px))); max-width: 100%; grid-column: 1; grid-row: 1; justify-self: center; align-self: end; }
+  .np.np-vis-mode .np-info { grid-column: 1; grid-row: 2; align-self: start; justify-self: center; width: min(380px, 30vw); }
+  .np.np-vis-mode .np-queue { grid-column: 2; grid-row: 1 / span 2; justify-self: end; max-height: calc(100vh - 120px); }
+  .np.np-vis-mode.np-pl-mode .np-queue { max-height: calc(100vh - 200px); }
+  .np.np-vis-mode.np-al-mode .np-flow-wrap, .np.np-vis-mode.np-pl-mode .np-flow-wrap { --c: max(min(15.6vw, 26vh, 234px), min(23.4vw, 39vh, 351px, calc(100vh - 480px))); }   /* v8.6.4：約1.5倍（v8.3.3 は min(15.6vw, 26vh, 234px)） */
+  .np.np-vis-mode.np-pl-mode .np-flow-wrap { --c: max(min(15.6vw, 26vh, 234px), min(23.4vw, 39vh, 351px, calc(100vh - 555px))); }   /* 上にプレイリストの見出しがある分、高さの上限を低く */
+  /* v8.3.3：ジャケットの並びを 1.3倍にしても、プレイリストの play画面（上に見出しがある）で曲名・操作が下にはみ出さないよう、縦を詰める */
+  .np.np-vis-mode .np-main { padding-top: 4px; padding-bottom: 6px; }
+  .np.np-vis-mode .np-flow { height: calc(var(--c) + 26px); }   /* 下の影の余白を少し詰める */
+  .np.np-vis-mode .np-flow-caption { position: absolute; left: 0; right: 0; bottom: -2px; z-index: 3; min-height: 0; margin: 0; }   /* 前後の曲の説明は重ねて出す（場所を取らない） */
+  .np.np-vis-mode .np-flow-caption.is-other { padding: 4px 10px; border-radius: 10px; background: var(--surface); border: 1px solid var(--border2); box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12); }
+  .np.np-vis-mode .np-info { gap: 5px; }
+  /* v8.3.2：幅の狭い PC でも曲名・操作ボタンがつぶれないよう、曲名と操作・曲リストに最低の幅を付け、そのぶんプレイヤー表示を小さめに */
+  .np.np-vis-mode .np-controls .np-btn { flex: none; }
+  .np.np-vis-mode.np-al-mode .np-info, .np.np-vis-mode.np-pl-mode .np-info { width: clamp(230px, 25vw, 340px); }
+  .np.np-vis-mode.np-al-mode .np-queue, .np.np-vis-mode.np-pl-mode .np-queue { width: clamp(260px, 25vw, 340px); }
+}
+@media (min-width: 761px) and (max-width: 1100px) {
+  .np.np-vis-mode.np-al-mode, .np.np-vis-mode.np-pl-mode { --cdD: min(30vw, calc(100vh - 190px), 620px); }
+  /* v8.6.4：幅の狭い PC で曲リストを出すと曲名と操作の列が細く、アーティストなどが折り返して高くなるので、高さの上限をもう少し低く */
+  .np.np-vis-mode.np-al-mode .np-flow-wrap { --c: max(min(15.6vw, 26vh, 234px), min(23.4vw, 39vh, 351px, calc(100vh - 500px))); }
+  .np.np-vis-mode.np-pl-mode .np-flow-wrap { --c: max(min(15.6vw, 26vh, 234px), min(23.4vw, 39vh, 351px, calc(100vh - 575px))); }
+}
+/* v8.6.4：高さの低い PC 画面（760px 以下）では、時間付き歌詞の場所の最低の高さを少し詰めて、曲名と操作が下にはみ出さないように */
+@media (min-width: 761px) and (max-height: 760px) {
+  .np.np-vis-mode .np-lyrics { min-height: 6em; margin: 4px 0; }
+  /* 詰めた分（約25px）、ジャケットの並びの高さの上限をゆるめる */
+  .np.np-vis-mode .np-flow-wrap { --c: max(min(18.2vw, 28.6vh, 260px), min(27.3vw, 42.9vh, 390px, calc(100vh - 455px))); }
+  .np.np-vis-mode.np-al-mode .np-flow-wrap { --c: max(min(15.6vw, 26vh, 234px), min(23.4vw, 39vh, 351px, calc(100vh - 455px))); }
+  .np.np-vis-mode.np-pl-mode .np-flow-wrap { --c: max(min(15.6vw, 26vh, 234px), min(23.4vw, 39vh, 351px, calc(100vh - 530px))); }
+}
+@media (min-width: 761px) and (max-width: 1100px) and (max-height: 760px) {
+  .np.np-vis-mode.np-al-mode .np-flow-wrap { --c: max(min(15.6vw, 26vh, 234px), min(23.4vw, 39vh, 351px, calc(100vh - 475px))); }
+  .np.np-vis-mode.np-pl-mode .np-flow-wrap { --c: max(min(15.6vw, 26vh, 234px), min(23.4vw, 39vh, 351px, calc(100vh - 550px))); }
+}
+/* スマホ幅：縦に並ぶ一番上にプレイヤー表示、その下にジャケットの並び（小さめ）・曲名・操作 */
+@media (max-width: 760px) {
+  .np.np-vis-mode, .np.np-vis-mode.np-al-mode, .np.np-vis-mode.np-pl-mode { --cdD: min(116vw, 60vh); }
+  .np.np-vis-mode .np-main { overflow-x: hidden; }
+  /* 枠は縦の並びの一番上に、画面の幅いっぱい（左右の余白 18px の分も外へ）・高さは CD の直径で固定 */
+  .np.np-vis-mode .np-vis-frame { position: relative; left: auto; top: auto; bottom: auto; flex: none; align-self: stretch; width: auto; height: var(--cdD); margin: 0 -18px; overflow: hidden; }
+  .np.np-vis-mode .np-flow-wrap, .np.np-vis-mode.np-al-mode .np-flow-wrap, .np.np-vis-mode.np-pl-mode .np-flow-wrap { --c: min(54.6vw, 29.25vh); }   /* v8.6.4：約1.5倍（v8.3.3 は min(36.4vw, 19.5vh)。スマホ幅は縦にスクロールできる） */
+}
+
+/* ---------- カセットテープ（v8.4。56-cassette.js）：回転CD と同じ左の場所に、全体が見えるように置く（横長なので見切れさせない）----------
+   ・幅 --csW・左の余白 --csL。高さは幅の 5/8（本物のカセットの比）。中の大きさは本体の幅に対する cqw で決める
+   ・回すのはリール（.np-cs-reel）の transform だけ。止め方は回転CD と同じ animation-play-state。巻いたテープ（.np-cs-pack）は scale で大きさを変える */
+.np-cs-big { display: none; }
+.np.np-cs-mode .np-cs-big { display: block; position: absolute; z-index: 0; left: var(--visL); top: 50%; width: calc(var(--visW) - var(--visL)); aspect-ratio: 8 / 5; transform: translateY(-50%); pointer-events: none; }   /* v8.5：枠の幅に合わせる */
+.np-cs-body { position: absolute; inset: 0; padding: 0; border: none; pointer-events: auto; cursor: zoom-in; container-type: inline-size; overflow: hidden;
+  border-radius: 4% / 6.4%; color: var(--cs-ink); font-family: var(--font); text-align: left;
+  background: linear-gradient(180deg, var(--cs-shell-1), var(--cs-shell-2));
+  box-shadow: 0 18px 44px rgba(0, 0, 0, 0.32), inset 0 0 0 1px var(--cs-edge), inset 0 2px 0 var(--cs-edge); }
+.np-cs-body:disabled { cursor: default; }
+.np-cs-body:focus-visible { outline: 3px solid var(--primary); outline-offset: 4px; }
+.np-cs-labeltag { top: -10px; right: -6px; left: auto; pointer-events: auto; }
+/* ラベル：ジャケットを背景に。ジャケットの無い曲はテーマの紫とオレンジ */
+.np-cs-label { position: absolute; left: 5.5%; right: 5.5%; top: 6%; height: 66%; border-radius: 1.6cqw; overflow: hidden;
+  background: linear-gradient(135deg, var(--accent), var(--primary-mid)); box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.18); }
+.np-cs-art { position: absolute; inset: 0; }
+.np-cs-art .art-thumb { width: 100%; height: 100%; border-radius: 0; background: transparent; }
+.np-cs-art .art-thumb img { width: 100%; height: 100%; object-fit: cover; }
+.np-cs-art .art-thumb.art-none, .np-cs-art .art-thumb.art-pending { background: repeating-linear-gradient(135deg, transparent 0 4cqw, rgba(255, 255, 255, 0.07) 4cqw 8cqw); }
+.np-cs-art .art-thumb.art-none svg, .np-cs-art .art-thumb.art-pending svg { display: none; }
+.np-cs-art::after { content: ''; position: absolute; inset: 0; background: linear-gradient(180deg, transparent 30%, rgba(0, 0, 0, 0.28)); }   /* 窓のまわりを少し暗く */
+/* 上の白い帯：A面の印・曲名・アーティスト（1行。入らなければ「…」） */
+.np-cs-strip { position: absolute; left: 0; right: 0; top: 0; height: 27%; display: flex; align-items: center; gap: 2cqw; padding: 0 3cqw;
+  background: var(--cs-paper); border-bottom: 0.5cqw solid var(--accent); }
+.np-cs-side { flex: none; font: 700 5.4cqw/1 var(--font-heading); color: var(--accent); }
+.np-cs-title { flex: 1 1 auto; min-width: 0; font: 600 4.2cqw/1.2 var(--font-heading); color: var(--cs-ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.np-cs-artist { flex: 0 1 auto; max-width: 38%; min-width: 0; font-size: 2.7cqw; color: var(--cs-ink-sub); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+/* 窓：左右のリールと巻いたテープ（ラベルの中。本体の幅の 15%〜85%） */
+.np-cs-window { position: absolute; left: 10%; right: 10%; top: 44%; height: 40%; border-radius: 7cqw; overflow: hidden;
+  background: var(--cs-window); box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.55), 0 0 0 0.7cqw rgba(0, 0, 0, 0.25); }
+.np-cs-window::after { content: ''; position: absolute; inset: 0; background: linear-gradient(170deg, rgba(255, 255, 255, 0.10), transparent 45%); pointer-events: none; }   /* ガラスの映り込み */
+.np-cs-pack { position: absolute; top: 50%; width: 26cqw; height: 26cqw; margin: -13cqw 0 0 -13cqw; border-radius: 50%;
+  background: radial-gradient(circle closest-side, var(--cs-tape) 0 95%, var(--cs-tape-edge) 96% 100%); transition: transform 0.6s linear; will-change: transform; }
+.np-cs-pack-l { left: 18%; transform: scale(var(--cs-l, 1)); }
+.np-cs-pack-r { left: 82%; transform: scale(var(--cs-r, 0.4)); }
+.np-cs-reel { position: absolute; top: 50%; width: 10.4cqw; height: 10.4cqw; margin: -5.2cqw 0 0 -5.2cqw; border-radius: 50%; will-change: transform;
+  background: radial-gradient(circle closest-side, var(--cs-window-solid) 0 30%, transparent 31% 64%, var(--cs-hub) 66% 100%),
+    repeating-conic-gradient(var(--cs-hub) 0 11deg, transparent 11deg 60deg);
+  animation: np-cs-spin 3.2s linear infinite; animation-play-state: paused; }
+.np-cs-reel-l { left: 18%; }
+.np-cs-reel-r { left: 82%; }
+.np.np-is-playing .np-cs-reel { animation-play-state: running; }
+@keyframes np-cs-spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+/* 下の台形の部分（テープの出る所）とねじ */
+.np-cs-bottom { position: absolute; left: 17%; right: 17%; bottom: 0; height: 19%; clip-path: polygon(6% 0, 94% 0, 100% 100%, 0 100%);
+  background: linear-gradient(180deg, var(--cs-edge) 0 1px, var(--cs-shell-3) 1px); }
+.np-cs-bottom::before, .np-cs-bottom::after { content: ''; position: absolute; top: 38%; width: 4cqw; height: 4cqw; border-radius: 50%; background: var(--cs-hole); box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.6); }
+.np-cs-bottom::before { left: 20%; }
+.np-cs-bottom::after { right: 20%; }
+.np-cs-screw { position: absolute; width: 2.6cqw; height: 2.6cqw; border-radius: 50%;
+  background: linear-gradient(45deg, transparent 44%, rgba(0, 0, 0, 0.45) 45% 55%, transparent 56%), radial-gradient(circle closest-side, var(--cs-screw) 0 80%, transparent 100%); }
+.np-cs-screw-1 { left: 1.6%; top: 2.4%; }
+.np-cs-screw-2 { right: 1.6%; top: 2.4%; }
+.np-cs-screw-3 { left: 1.6%; bottom: 2.4%; }
+.np-cs-screw-4 { right: 1.6%; bottom: 2.4%; }
+/* スマホ幅：一番上に、全体が見えるように */
+@media (max-width: 760px) {
+  .np.np-cs-mode .np-cs-big { left: 50%; width: min(calc(100% - 36px), 440px); transform: translate(-50%, -50%); }   /* 枠の真ん中に、全体が見えるように */
+}
+
+/* ---------- レコード（v8.5。57-record.js）：プレイヤー表示の枠の中に、全体（トーンアームも）が見えるように置く ----------
+   ・プレーヤー台は幅：高さ＝5：4。中の位置・大きさはプレーヤー台の幅に対する cqw（幅を 100 とした数）で決める：
+     盤の中心 (40, 40)・プラッターの直径 72・盤の直径 68・レーベルの直径 24、トーンアームの支点 (88, 14)・針までの長さ 54
+   ・盤（.np-rc-disc）は再生中だけ回す（animation-play-state）。光の反射（.np-rc-shine）は回さない
+   ・トーンアーム（.np-rc-arm）は --arm の角度で回し（transition でなめらかに）、.is-down で針を下ろす（.np-rc-arm-in の大きさと影） */
+.np-rc-big { display: none; }
+.np.np-rc-mode .np-rc-big { display: block; position: absolute; z-index: 0; left: var(--visL); top: 50%; width: calc(var(--visW) - var(--visL)); aspect-ratio: 5 / 4; transform: translateY(-50%); pointer-events: none; }
+.np-rc-body { position: absolute; inset: 0; padding: 0; border: none; pointer-events: auto; cursor: zoom-in; container-type: inline-size; overflow: hidden;
+  border-radius: 3% / 3.75%; background: linear-gradient(160deg, var(--rc-plinth-1), var(--rc-plinth-2));
+  box-shadow: 0 18px 44px rgba(0, 0, 0, 0.32), inset 0 0 0 1px var(--rc-edge), inset 0 2px 0 var(--rc-edge); }
+.np-rc-body::before { content: ''; position: absolute; inset: 0; pointer-events: none;   /* 木目のうすい筋 */
+  background: repeating-linear-gradient(172deg, rgba(255, 255, 255, 0.035) 0 0.6cqw, transparent 0.6cqw 2.2cqw); }
+.np-rc-body:disabled { cursor: default; }
+.np-rc-body:focus-visible { outline: 3px solid var(--primary); outline-offset: 4px; }
+.np-rc-labeltag { top: -10px; right: -6px; left: auto; pointer-events: auto; }
+/* プラッター・盤・レーベル */
+.np-rc-platter { position: absolute; left: 4cqw; top: 4cqw; width: 72cqw; height: 72cqw; border-radius: 50%;
+  background: radial-gradient(circle closest-side, var(--rc-platter-2) 0 94%, var(--rc-platter) 95% 100%); box-shadow: 0 1.2cqw 3cqw rgba(0, 0, 0, 0.45); }
+.np-rc-disc { position: absolute; inset: 2cqw; border-radius: 50%; will-change: transform;
+  background: radial-gradient(circle closest-side, transparent 0 36%, var(--rc-vinyl) 36.5% 39%, transparent 39.5%),
+    repeating-radial-gradient(circle closest-side, var(--rc-vinyl) 0 0.9%, var(--rc-groove) 1.1%, var(--rc-vinyl) 1.3%),
+    var(--rc-vinyl);
+  animation: np-rc-spin 1.8s linear infinite; animation-play-state: paused; }
+.np.np-is-playing .np-rc-disc { animation-play-state: running; }
+@keyframes np-rc-spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+.np-rc-label { position: absolute; left: 50%; top: 50%; width: 24cqw; height: 24cqw; margin: -12cqw 0 0 -12cqw; border-radius: 50%; overflow: hidden;
+  background: radial-gradient(circle closest-side, var(--accent) 0 60%, var(--primary-mid) 62% 100%); box-shadow: 0 0 0 0.3cqw rgba(0, 0, 0, 0.5); }
+.np-rc-label .art-thumb { width: 100%; height: 100%; border-radius: 0; background: transparent; }
+.np-rc-label .art-thumb img { width: 100%; height: 100%; object-fit: cover; }
+.np-rc-label .art-thumb.art-none svg, .np-rc-label .art-thumb.art-pending svg { width: 34%; height: 34%; color: rgba(255, 255, 255, 0.85); }   /* 既定のレーベル：音符（回ると動いて見える） */
+.np-rc-label .art-thumb.art-none, .np-rc-label .art-thumb.art-pending { display: flex; align-items: flex-start; justify-content: center; padding-top: 8%; background: transparent; }
+.np-rc-shine { position: absolute; inset: 2cqw; border-radius: 50%; pointer-events: none;   /* 溝の光の反射（回さない） */
+  background: conic-gradient(from 300deg, transparent 0deg, var(--rc-shine) 18deg, transparent 42deg, transparent 180deg, var(--rc-shine) 198deg, transparent 222deg);
+  -webkit-mask-image: radial-gradient(circle closest-side, transparent 38%, #000 40%, #000 98%, transparent 99%); mask-image: radial-gradient(circle closest-side, transparent 38%, #000 40%, #000 98%, transparent 99%); }
+.np-rc-spindle { position: absolute; left: 50%; top: 50%; width: 1.8cqw; height: 1.8cqw; margin: -0.9cqw 0 0 -0.9cqw; border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, var(--rc-arm-1), var(--rc-arm-2)); }
+/* アームレスト・支点の台・トーンアーム */
+.np-rc-rest { position: absolute; left: 88cqw; top: 50cqw; width: 3.4cqw; height: 3.4cqw; margin: -1.7cqw 0 0 -1.7cqw; border-radius: 50%;
+  background: var(--rc-pivot); box-shadow: inset 0 0 0 0.5cqw var(--rc-arm-2); }
+.np-rc-pivot { position: absolute; left: 88cqw; top: 14cqw; width: 12cqw; height: 12cqw; margin: -6cqw 0 0 -6cqw; border-radius: 50%;
+  background: radial-gradient(circle closest-side, var(--rc-pivot) 0 70%, var(--rc-arm-2) 72% 78%, var(--rc-pivot) 80%); box-shadow: 0 0.6cqw 1.6cqw rgba(0, 0, 0, 0.45); }
+.np-rc-arm { position: absolute; left: 88cqw; top: 14cqw; width: 0; height: 0; transform: rotate(var(--arm, 0deg)); transition: transform 0.8s linear; will-change: transform; }
+.np-rc-arm.no-anim, .np-rc-arm.no-anim .np-rc-arm-in { transition: none; }
+.np-rc-arm-in { position: absolute; left: 0; top: 0; width: 0; height: 0; transform-origin: 0 0; transform: scale(1.035);
+  filter: drop-shadow(1.6cqw 2.4cqw 1.4cqw rgba(0, 0, 0, 0.40)); transition: transform 0.3s ease, filter 0.3s ease; }   /* 針を上げている */
+.np-rc-arm.is-down .np-rc-arm-in { transform: scale(1); filter: drop-shadow(0.5cqw 0.8cqw 0.5cqw rgba(0, 0, 0, 0.45)); }   /* 針を下ろしている */
+.np-rc-rod { position: absolute; left: -0.65cqw; top: -2cqw; width: 1.3cqw; height: 48cqw; border-radius: 0.7cqw;
+  background: linear-gradient(90deg, var(--rc-arm-2), var(--rc-arm-1) 45%, var(--rc-arm-2)); }
+.np-rc-weight { position: absolute; left: -2.8cqw; top: -11cqw; width: 5.6cqw; height: 7.5cqw; border-radius: 1.2cqw;
+  background: linear-gradient(90deg, var(--rc-arm-2), var(--rc-arm-1) 45%, var(--rc-arm-2)); box-shadow: inset 0 -0.6cqw 0 rgba(0, 0, 0, 0.25); }
+.np-rc-head { position: absolute; left: -2.5cqw; top: 45cqw; width: 5cqw; height: 9cqw; border-radius: 0.8cqw 0.8cqw 1.6cqw 1.6cqw; background: var(--rc-head);
+  box-shadow: inset 0 0 0 0.3cqw rgba(255, 255, 255, 0.12); }
+.np-rc-head::after { content: ''; position: absolute; left: 4.6cqw; top: 1.2cqw; width: 2.6cqw; height: 0.8cqw; border-radius: 0.4cqw; background: var(--rc-arm-2); }   /* 指をかける所 */
+.np-rc-cap { position: absolute; left: 88cqw; top: 14cqw; width: 4.6cqw; height: 4.6cqw; margin: -2.3cqw 0 0 -2.3cqw; border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, var(--rc-arm-1), var(--rc-arm-2)); box-shadow: 0 0.4cqw 1cqw rgba(0, 0, 0, 0.4); }
+/* 左下のつまみ・右下の回転数 */
+.np-rc-knob { position: absolute; left: 4cqw; bottom: 3.2cqw; width: 5.4cqw; height: 5.4cqw; border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, var(--rc-arm-1), var(--rc-arm-2)); box-shadow: 0 0.4cqw 1cqw rgba(0, 0, 0, 0.4); }
+.np-rc-speed { position: absolute; right: 3.4cqw; bottom: 2.6cqw; font: 600 3.2cqw/1 var(--font-heading); letter-spacing: 0.04em; color: var(--rc-text); }
+/* スマホ幅：枠の真ん中に、全体が見えるように */
+@media (max-width: 760px) {
+  .np.np-rc-mode .np-rc-big { left: 50%; width: min(calc(100% - 36px), 440px, calc(var(--cdD) * 1.2)); transform: translate(-50%, -50%); }
+}
+
+/* ---------- MD（ミニディスク。v8.6。v8.6.1 でカラースケルトン〔半透明〕に。58-md.js）：プレイヤー表示の枠の右端にそろえて、カセットテープ・レコードと同じ 1.3倍 ----------
+   ・本体は幅：高さ＝68：72（本物の MD の比）。中の位置・大きさは本体の幅に対する cqw で決める
+   ・シェルの色は --md-h（色合い）・--md-s（鮮やかさ）を 58-md.js がジャケットから決め、明るさ --md-l・透け具合 --md-back-a / --md-front-a はテーマの色の変数
+   ・重なり：奥のシェル（本体の背景）→ 中のディスク（回る）→ 光の反射（回さない）→ 手前の半透明のシェル → MDシャッター・段差・ねじ穴・刻印 → 右側のラベル */
+.np-md-big { display: none; --md-h: 272; --md-s: 55%; }
+.np.np-md-mode .np-md-big { display: block; position: absolute; z-index: 0; right: 0; top: 50%; width: calc((var(--visW) - var(--visL)) * 1.3); aspect-ratio: 1;   /* v8.6.3：正方形（v8.6.2 までは 68：72） */
+ 
+  transform: translateY(-50%); pointer-events: none; }
+.np-md-shadow { position: absolute; inset: 1.5%; border-radius: 6%; box-shadow: 0 18px 44px rgba(0, 0, 0, 0.30); }   /* 影（本体は切り欠きで clip-path を使うので、別に付ける） */
+.np-md-body { position: absolute; inset: 0; padding: 0; border: none; pointer-events: auto; cursor: zoom-in; container-type: inline-size; overflow: hidden;
+  border-radius: 4.5%; clip-path: polygon(9% 0, 100% 0, 100% 100%, 0 100%, 0 9%);   /* 左上の角を斜めに切り欠く */
+  color: var(--md-ink); font-family: var(--font); text-align: left;
+  background: linear-gradient(150deg, hsl(var(--md-h) var(--md-s) calc(var(--md-l) + 8%) / var(--md-back-a)), hsl(var(--md-h) var(--md-s) var(--md-l) / var(--md-back-a)) 60%, hsl(var(--md-h) var(--md-s) calc(var(--md-l) - 10%) / var(--md-back-a))); }
+.np-md-body:disabled { cursor: default; }
+.np-md-body:focus-visible { outline: 3px solid var(--primary); outline-offset: -3px; }
+.np-md-labeltag { top: -10px; right: -6px; left: auto; pointer-events: auto; }
+/* 中のディスク：銀色に虹色の回折、中央の金属のハブ（回る） */
+.np-md-disc { position: absolute; left: 3.5cqw; top: 3.5cqw; width: 93cqw; height: 93cqw;   /* v8.6.3：正方形のシェルの真ん中に、一辺の 93%（v8.6.2 は 88） */
+  border-radius: 50%; will-change: transform;
+  background:
+    radial-gradient(circle closest-side, var(--md-hub-dark) 0 6%, var(--md-hub) 7% 17%, var(--md-hub-dark) 18% 19%, rgba(255, 255, 255, 0.35) 20% 30%, transparent 31%),
+    conic-gradient(from 10deg, var(--md-disc-1), hsl(200 70% 75%) 8%, var(--md-disc-2) 16%, hsl(300 55% 78%) 24%, var(--md-disc-1) 32%, hsl(50 80% 75%) 41%, var(--md-disc-2) 50%,
+      hsl(160 60% 72%) 58%, var(--md-disc-1) 66%, hsl(330 60% 78%) 75%, var(--md-disc-2) 84%, hsl(220 70% 78%) 92%, var(--md-disc-1));
+  box-shadow: 0 0 0 0.4cqw rgba(255, 255, 255, 0.35);
+  animation: np-md-spin 1.4s linear infinite; animation-play-state: paused; }
+.np.np-is-playing .np-md-disc { animation-play-state: running; }
+@keyframes np-md-spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+.np-md-shine { position: absolute; left: 3.5cqw; top: 3.5cqw; width: 93cqw; height: 93cqw; border-radius: 50%; pointer-events: none;   /* 光の反射（回さない） */
+  background: conic-gradient(from 320deg, transparent 0deg, rgba(255, 255, 255, 0.55) 16deg, transparent 40deg, transparent 180deg, rgba(255, 255, 255, 0.4) 196deg, transparent 220deg);
+  -webkit-mask-image: radial-gradient(circle closest-side, transparent 30%, #000 31%); mask-image: radial-gradient(circle closest-side, transparent 30%, #000 31%); }
+/* 手前の半透明のシェル（ディスクに色を重ねる）と縁の明るい光 */
+.np-md-front { position: absolute; inset: 0; pointer-events: none;
+  background: linear-gradient(150deg, rgba(255, 255, 255, 0.28), transparent 30%, transparent 70%, rgba(255, 255, 255, 0.10)),
+    hsl(var(--md-h) var(--md-s) var(--md-l) / var(--md-front-a));
+  box-shadow: inset 0 0 0 0.5cqw var(--md-edge), inset 0 0 2.4cqw rgba(255, 255, 255, 0.18); }
+/* MDシャッター：半透明のシェルの一部として控えめに（真ん中から下の、少し明るい四角と継ぎ目） */
+.np-md-shutter { position: absolute; left: 33cqw; width: 38cqw; top: 50cqw; bottom: 3.5cqw; border-radius: 1.2cqw; pointer-events: none;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.16), rgba(255, 255, 255, 0.06)); box-shadow: inset 0 0 0 0.3cqw rgba(255, 255, 255, 0.28); }
+.np-md-shutter::before { content: ''; position: absolute; left: 50%; top: -46cqw; bottom: 0; width: 0.3cqw; background: rgba(255, 255, 255, 0.22); }   /* 縦の継ぎ目 */
+/* 成形の段差・ねじ穴のへこみ */
+.np-md-rim { position: absolute; inset: 3cqw; border-radius: 3cqw; pointer-events: none; box-shadow: inset 0 0 0 0.3cqw rgba(255, 255, 255, 0.22), 0 0 0 0.3cqw rgba(0, 0, 0, 0.08); }
+.np-md-hole { position: absolute; width: 3.4cqw; height: 3.4cqw; border-radius: 50%; background: var(--md-hole); box-shadow: inset 0 0.4cqw 0.6cqw rgba(0, 0, 0, 0.35), 0 0 0 0.3cqw rgba(255, 255, 255, 0.25); }
+.np-md-hole-1 { left: 11cqw; top: 6cqw; }
+.np-md-hole-2 { right: 6cqw; top: 6cqw; }
+.np-md-hole-3 { left: 5cqw; bottom: 5cqw; }
+.np-md-hole-4 { right: 6cqw; bottom: 5cqw; }
+/* 上の真ん中の▲と刻印 */
+.np-md-insert { position: absolute; left: 0; right: 0; top: 2.4cqw; display: flex; flex-direction: column; align-items: center; gap: 0.6cqw;
+  font: 700 2.3cqw/1 var(--font); letter-spacing: 0.14em; color: var(--md-engrave); text-shadow: 0 0.2cqw 0 rgba(0, 0, 0, 0.18); pointer-events: none; }
+.np-md-arrow { width: 0; height: 0; border-left: 1.4cqw solid transparent; border-right: 1.4cqw solid transparent; border-bottom: 2.2cqw solid var(--md-engrave); }
+/* 右端に貼った横長の紙のラベル（v8.6.2）：左にジャケットの小さな絵、右に曲名（1行）・アーティスト、下に「74」（左）と「MD」（右・大きめ）。
+   シェルの右端に接して貼り、右の端は縁を回り込むように少し暗くする。ディスクの上に重なる（ディスクの回転はラベルの外で見える） */
+.np-md-label { position: absolute; right: 0; top: 50%; width: 66cqw; height: 28.5cqw; margin-top: -14.25cqw; display: flex; align-items: stretch; gap: 2.4cqw; padding: 2.2cqw 3.4cqw 2.2cqw 2.2cqw;   /* v8.6.3：高さ 1.5倍・上下の真ん中 */
+ 
+  border-radius: 1.2cqw 0 0 1.2cqw; pointer-events: none;
+  background: linear-gradient(90deg, transparent calc(100% - 2.4cqw), rgba(0, 0, 0, 0.16) calc(100% - 1.2cqw), rgba(0, 0, 0, 0.26)),   /* 右端：縁を回り込む */
+    linear-gradient(170deg, var(--md-paper), var(--md-paper-2));
+  box-shadow: -0.4cqw 0.6cqw 1.6cqw rgba(0, 0, 0, 0.26), inset 0 0 0 0.25cqw rgba(255, 255, 255, 0.55); }
+.np-md-art { position: relative; flex: none; height: 100%; aspect-ratio: 1; border-radius: 0.5cqw; overflow: hidden; background: linear-gradient(135deg, var(--primary-mid), var(--accent));
+  box-shadow: 0 0 0 0.2cqw rgba(0, 0, 0, 0.12); }
+.np-md-art .art-thumb { width: 100%; height: 100%; border-radius: 0; background: transparent; }
+.np-md-art .art-thumb img { width: 100%; height: 100%; object-fit: cover; }
+.np-md-art .art-thumb.art-none svg, .np-md-art .art-thumb.art-pending svg { width: 50%; height: 50%; color: rgba(255, 255, 255, 0.85); }
+.np-md-ltext { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.np-md-title { font: 600 3cqw/1.25 var(--font-heading); color: var(--md-ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.np-md-artist { margin-top: 0.6cqw; font-size: 2.5cqw; color: var(--md-ink-sub); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.np-md-mark { margin-top: auto; display: flex; align-items: flex-end; justify-content: space-between; padding-top: 1.2cqw; border-top: 0.3cqw solid var(--md-ink); }
+.np-md-cap { font: 700 4.2cqw/1 var(--font-heading); color: var(--md-ink); }
+.np-md-logo { font: 800 italic 7cqw/0.9 var(--font); letter-spacing: 0.01em; color: var(--md-ink); }
+/* スマホ幅：v8.5 の大きさ --spW の右端にそろえて 1.3倍（高さが枠に入るように --spW を決める） */
+@media (max-width: 760px) {
+  .np.np-md-mode .np-md-big { --spW: min(calc(100% - 36px), 440px, calc(var(--cdD) * 0.75));   /* v8.6.3：正方形の高さ（幅と同じ）が枠に入る最大 */
+    left: auto; right: calc(50% - var(--spW) / 2); width: calc(var(--spW) * 1.3); }
+}
+
+/* ---------- カセットテープ・レコードを 1.3倍に（v8.5.1）----------
+   ・プレイヤー表示の枠の右端にそろえたまま、幅を 1.3倍にして左へ広げる（入らない分は画面の左端で見切れる）。
+     右側（ジャケットの並び・曲名と操作・曲リスト）には重ならず、枠の大きさも変えないので、右側の大きさ・位置は変わらない
+   ・レコードはトーンアーム・「33⅓」が右側にあるので切れない（見切れるのは盤と台の左側）
+   ・カセットテープは見切れた分（--cs-clip）だけラベルの帯の左の余白を広げ、A面の印・曲名が見える所から始める */
+.np.np-cs-mode .np-cs-big, .np.np-rc-mode .np-rc-big { left: auto; right: 0; width: calc((var(--visW) - var(--visL)) * 1.3); }
+.np.np-cs-mode .np-cs-big { --cs-clip: max(0px, calc(var(--visW) * 0.3 - var(--visL) * 1.3)); }   /* 左に見切れる幅（枠の左端＝画面の左端） */
+.np-cs-big .np-cs-strip { padding-left: max(3cqw, calc(var(--cs-clip, 0px) - 5.5cqw + 3cqw)); }
+@media (max-width: 760px) {
+  /* スマホ幅：v8.5 の大きさ --spW の右端にそろえて 1.3倍（枠は画面の幅いっぱい・高さは固定なので、下の部品は動かない） */
+  .np.np-cs-mode .np-cs-big { --spW: min(calc(100% - 36px), 440px); --cs-clip: max(0px, calc(min(calc(100vw - 36px), 440px) * 0.8 - 50vw)); }
+  .np.np-rc-mode .np-rc-big { --spW: min(calc(100% - 36px), 440px, calc(var(--cdD) * 0.96)); }   /* 1.3倍しても高さが枠（--cdD）に入るように */
+  .np.np-cs-mode .np-cs-big, .np.np-rc-mode .np-rc-big { left: auto; right: calc(50% - var(--spW) / 2); width: calc(var(--spW) * 1.3); transform: translateY(-50%); }
+}
+
+/* ---------- レコードをさらに 1.3倍に（v8.6.2）----------
+   ・v8.5.1 の 1.3倍からさらに 1.3倍（枠の幅の 1.69倍）。右端は枠の右端のまま左へ広げ、盤と台の左側は画面の左端で見切れる
+     （トーンアーム・アームレスト・「33⅓」は右側なので切れない）
+   ・高さ（幅の 4/5）が枠の高さを超えて上のボタンや見出しに重ならないよう、画面の高さからも上限を付ける（低い画面ではここで止まる）
+   ・スマホ幅は枠の高さ（--cdD）が固定なので、高さが枠に入る最大（幅 ＝ --cdD × 1.25）で止める（下の部品は動かない） */
+.np.np-rc-mode .np-rc-big { width: min(calc((var(--visW) - var(--visL)) * 1.69), calc((100vh - 70px) * 1.25)); }
+.np.np-rc-mode.np-pl-mode .np-rc-big { width: min(calc((var(--visW) - var(--visL)) * 1.69), calc((100vh - 150px) * 1.25)); }   /* 上にプレイリストの見出しがある分 */
+@media (max-width: 760px) {
+  .np.np-rc-mode .np-rc-big, .np.np-rc-mode.np-pl-mode .np-rc-big { width: min(calc(var(--spW) * 1.69), calc(var(--cdD) * 1.25)); }
+}
+
+/* 「プレイヤー表示ボタン」（v8.3 の「回転CD」ボタン）：曲リストボタンと同じく左の余白なし */
+.np-vis-toggle { margin-left: 0; white-space: nowrap; }
+.np-vis-toggle:not(.active) svg { opacity: 0.6; }
+@media (max-width: 400px) {   /* 歌詞・曲リスト・プレイヤー表示のボタンが並ぶと狭いので、少し詰めて閉じるボタンを縮めない */
+  .np-top { gap: 4px; }
+  .np-top .np-lyr-toggle { padding: 6px 8px; }
+  .np-top .np-close { flex: none; width: 36px; height: 36px; }
+}
+/* 動きを減らす設定では回さない（形のまま止めておく） */
+@media (prefers-reduced-motion: reduce) {
+  .np-cd-spin, .np-cs-reel, .np-rc-disc, .np-md-disc { animation: none; }
+  .np-cs-pack, .np-rc-arm, .np-rc-arm-in, .np-md-shutter { transition: none; }
+}
+
+/* ---------- 読み取り専用モード（スマホ。v8.7。59-mobile.js）----------
+   ・「読み取り専用モードの表示」（#readonly-banner）：本文の上。選ぶ前（.is-start）は案内とボタン、読み込んだあと（.is-loaded）は1行
+   ・書き込みが必要なボタンは、body.readonly-mode でうすくして押せなくする（押せても 59-mobile.js が止める） */
+.readonly-banner { position: relative; margin: 14px 42px 0; padding: 12px 16px; border-radius: var(--r-sm);
+  background: var(--primary-pale); border: 1px solid var(--border2); color: var(--text); }
+.readonly-banner .ro-title { font-weight: 700; color: var(--ink); }
+.readonly-banner.is-start { padding: 16px 18px; }
+.readonly-banner.is-start .ro-title { font-size: 16px; margin-bottom: 6px; }
+.readonly-banner .ro-text { margin: 0 0 10px; font-size: 13.5px; line-height: 1.6; }
+.readonly-banner .ro-hint { margin: 10px 0 0; font-size: 12px; color: var(--text-sub); line-height: 1.6; }
+.readonly-banner .ro-btns { display: flex; flex-wrap: wrap; gap: 8px; }
+.readonly-banner .ro-btns button { display: inline-flex; align-items: center; gap: 6px; min-height: 44px; }   /* 指で押しやすい高さ */
+.readonly-banner .ro-btns svg { width: 18px; height: 18px; }
+.readonly-banner.is-loaded { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 12px; padding: 8px 14px; font-size: 12.5px; }
+.readonly-banner.is-loaded .ro-text { margin: 0; font-size: 12.5px; color: var(--text-sub); flex: 1; min-width: 12em; }
+.readonly-banner[hidden] { display: none; }
+.readonly-banner .ro-repick { min-height: 36px; padding: 6px 12px; font-size: 12.5px; }
+.conn-btn + .conn-btn { margin-top: 6px; }
+/* ファイル整理の画面：説明を出し、操作のボタンを押せなくする */
+.ro-org-note { margin: 0 0 12px; padding: 10px 14px; border-radius: var(--r-sm); background: var(--red-pale); color: var(--red); font-size: 13px; font-weight: 700; }
+body.readonly-mode #page-organizer [onclick*="undoLastOperation"],
+body.readonly-mode #page-organizer [onclick*="orgCreateFolder"],
+body.readonly-mode #page-organizer [data-act="move"],
+body.readonly-mode #page-organizer [data-act="trash"],
+body.readonly-mode #page-organizer [data-act="rename"],
+body.readonly-mode [data-act="copy-folder"] { opacity: 0.45; pointer-events: none; }   /* フォルダの中身を見るボタンはそのまま */
+@media (max-width: 760px) {
+  .readonly-banner { margin: 10px 12px 0; }
+}
