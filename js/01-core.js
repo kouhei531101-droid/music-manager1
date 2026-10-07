@@ -30,7 +30,7 @@ function freshDB() {
                 albumPinOnly: false,
                 plAutoOpen: false,    // プレイリスト再生時に play画面を自動で開く（v5.6）
                 npSpinCd: true,       // 再生画面の「回転CD」を出す（v8.3。54-spin-cd.js。無い古いデータ・バックアップはオンとして読む）
-                npVisual: 'cd',       // 再生画面のプレイヤー表示（v8.4。'cd' 回転CD／'cassette' カセットテープ／'none' なし。無いときは npSpinCd から読む）
+                npVisual: 'cd',       // 再生画面のプレイヤー表示（v8.4。'cd' 回転CD／'cassette' カセットテープ／'none' なし〔スマホ版 v8.9 から 'jacket' ジャケットの並び・'record'・'md'。古い 'none' は 'jacket' として読む〕。無いときは npSpinCd から読む）
                 albumGroup: 'none',   // album 一覧のグループ表示（none／tag／genre／decade。v5.3。38-album-groups.js）  // album の「Pin のみ」（Pin したアルバムだけを表示。v4.1。26-pinned-albums.js）
                 fastMode: true,       // 高速モード（v2.7）：起動・読み直すでは増えた曲・なくなった曲だけ
                 fullCheckDays: 7,     // 全曲をきちんと確認する間隔（日。0＝自動ではしない）

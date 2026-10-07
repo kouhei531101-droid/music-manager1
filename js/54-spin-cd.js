@@ -10,6 +10,8 @@
    ・v8.4：回転CD とカセットテープ（56-cassette.js）のどちらを出すかを「プレイヤー表示」として選ぶ（db.settings.npVisual：'cd'／'cassette'／'none'）。
      上の「プレイヤー表示ボタン」を押すたびに 回転CD → カセットテープ → レコード（v8.5。57-record.js）→ MD（v8.6。58-md.js）→ なし → 回転CD … と切り替わる。バックアップ・復元の対象。
      npVisual が無い古いデータ・バックアップは、v8.3 の db.settings.npSpinCd（false ならなし、それ以外は回転CD）として読む。
+     スマホ版 v8.9：「なし」を廃止し「ジャケット」（'jacket'。ジャケットの並び）を先頭に。古い 'none'（と、作りかけの版の 'flow'）・npSpinCd:false は
+     'jacket' として読む（保存し直しはしない。古いバックアップを復元しても同じ）。'jacket' のときは .np-jacket-mode を付け、.np-vis-mode（左の枠）は付けない
      前の版でも同じ見た目になるよう、npSpinCd も合わせて書く（カセットテープ・なしのときは false）。「なし」は今までの表示
    ・再生画面を閉じている・隠している（display:none）ときは回らない。prefers-reduced-motion では回さない（style.css）
    ========================================================= */
@@ -19,13 +21,17 @@ var scd = { bound: false, path: undefined };
 var SCD_ICON = _svg('<circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.3"/><path d="M20.5 12a8.5 8.5 0 1 1-2.5-6"/><path d="M18.6 2.6v3.6H15"/>');
 
 // プレイヤー表示の順（ボタンを押すと次へ）。v8.5 でレコード（57-record.js）、v8.6 で MD（58-md.js）を足した
-var NP_VISUALS = [['cd', '回転CD'], ['cassette', 'カセット'], ['record', 'レコード'], ['md', 'MD'], ['none', 'なし']];
-var NP_VISUAL_LONG = { cd: '回転CD', cassette: 'カセットテープ', record: 'レコード', md: 'MD（ミニディスク）', none: 'なし（今までの表示）' };   // ボタンの説明に使う名前
-// 今のプレイヤー表示（v8.4。古いデータは npSpinCd から読む）
+// スマホ版 v8.9：「なし」をやめ、先頭に「ジャケット」（'jacket'。ジャケットの並び）を足した。順は ジャケット → 回転CD → カセット → レコード → MD → …
+var NP_VISUALS = [['jacket', 'ジャケット'], ['cd', '回転CD'], ['cassette', 'カセット'], ['record', 'レコード'], ['md', 'MD']];
+var NP_VISUAL_LONG = { jacket: 'ジャケットの並び', cd: '回転CD', cassette: 'カセットテープ', record: 'レコード', md: 'MD（ミニディスク）' };   // ボタンの説明に使う名前
+// 「ジャケット」のアイコン（真ん中の四角と、左右に重なったジャケットの縁）
+var FLOW_VIS_ICON = _svg('<rect x="7" y="5" width="10" height="14" rx="1.5"/><path d="M5 7.5v9M2.5 9v6M19 7.5v9M21.5 9v6"/>');
+// 今のプレイヤー表示（v8.4。古いデータは npSpinCd から読む。スマホ版 v8.9：古い 'none'〔なし〕・'flow' と npSpinCd:false は 'jacket' として読む）
 function npVisual() {
   var st = db.settings || {}, v = st.npVisual;
+  if (v === 'none' || v === 'flow') return 'jacket';
   if (NP_VISUALS.some(function (x) { return x[0] === v; })) return v;
-  return st.npSpinCd === false ? 'none' : 'cd';
+  return st.npSpinCd === false ? 'jacket' : 'cd';
 }
 function setNpVisual(v) {
   db.settings.npVisual = v;
@@ -97,13 +103,16 @@ function spinCdApply() {
   var vis = npVisual(), on = vis === 'cd', tg = _scdEnsureToggle(el), box = _scdEnsureDisc(el);
   if (tg) {
     var next = NP_VISUALS[(NP_VISUALS.findIndex(function (x) { return x[0] === vis; }) + 1) % NP_VISUALS.length][0];
-    var icon = vis === 'cassette' && typeof CST_ICON !== 'undefined' ? CST_ICON : vis === 'record' && typeof RC_ICON !== 'undefined' ? RC_ICON : vis === 'md' && typeof MD_ICON !== 'undefined' ? MD_ICON : SCD_ICON;
+    var icon = vis === 'jacket' ? FLOW_VIS_ICON : vis === 'cassette' && typeof CST_ICON !== 'undefined' ? CST_ICON : vis === 'record' && typeof RC_ICON !== 'undefined' ? RC_ICON : vis === 'md' && typeof MD_ICON !== 'undefined' ? MD_ICON : SCD_ICON;
     tg.innerHTML = icon + _npVisualName(vis);
-    tg.classList.toggle('active', vis !== 'none');
+    tg.classList.toggle('active', true);   // スマホ版 v8.9：「なし」が無くなったので、いつも何かを表示中
     tg.setAttribute('aria-label', 'プレイヤー表示：' + _npVisualName(vis));
-    tg.title = 'プレイヤー表示：' + NP_VISUAL_LONG[vis] + '（押すと「' + (next === 'none' ? 'なし' : NP_VISUAL_LONG[next]) + '」に切り替え）';
+    tg.title = 'プレイヤー表示：' + NP_VISUAL_LONG[vis] + '（押すと「' + NP_VISUAL_LONG[next] + '」に切り替え）';   // 'none' は無くなった（スマホ版 v8.9）
   }
-  el.classList.add('np-vis-mode');   // 左にプレイヤー表示の枠を置く並び（v8.5：「なし」でも同じ並びにして、切り替えても大きさ・位置を変えない）
+  // 左にプレイヤー表示の枠を置く並び（v8.5）。スマホ版 v8.9：「ジャケット」のときは枠を空けて残さず、ジャケットの並びを大きく出す
+  //   （PC 幅は v8.3 より前の並び：大きなジャケットの並びの右に曲名と操作。スマホ幅の並びは style.css の「スマホ版 v8.9」）
+  el.classList.toggle('np-vis-mode', vis !== 'jacket');
+  el.classList.toggle('np-jacket-mode', vis === 'jacket');
   el.classList.toggle('np-cd-mode', on);
   el.classList.toggle('np-cs-mode', vis === 'cassette');
   el.classList.toggle('np-rc-mode', vis === 'record');
