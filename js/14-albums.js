@@ -405,7 +405,7 @@ function renderAlbumsPage() {
   }
   if (list.length > shown.length) h += loadMoreHtml('alb-more', list.length - shown.length, '枚');
   }
-  h += '<p class="lib-legend">うすい文字のアルバム名は、曲にアルバム名のタグが無かったためフォルダ名を使っています。</p>';
+  h += '<p class="lib-legend alb-legend">うすい文字のアルバム名は、曲にアルバム名のタグが無かったためフォルダ名を使っています。</p>';
   body.innerHTML = h;
   artObserve(body);   // 見えているカードのジャケット画像だけ読み込む
   watchLoadMore('alb', document.getElementById('alb-more'), albLoadMore);

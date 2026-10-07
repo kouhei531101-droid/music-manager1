@@ -23,4 +23,32 @@ function syncLyricsMiniEmpty() {
   };
 })();
 document.addEventListener('DOMContentLoaded', syncLyricsMiniEmpty);
+
+/* ---------- スマホ版 v8.9.4：歌詞パネルの入口 ----------
+   ・再生バーを全部の画面で出さなくなった（60-album-bar.js）ので、再生バーの「歌詞」ボタンの代わりに
+     ① 再生画面の時間付き歌詞の場所：時間付きの歌詞が無い曲では「歌詞パネルを開く（入力・検索）」ボタンを出す。歌詞がある曲は、歌詞の行を押すと開く
+     ② 再生中ボタンの長押し（65-album-play-np.js）
+   ・開くときは再生画面を閉じてから、歌詞パネルを元の大きさに（歌詞の入力・Google で検索のボタンも今までどおり） */
+function npOpenLyricsPanel() {
+  var open = function () { if (typeof setLyricsCollapsed === 'function') setLyricsCollapsed(false); };
+  if (typeof np !== 'undefined' && np.open && typeof closeNowPlaying === 'function') closeNowPlaying(open); else open();
+}
+(function () {
+  var f = window._npLyricsUi;
+  if (typeof f !== 'function') return;
+  window._npLyricsUi = function () {
+    var r = f.apply(this, arguments);
+    try {
+      var box = document.getElementById('np-lyrics');
+      if (box && window.innerWidth <= 760 && box.querySelector('.np-lyr-none') && player.currentPath) {
+        box.innerHTML = '<button type="button" class="np-lyr-panel-btn" id="np-lyr-panel-btn" title="歌詞パネルを開く（歌詞の入力・Google で検索）">' + ICONS.lyrics + '歌詞パネルを開く（入力・検索）</button>';
+      }
+    } catch (e) { console.warn(e); }
+    return r;
+  };
+})();
+document.addEventListener('click', function (ev) {
+  if (window.innerWidth > 760 || !ev.target.closest) return;
+  if (ev.target.closest('#np-lyr-panel-btn') || ev.target.closest('#now-playing .np-lyrics .np-lyr.active')) { ev.preventDefault(); npOpenLyricsPanel(); }
+});
 if (document.readyState !== 'loading') syncLyricsMiniEmpty();
