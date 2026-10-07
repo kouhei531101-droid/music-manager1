@@ -12,7 +12,8 @@
    ・ビジュアライザーの「円」：スマホ幅では、円の中心をメインのビジュアルの真ん中に合わせる（37-now-playing.js の _npVizCenter を包む）
    ========================================================= */
 
-function npOneNarrow() { return window.innerWidth <= 760; }
+// スマホ版 v8.10：横向きのスマホ（71-np-landscape.js の npOneLand）も、幅が 760px を超えていてもスマホの扱い（曲リストボタン・円の中心）にする
+function npOneNarrow() { return window.innerWidth <= 760 || (typeof npOneLand === 'function' && npOneLand()); }
 function npListMobileOn() { return ui.npListMobile === true; }
 
 // スマホ幅では、アルバムの曲リストを出すかどうかをスマホ幅だけの設定で決める

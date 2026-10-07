@@ -2864,3 +2864,95 @@ body.alb-fab-on #main { padding-bottom: calc(var(--player-h) + var(--lyr-bottom)
   #now-playing .np-lyrics .np-lyr.active { cursor: pointer; }
   #page-albums .alb-legend { display: none; }
 }
+
+/* ---------- スマホ版 v8.10：再生画面の横向き（71-np-landscape.js・68-np-onescreen.js）----------
+   ・スマホを横向きにしたとき（横長で高さ 500px 以下・幅 1000px 以下。71-np-landscape.js の NP_LAND_MQ と同じ条件）の再生画面の並び。
+     幅が 760px を超える横向き（812px・915px など）でも PC 幅の並びにはせず、この並びにする
+   ・「左の列」：メインのビジュアル（ジャケットの並び、または回転CD・カセット・レコード・MD）を、縦横の比を保って高さいっぱいに入る最大の大きさで真ん中に。
+     曲リストボタンで出した曲リスト（アルバムの曲リスト・キュー）も、ビジュアルの代わりにこの列に出す
+   ・「右の列」：上に「上部のボタン列」、その下に 曲名 → アーティスト・アルバム → 再生元 →（時間付き歌詞1行）→ シークバー → 再生操作 → 音量 を
+     縦に並べ、上下の真ん中にそろえる（スクロールしない）
+   ・横向きでは出さないもの：プレイリストの play画面の見出し（.np-pl-head。再生元の行にプレイリスト名が出る）、
+     時間付き歌詞が無い曲の「歌詞パネルを開く（入力・検索）」ボタン（62-lyrics-mini.js）
+   ・左右のノッチ・ホームバーの分（safe-area）をあける。オーディオビジュアライザーは今までどおり再生画面全体（バー・波形は画面の下の幅いっぱい、
+     円の中心はメインのビジュアルの真ん中〔68-np-onescreen.js〕）
+   ・#now-playing の ID で、PC 幅の指定（.np.np-vis-mode など）・スマホ幅（縦向き）の指定より優先させる */
+@media (orientation: landscape) and (max-height: 500px) and (max-width: 1000px) {
+  #now-playing { --npl-l: env(safe-area-inset-left, 0px); --npl-r: env(safe-area-inset-right, 0px); --npl-b: env(safe-area-inset-bottom, 0px);
+    padding: env(safe-area-inset-top, 0px) var(--npl-r) 0 var(--npl-l); }
+  #now-playing .np-viz { opacity: 0.55; }   /* 文字と重なるので、縦向きと同じくうすく */
+
+  /* 上部のボタン列：右の列の一番上（ⓘ描き方ボタン・歌詞・曲リスト・プレイヤー表示ボタン・閉じる） */
+  #now-playing .np-top { position: absolute; z-index: 2; top: env(safe-area-inset-top, 0px); right: var(--npl-r); left: calc(var(--npl-l) + (100% - var(--npl-l) - var(--npl-r)) / 2);
+    flex-wrap: nowrap; gap: 6px; padding: 8px 12px 0 10px; container: np-top / inline-size; }
+  #now-playing .np-top .np-lyr-toggle { white-space: nowrap; padding: 6px 10px; }
+  #now-playing .np-top .np-close { flex: none; }
+  #now-playing .np-pl-head { display: none; }
+
+  /* 本文：左の列（メインのビジュアル・曲リスト）と右の列（曲名・操作）の2列 */
+  #now-playing .np-main { flex: 1 1 0; min-height: 0; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); grid-template-rows: minmax(0, 1fr);
+    grid-auto-flow: row; align-items: stretch; align-content: stretch; justify-content: stretch; gap: 0; padding: 0; overflow: hidden; }
+  #now-playing .np-art { display: none; }
+
+  /* 左の列：メインのビジュアル（どちらか1つだけ）。下はホームバーの分あける */
+  #now-playing .np-vis-frame, #now-playing .np-flow-wrap { display: none; }
+  #now-playing.np-vis-mode .np-vis-frame { display: block; position: relative; left: auto; top: auto; bottom: auto; grid-column: 1; grid-row: 1; align-self: stretch; justify-self: stretch;
+    width: auto; height: auto; min-height: 0; margin: 0; padding-bottom: var(--npl-b); overflow: hidden; container-type: size; }
+  #now-playing.np-jacket-mode .np-flow-wrap { display: block; position: relative; grid-column: 1; grid-row: 1; align-self: stretch; justify-self: stretch;
+    width: auto; max-width: none; min-height: 0; margin: 0; padding-bottom: var(--npl-b); container-type: size; }
+  /* ジャケットの並び：中央のジャケットの一辺は、列の幅の 74% と（高さ − 説明の分）の小さい方 */
+  #now-playing.np-jacket-mode .np-flow { --c: max(60px, min(74cqw, calc(100cqh - 44px))); height: 100%; }
+  #now-playing.np-jacket-mode .np-flow-item { top: calc(50% - var(--c) / 2 - 10px); }
+  #now-playing.np-jacket-mode .np-flow-caption { position: absolute; left: 12px; right: 12px; bottom: calc(4px + var(--npl-b)); z-index: 3; min-height: 0; margin: 0; font-size: 12px; }
+  #now-playing.np-jacket-mode .np-flow-caption.is-other { padding: 3px 10px; border-radius: 10px; background: var(--surface); border: 1px solid var(--border2); box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12); }
+  #now-playing.np-jacket-mode .np-flow-cap-hint { display: none; }
+  /* 回転CD・カセット・レコード・MD：列に入る最大の大きさで真ん中に（見切れさせない。レコードはトーンアームまで） */
+  #now-playing.np-cd-mode .np-cd-big { --s: min(calc(100cqw - 24px), calc(100cqh - 16px)); left: 50%; right: auto; top: 50%; width: var(--s); height: var(--s); margin: 0; transform: translate(-50%, -50%); }
+  #now-playing.np-cs-mode .np-cs-big { --cs-clip: 0px; left: 50%; right: auto; top: 50%; width: min(calc(100cqw - 24px), calc((100cqh - 16px) * 1.6), 520px); transform: translate(-50%, -50%); }
+  #now-playing.np-rc-mode .np-rc-big { left: 50%; right: auto; top: 50%; width: min(calc(100cqw - 16px), calc((100cqh - 16px) * 1.25)); transform: translate(-50%, -50%); }
+  #now-playing.np-md-mode .np-md-big { left: 50%; right: auto; top: 50%; width: min(calc(100cqw - 24px), calc(100cqh - 16px)); transform: translate(-50%, -50%); }
+  #now-playing .np-md-title { font-size: 4.4cqw; line-height: 1.2; }
+  #now-playing .np-md-artist { margin-top: 0.8cqw; font-size: 3.6cqw; line-height: 1.25; }
+
+  /* 曲リスト（曲リストボタンで出したとき）：メインのビジュアルの代わりに左の列に */
+  #now-playing.np-list-open .np-vis-frame, #now-playing.np-list-open .np-flow-wrap { display: none; }
+  #now-playing.np-pl-mode:not(.np-list-open) .np-queue { display: none; }
+  #now-playing.np-list-open.np-pl-mode .np-queue, #now-playing.np-list-open.np-al-mode .np-al-list { display: flex; grid-column: 1; grid-row: 1; align-self: stretch; justify-self: stretch;
+    width: auto; max-width: none; max-height: none; min-height: 0; margin: 8px 6px calc(8px + var(--npl-b)) 10px; }
+  #now-playing.np-list-open .plp-q-list { flex: 1 1 0; min-height: 0; max-height: none; }
+
+  /* 右の列：上部のボタン列の下の高さで、上下の真ん中に */
+  #now-playing .np-info { grid-column: 2; grid-row: 1; align-self: stretch; justify-self: stretch; width: auto; max-width: none; min-width: 0; min-height: 0;
+    display: flex; flex-direction: column; justify-content: center; gap: 4px; padding: 54px 14px calc(6px + var(--npl-b)) 10px; overflow: hidden; }
+  #now-playing .np-title { font-size: 26px; line-height: 1.25; text-align: center; }   /* 入らないときは 55-np-title-fit.js が縮める */
+  #now-playing .np-sub, #now-playing .np-label { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: center; }
+  #now-playing .np-sub { font-size: 17px; line-height: 1.35; }
+  #now-playing .np-label { font-size: 11.5px; line-height: 1.35; }
+  #now-playing .np-label:empty { display: none; }
+  /* 時間付き歌詞：今の1行だけ（長い行は2行まで）。時間付きの歌詞が無い曲では場所をとらない */
+  #now-playing .np-lyrics { min-height: calc(15px * 1.35); margin: 0; text-align: center; }
+  #now-playing .np-lyrics:has(.np-lyr-none), #now-playing .np-lyrics:has(.np-lyr-panel-btn) { display: none; }
+  #now-playing .np-lyr:not(.active) { display: none; }
+  #now-playing .np-lyr.active { padding: 0; font-size: 15px; line-height: 1.35; white-space: normal; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  #now-playing .np-seek { gap: 8px; }
+  #now-playing .np-seek input { margin: 0; height: 22px; }
+  #now-playing .np-controls { gap: 10px; }
+  #now-playing .np-controls .np-btn { flex: none; }
+  #now-playing .np-volume { height: 30px; gap: 6px; }
+  #now-playing .np-volume .np-btn-sm { width: 30px; height: 30px; }
+  #now-playing .np-volume .np-btn-sm svg { width: 16px; height: 16px; }
+  #now-playing .np-volume input { width: min(200px, 55%); margin: 0; }
+
+  /* 右の列が狭いとき（上部のボタン列の中の幅 365px 以下：667px・740px など）：歌詞・曲リスト・プレイヤー表示のボタンはアイコンだけ（名前は title） */
+  @container np-top (max-width: 365px) {
+    #now-playing .np-top .np-lyr-toggle { font-size: 0; gap: 0; padding: 6px 8px; }
+    #now-playing .np-top .np-lyr-toggle svg { width: 16px; height: 16px; }
+  }
+}
+/* 横向きで特に低い画面（高さ 340px 以下）：曲名・操作を少し詰める */
+@media (orientation: landscape) and (max-height: 340px) and (max-width: 1000px) {
+  #now-playing .np-info { gap: 2px; padding-top: 50px; }
+  #now-playing .np-title { font-size: 24px; }
+  #now-playing .np-sub { font-size: 16px; }
+  #now-playing .np-btn.np-play { width: 58px; height: 58px; }
+}

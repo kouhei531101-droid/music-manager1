@@ -9,7 +9,7 @@
      ③ 点ごとに前のフレームの値へ WAVE_FOLLOW の割合だけ近づける（時間方向のなめらかさ）④ 点と点を2次曲線でなめらかにつなぐ。
      振幅は音の大きさに合わせるので、音に反応している感じは残る
    ・動きを減らす設定（np.reduced）：尾を出さず（ピーク＝今の値）、波形はもっとゆっくり（WAVE_FOLLOW_REDUCED）。描く回数は 37 のまま（約8回/秒）
-   ・負荷：配列は1回だけ作って使い回す。描くのはバー最大56本・円56本（v8.9.6 で約6割に）＋尾・粒（最大 NPV_SPARK_MAX 個）・波形 WAVE_POINTS 点だけ
+   ・負荷：配列は1回だけ作って使い回す。描くのはバー最大56本・円96本（v8.9.6〜8.9.7 は56本。スマホ版 v8.10 で 37 と同じ96本に戻した）＋尾・粒（最大 NPV_SPARK_MAX 個）・波形 WAVE_POINTS 点だけ
    ・スマホ版 v8.9.6：花火のように光る残像（光るキャップ・はじける粒）。下の「花火のように光る残像」
    ・スマホ版 v8.9.7：はじける高さを上がり方で変える（強いほど高く、最大は画面の上端を超える）。NPV_RISE_* ・ _npvBurstV
    ========================================================= */
@@ -208,16 +208,23 @@ function _npvDrawBars(g, W, H, col, amp, dt, reduced) {
   if (!reduced) _npvSparksDraw(g, H, col, dark, dt);
 }
 
-/* ---------- 円（スマホ版 v8.9.6：線を約6割に減らして太く・先端が光り、外へ粒が散る） ---------- */
+/* ---------- 円（スマホ版 v8.9.6：先端が光り、外へ粒が散る）----------
+   ・スマホ版 v8.10：線の本数・太さを 37-now-playing.js の元の描き方と同じ（96本・太さ max(2, 短い辺/160)）に戻した
+     （v8.9.6〜8.9.7 は 56本・太さ max(3, 短い辺/95)）。粒の大きさは v8.9.7 のまま（NPV_CIRC_SPARK_LW の太さから決める）。
+     本数が増えた分、粒が増えすぎないよう、出す粒を NPV_CIRC_SPARK_KEEP の割合に間引く（全体の粒の数は 56本のときとほぼ同じ） */
+var NPV_CIRC_BARS = 96;                    // 円の線の本数（37 の元の描き方と同じ）
+var NPV_CIRC_SPARK_KEEP = 56 / 96;         // 円の粒を出す割合（v8.9.7 の 56本のときと同じくらいの数にする）
+function NPV_CIRC_SPARK_LW(W, H) { return Math.max(3, Math.min(W, H) / 95); }   // 粒の大きさの元にする太さ（v8.9.7 の線の太さ）
 function _npvDrawCircle(g, W, H, col, amp, dt, reduced, cv) {
   var dark = _npvDark(), vc = _npVizCenter(cv);
-  var cx = vc ? vc.x : W / 2, cy = vc ? vc.y : H / 2, r0 = Math.max(Math.min(W, H) * 0.22, vc ? vc.r : 0), bars = 56, fl = np.freq.length;
+  var cx = vc ? vc.x : W / 2, cy = vc ? vc.y : H / 2, r0 = Math.max(Math.min(W, H) * 0.22, vc ? vc.r : 0), bars = NPV_CIRC_BARS, fl = np.freq.length;
   if (!_npvCircVals || _npvCircVals.length !== bars) { _npvCircVals = new Float32Array(bars); _npvPrevCirc = new Float32Array(bars); _npvLoCirc = new Float32Array(bars); }
   for (var k = 0; k < bars; k++) _npvCircVals[k] = np.freq[Math.floor(Math.pow(k / bars, 1.6) * fl * 0.7)] / 255;
   var pk = _npvPeaks(_npvCircVals, bars, 'cpeak', 'chold', dt, reduced);
-  var lw = Math.max(3, Math.min(W, H) / 95);
+  var lw = Math.max(2, Math.min(W, H) / 160), slw = NPV_CIRC_SPARK_LW(W, H);   // 線の太さ（37 と同じ）・粒の大きさの元
   if (!reduced) _npvEmit(pk, _npvPrevCirc, _npvCircVals, _npvLoCirc, bars, dt, function (i, power, e) {
-    var ang = i / bars * Math.PI * 2 - Math.PI / 2, c = Math.cos(ang), s = Math.sin(ang), d = r0 + r0 * 0.9 * pk[i] * amp + 2, sz = Math.max(1.6, lw * 0.32);
+    if (Math.random() > NPV_CIRC_SPARK_KEEP) return;   // 本数が増えた分を間引く
+    var ang = i / bars * Math.PI * 2 - Math.PI / 2, c = Math.cos(ang), s = Math.sin(ang), d = r0 + r0 * 0.9 * pk[i] * amp + 2, sz = Math.max(1.6, slw * 0.32);
     var x0 = cx + c * d, y0 = cy + s * d;
     if (e < 0) { _npvSpark(x0, y0, c, s, r0 * 0.9 * power, sz); return; }
     // 最大は、その向きで画面の端まで＋短い辺の 12%（画面の外まで飛ぶ）
