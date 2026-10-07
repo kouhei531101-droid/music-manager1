@@ -523,7 +523,7 @@ function renderAlbumDetail(a, body) {
           a.tracks.length + '曲' + (a.duration ? ' ・ ' + formatTotalDuration(a.duration) : '') +
           (a.byFolder ? ' ・ <span class="album-head-byfolder">フォルダでまとめたアルバム</span>' : '') + '</div>' +
         '<div class="btn-row">' +
-          '<button class="btn-save" data-act="play-all">' + ICONS.play + 'アルバムを再生</button>' +
+          '<button class="btn-save" data-act="play-all" title="アルバムを再生" aria-label="アルバムを再生">' + ICONS.play + 'アルバムを再生</button>' +
           shuffleBtnHtml('data-act="shuffle-all"', 'このアルバムをばらばらの順で再生') +   // v7.5（47-shuffle-play.js）
           '<button class="btn-inline-small" data-act="add-all" title="アルバムの全曲をプレイリストに追加">+ playlist add</button>' +
           '<button class="btn-inline-small" data-act="edit-album">' + ICONS.edit + 'アルバム情報を編集</button>' +
