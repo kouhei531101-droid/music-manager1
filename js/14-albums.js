@@ -537,7 +537,7 @@ function renderAlbumDetail(a, body) {
     '<div class="album-tracks-wrap">' +
       '<span class="ui-label-tag ui-label-tag-onlight" style="top:-14px;right:0" onclick="copyUiLabel(\'アルバムの曲リスト\', event)" title="クリックで「アルバムの曲リスト」をコピー">□</span>' +
       '<table class="lib-table album-track-table"><thead><tr>' +
-        '<th class="col-no">No</th><th class="col-play"></th><th class="col-title">song title</th><th class="col-dur">song length</th><th class="col-yt"></th><th class="col-add"></th><th class="col-edit"></th>' +
+        '<th class="col-no">No</th><th class="col-play"></th><th class="col-title">title</th><th class="col-dur">length</th><th class="col-yt"></th><th class="col-add"></th><th class="col-edit"></th>' +
       '</tr></thead><tbody>';
   var lastDisc = null;
   a.tracks.forEach(function (t, i) {

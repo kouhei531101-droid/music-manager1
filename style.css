@@ -1992,10 +1992,10 @@ button.album-sk-label:focus-visible, .album-sk-cover-btn:focus-visible { outline
   /* スマホ幅：曲名の幅をとるため、曲番号・長さ・ボタンの列を詰める */
   .album-track-table .col-yt, .album-track-table .col-add { width: 30px; }
   .album-track-table .col-no { width: 30px; padding-right: 4px; }
-  .album-track-table .col-dur { width: 42px; }
+  .album-track-table .col-dur { width: 54px; padding-left: 4px; padding-right: 4px; text-overflow: clip; }   /* スマホ版 v8.9.2：42px → 54px（「3:45」「12:05」が「…」にならないように。鉛筆の列を消して空いた幅から） */
   .album-track-table th.col-dur { font-size: 0; }
-  .album-track-table th.col-dur::after { content: '長さ'; font-size: 10.5px; }
-  .album-track-table .col-edit { width: 40px; }
+  .album-track-table th.col-dur::after { content: 'length'; font-size: 10.5px; }   /* スマホ版 v8.9.2：「長さ」→「length」 */
+  .album-track-table .col-edit { display: none; }   /* スマホ版 v8.9.2：編集ボタン（鉛筆）は出さない。空いた幅は曲名の列へ（.col-title は width: auto） */
   .album-track-table td.col-yt, .album-track-table td.col-add { padding: 2px; }
   .album-track-table .btn-row-youtube, .album-track-table td.col-add .btn-icon { width: 26px; }
 }
@@ -2678,6 +2678,7 @@ body.alb-fab-on #main { padding-bottom: calc(var(--player-h) + var(--lyr-bottom)
      それ以外はプレイヤー表示の枠（.np-vis-frame）。どちらか1つだけを出す。中身は container query（cqw・cqh）で、縦横の比を保って枠に入る最大の大きさにし、真ん中に置く
      （回転CD はスマホ幅では左に見切れさせず、全体を真ん中に出す。レコードはトーンアームまで、カセット・MD も全体が見える）
    ・曲リスト（.np-list-open）：メインのビジュアルの代わりに、その場所にアルバムの曲リスト・キューを出す（リストの中だけスクロール）
+   ・スマホ版 v8.9.1：曲名 27px（低い画面 25px）・アーティスト・アルバムの行 18px（v8.9 は 21px・14px）。MD のラベルの文字も大きく
    ・時間付き歌詞は今の1行だけ（長い行は2行まで）。時間付きの歌詞が無い曲では場所をとらない。アーティスト・アルバム・再生元の行は1行（入らなければ「…」）
    ・音量は1行の細い行（消音ボタン＋音量バー）。下の端は safe-area（ホームバー）の分あける
    ・#now-playing の ID で、今までのスマホ幅の指定（.np.np-vis-mode など）より優先させる */
@@ -2709,6 +2710,10 @@ body.alb-fab-on #main { padding-bottom: calc(var(--player-h) + var(--lyr-bottom)
   #now-playing.np-cs-mode .np-cs-big { --cs-clip: 0px; left: 50%; right: auto; top: 50%; width: min(calc(100cqw - 24px), calc((100cqh - 8px) * 1.6), 520px); transform: translate(-50%, -50%); }
   #now-playing.np-rc-mode .np-rc-big { left: 50%; right: auto; top: 50%; width: min(calc(100cqw - 12px), calc((100cqh - 8px) * 1.25)); transform: translate(-50%, -50%); }
   #now-playing.np-md-mode .np-md-big { left: 50%; right: auto; top: 50%; width: min(calc(100cqw - 24px), calc(100cqh - 8px)); transform: translate(-50%, -50%); }
+  /* スマホ版 v8.9.1：MD の横長ラベルの曲名・アーティスト名を約1.45倍に（曲名 3cqw → 4.4cqw、アーティスト 2.5cqw → 3.6cqw。1行で入らなければ「…」）。
+     ラベルの高さ（28.5cqw）・左のジャケットの小さな絵はそのまま（文字の行と下の「74」「MD」がラベルの中に収まる大きさ） */
+  #now-playing .np-md-title { font-size: 4.4cqw; line-height: 1.2; }
+  #now-playing .np-md-artist { margin-top: 0.8cqw; font-size: 3.6cqw; line-height: 1.25; }
 
   /* 曲リスト（アルバムの曲リスト・キュー）：曲リストボタンで出したときだけ、メインのビジュアルの場所に */
   #now-playing.np-list-open .np-vis-frame, #now-playing.np-list-open .np-flow-wrap { display: none; }
@@ -2718,9 +2723,9 @@ body.alb-fab-on #main { padding-bottom: calc(var(--player-h) + var(--lyr-bottom)
 
   /* 曲名・操作：中身の高さだけ */
   #now-playing .np-info { order: 2; flex: none; width: 100%; max-width: 480px; align-self: center; gap: 4px; }
-  #now-playing .np-title { font-size: 21px; line-height: 1.25; }
+  #now-playing .np-title { font-size: 27px; line-height: 1.25; }   /* スマホ版 v8.9.1：21px → 27px（約1.3倍。入らないときは 55-np-title-fit.js が 45% まで縮め、それでも入らなければ「…」） */
   #now-playing .np-sub, #now-playing .np-label { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  #now-playing .np-sub { font-size: 14px; line-height: 1.4; }
+  #now-playing .np-sub { font-size: 18px; line-height: 1.35; }   /* スマホ版 v8.9.1：14px → 18px（約1.3倍） */
   #now-playing .np-label { font-size: 11.5px; line-height: 1.35; }
   #now-playing .np-label:empty { display: none; }
   /* 時間付き歌詞：今の1行だけ（2行まで）。時間付きの歌詞が無いときは場所をとらない */
@@ -2742,7 +2747,7 @@ body.alb-fab-on #main { padding-bottom: calc(var(--player-h) + var(--lyr-bottom)
   #now-playing .np-top { padding-top: 6px; }
   #now-playing .np-main { gap: 4px; padding-top: 4px; }
   #now-playing .np-info { gap: 2px; }
-  #now-playing .np-title { font-size: 19px; }
+  #now-playing .np-title { font-size: 25px; }   /* スマホ版 v8.9.1：19px → 25px */
   #now-playing .np-controls { gap: 10px; }
 }
 
@@ -2764,4 +2769,44 @@ body.alb-fab-on #main { padding-bottom: calc(var(--player-h) + var(--lyr-bottom)
   .album-sk-cluster > .album-sk-cards:not(:has(> :nth-child(4))) { grid-template-rows: auto; }          /* 3枚以下：1行 */
   .album-sk-cluster > .album-sk-cards:has(> :nth-child(4)):not(:has(> :nth-child(5))) { grid-template-rows: repeat(2, auto); }   /* 4枚：2行 */
   .album-sk-cluster > .album-sk-cards > .album-card { scroll-snap-align: start; min-width: 0; }
+}
+
+/* ---------- スマホ版 v8.9.2：アルバムの見出しを縦に並べ、ジャケットを大きく・「見出しのボタン列」（14-albums.js・64-card-menu.js の HTML はそのまま。CSS だけ）----------
+   ・スマホ幅のアルバムの見出しは、上からジャケット（真ん中に大きく。200px〔狭い画面は幅の 60%〕。押すと今までどおりジャケット拡大表示・長押しでメニュー）→
+     アルバム名（Google検索ボタン・洋楽の指定ボタン）→ アーティスト → タグのバッジ・ソートキー・曲数 →「見出しのボタン列」→ アルバムを再生などのボタン列
+   ・見出しのボタン列：ジャケットの上に重ねていた5つの丸いボタンを、ジャケットから外して1行に並べたもの。
+     左から 見出しの写真の Pin ボタン・見出しのタグボタン・見出しの写真の非表示ボタン・YouTube検索ボタン・ジャケットの設定ボタン（40px）。
+     色の決まり（Pin 中はオレンジ・タグありはオレンジのアイコン・非表示中は紫）と働きは今までどおり
+   ・作り方：写真の枠（.album-head-art-wrap）・右下の重ねる場所（.album-art-overlay）・右の列（.album-head-info）を display: contents にして、
+     中の部品をアルバムの見出しの grid に直接並べる（ボタンの要素は動かさないので、押したときの働きは変わらない）
+   ・アーティストの見出し（.artist-head）・PC 幅は今までどおり */
+@media (max-width: 760px) {
+  #alb-body .album-head:not(.artist-head) {
+    display: grid; grid-template-columns: minmax(0, 1fr) repeat(5, 40px) minmax(0, 1fr); column-gap: 12px; row-gap: 0;
+    justify-items: center; align-items: center; padding: 16px 12px 14px; }
+  #alb-body .album-head:not(.artist-head) .album-head-art-wrap,
+  #alb-body .album-head:not(.artist-head) .album-art-overlay,
+  #alb-body .album-head:not(.artist-head) .album-head-info { display: contents; }
+  /* ジャケット：真ん中に大きく */
+  #alb-body .album-head:not(.artist-head) .album-head-art { grid-row: 1; grid-column: 1 / -1; width: min(200px, 60vw); height: min(200px, 60vw); margin-bottom: 12px; }
+  #alb-body .album-head:not(.artist-head) .art-thumb.art-large svg { width: 56px; height: 56px; }
+  /* アルバム名・アーティスト・曲数：幅いっぱいで中央揃え */
+  #alb-body .album-head:not(.artist-head) .album-head-title { grid-row: 2; grid-column: 1 / -1; justify-self: stretch; justify-content: center; }
+  #alb-body .album-head:not(.artist-head) .album-head-artist { grid-row: 3; grid-column: 1 / -1; justify-self: stretch; text-align: center; }
+  #alb-body .album-head:not(.artist-head) .album-head-meta { grid-row: 4; grid-column: 1 / -1; justify-self: stretch; text-align: center; }
+  /* 見出しのボタン列（5つの丸いボタン。1行） */
+  #alb-body .album-head:not(.artist-head) .head-art-pin-wrap,
+  #alb-body .album-head:not(.artist-head) .head-art-tag-wrap,
+  #alb-body .album-head:not(.artist-head) .head-art-hide-wrap,
+  #alb-body .album-head:not(.artist-head) .album-yt-wrap,
+  #alb-body .album-head:not(.artist-head) .album-art-set-wrap { position: relative; top: auto; left: auto; right: auto; bottom: auto; grid-row: 5; margin-top: 12px; display: inline-flex; }
+  #alb-body .album-head:not(.artist-head) .head-art-pin-wrap { grid-column: 2; }
+  #alb-body .album-head:not(.artist-head) .head-art-tag-wrap { grid-column: 3; }
+  #alb-body .album-head:not(.artist-head) .head-art-hide-wrap { grid-column: 4; }
+  #alb-body .album-head:not(.artist-head) .album-yt-wrap { grid-column: 5; }
+  #alb-body .album-head:not(.artist-head) .album-art-set-wrap { grid-column: 6; }
+  #alb-body .album-head:not(.artist-head) .art-overlay-btn { width: 40px; height: 40px; box-shadow: 0 1px 4px rgba(0, 0, 0, 0.16); border-color: var(--border2); opacity: 1; }
+  #alb-body .album-head:not(.artist-head) .art-overlay-btn svg { width: 19px; height: 19px; }
+  /* アルバムを再生・シャッフル・+ playlist add・アルバム情報を編集・フォルダのボタン：見出しのボタン列の下に中央揃え（入らなければ折り返す） */
+  #alb-body .album-head:not(.artist-head) .album-head-info .btn-row { grid-row: 6; grid-column: 1 / -1; justify-self: stretch; justify-content: center; margin-top: 12px; }
 }

@@ -25,9 +25,9 @@ PAGE_RENDERERS.newsongs = renderNewSongsPage;
 function songTableHtml(list, opts) {
   opts = opts || {};
   var h = '<table class="lib-table song-table"><thead><tr>' +
-    '<th class="col-play"></th><th class="col-art"></th><th class="col-title">song title</th><th class="col-album">アルバム</th>' +
+    '<th class="col-play"></th><th class="col-art"></th><th class="col-title">title</th><th class="col-album">アルバム</th>' +
     (opts.extra ? '<th class="col-extra">' + opts.extra.head + '</th>' : '') +
-    '<th class="col-dur">長さ</th><th class="col-add"></th><th class="col-edit"></th></tr></thead><tbody>';
+    '<th class="col-dur">length</th><th class="col-add"></th><th class="col-edit"></th></tr></thead><tbody>';   // スマホ版 v8.9.2：見出しを title／length に（アルバムの曲リストとそろえる）
   list.forEach(function (t, i) {
     h += '<tr class="lib-row song-row' + (t.path === player.currentPath ? ' is-playing' : '') + '" data-i="' + i + '">' +
       '<td class="col-play"><button class="btn-icon btn-play-row" data-act="play" data-i="' + i + '" title="この曲から再生">' + ICONS.play + '</button></td>' +
