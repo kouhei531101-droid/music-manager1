@@ -12,6 +12,10 @@
    ・負荷：配列は1回だけ作って使い回す。描くのはバー最大56本・円96本（v8.9.6〜8.9.7 は56本。スマホ版 v8.10 で 37 と同じ96本に戻した）＋尾・粒（最大 NPV_SPARK_MAX 個）・波形 WAVE_POINTS 点だけ
    ・スマホ版 v8.9.6：花火のように光る残像（光るキャップ・はじける粒）。下の「花火のように光る残像」
    ・スマホ版 v8.9.7：はじける高さを上がり方で変える（強いほど高く、最大は画面の上端を超える）。NPV_RISE_* ・ _npvBurstV
+   ・スマホ版 v8.11：描き方を組み合わせられる（73-np-viz-settings.js の npVizCfg()。PC版 v8.7.8 と同じ保存の形）。
+     重ねる順（奥から）：円 → バー → 波形 → 光の粒（粒はまとめて1回だけ動かして描く）。「なし」は何も描かない
+     バーの数・円の線の本数（NVZ_BARS）・太さ（NVZ_THICK）を設定から。光がオフ（cfg.glow）のときは、残像・光る先端・粒を出さない
+     （動きを減らす設定と同じ描き方。振幅は変えない）。波形はゆったりした描き方（96点・なめらか）のまま、光がオンなら線のまわりにうすい光
    ========================================================= */
 
 var NPV_TRAIL_FALL = 0.55;        // ピークが1秒で下がる量（0〜1。1＝棒の一番上から下まで）
@@ -47,11 +51,17 @@ window._npDraw = function () {
   var col = _npColor(), amp = np.reduced ? 0.5 : 1, reduced = !!np.reduced;
   if (np.analyser) { np.analyser.getByteFrequencyData(np.freq); np.analyser.getByteTimeDomainData(np.wave); }
   else { np.freq = np.freq || new Uint8Array(1024); np.wave = np.wave || new Uint8Array(2048).fill(128); }
-  var mode = npMode();
-  if (mode === 'wave' || reduced) _npvSparksClear();   // v8.9.6：波形・動きを減らす設定では粒を消す
-  if (mode === 'wave') _npvDrawWave(g, W, H, col, amp, dt, reduced);
-  else if (mode === 'circle') _npvDrawCircle(g, W, H, col, amp, dt, reduced, cv);
-  else _npvDrawBars(g, W, H, col, amp, dt, reduced);
+  // スマホ版 v8.11：組み合わせ（奥から 円 → バー → 波形 → 光の粒）。plain：残像・光る先端・粒を出さない（光がオフ・動きを減らす設定）
+  var cfg = typeof npVizCfg === 'function' ? npVizCfg() : { modes: [npMode()], bars: 'normal', thick: 'normal', glow: true };
+  if (!cfg.modes.length) { _npvSparksClear(); return; }
+  var plain = reduced || !cfg.glow, sparkle = !plain && (cfg.modes.indexOf('bars') >= 0 || cfg.modes.indexOf('circle') >= 0);
+  if (!sparkle) _npvSparksClear();   // v8.9.6：波形だけ・動きを減らす設定（v8.11：光がオフ）では粒を消す
+  cfg.modes.forEach(function (m) {
+    if (m === 'circle') _npvDrawCircle(g, W, H, col, amp, dt, plain, cv, cfg);
+    else if (m === 'bars') _npvDrawBars(g, W, H, col, amp, dt, plain, cfg);
+    else if (m === 'wave') _npvDrawWave(g, W, H, col, amp, dt, reduced, !plain);
+  });
+  if (sparkle) _npvSparksDraw(g, H, col, _npvDark(), dt);
 };
 
 /* ---------- スマホ版 v8.9.6：花火のように光る残像（粒＝スパーク） ----------
@@ -104,19 +114,28 @@ function _npvSparksDraw(g, H, col, dark, dt) {
   var pool = npvSp.pool;
   if (!pool || !npvSp.n) return;
   var grav = H * NPV_SPARK_GRAV, t = performance.now() / 1000, gold = dark ? '255,214,120' : '196,128,24';
-  if (dark) g.globalCompositeOperation = 'lighter';
+  // スマホ版 v8.11：粒を色（テーマ色・金色）×明るさ4段階ごとにまとめて塗る（1つずつ塗ると、描き方を重ねたときに重い）
+  var LV = 4, B = npvSp.buckets || (npvSp.buckets = []);
+  for (var bi = 0; bi < LV * 2; bi++) B[bi] = null;
   for (var i = 0; i < pool.length; i++) {
     var p = pool[i];
     if (!p.on) continue;
     p.life -= dt;
     if (p.life <= 0) { p.on = false; npvSp.n--; if (window.__npvLog) window.__npvLog.push([p.e, p.minY]); continue; }
     p.vy += grav * dt; p.vx *= 0.985; p.x += p.vx * dt; p.y += p.vy * dt; if (p.y < p.minY) p.minY = p.y;
-    var k = p.life / p.max, tw = 0.55 + 0.45 * Math.sin(t * 22 + p.ph), r = p.size * (0.5 + 0.5 * k), c = p.gold ? gold : col;
-    var a = k * tw;
-    g.fillStyle = 'rgba(' + c + ',' + (a * (dark ? 0.35 : 0.25)).toFixed(3) + ')';   // にじみ
-    g.beginPath(); g.arc(p.x, p.y, r * 2.6, 0, 6.283); g.fill();
-    g.fillStyle = dark ? 'rgba(255,250,235,' + (a * 0.9).toFixed(3) + ')' : 'rgba(' + c + ',' + (a * 0.95).toFixed(3) + ')';   // 芯
-    g.beginPath(); g.arc(p.x, p.y, r, 0, 6.283); g.fill();
+    var k = p.life / p.max, tw = 0.55 + 0.45 * Math.sin(t * 22 + p.ph), r = p.size * (0.5 + 0.5 * k);
+    var lv = Math.min(LV - 1, Math.floor(k * tw * LV)), idx = (p.gold ? LV : 0) + lv;
+    var bk = B[idx] || (B[idx] = { halo: new Path2D(), core: new Path2D() });
+    bk.halo.moveTo(p.x + r * 2.6, p.y); bk.halo.arc(p.x, p.y, r * 2.6, 0, 6.283);   // にじみ
+    bk.core.moveTo(p.x + r, p.y); bk.core.arc(p.x, p.y, r, 0, 6.283);               // 芯
+  }
+  if (dark) g.globalCompositeOperation = 'lighter';
+  for (var j = 0; j < LV * 2; j++) {
+    var b = B[j];
+    if (!b) continue;
+    var c = j >= LV ? gold : col, a = ((j % LV) + 0.5) / LV;
+    g.fillStyle = 'rgba(' + c + ',' + (a * (dark ? 0.35 : 0.25)).toFixed(3) + ')'; g.fill(b.halo);
+    g.fillStyle = dark ? 'rgba(255,250,235,' + (a * 0.9).toFixed(3) + ')' : 'rgba(' + c + ',' + (a * 0.95).toFixed(3) + ')'; g.fill(b.core);
   }
   g.globalCompositeOperation = 'source-over';
 }
@@ -159,9 +178,11 @@ function _npvRect(g, x, y, w, h, r) {
 }
 
 /* ---------- バー（スマホ版 v8.9.6：本数を約6割に減らして太く・角を丸く） ---------- */
-function _npvDrawBars(g, W, H, col, amp, dt, reduced) {
+// reduced：残像・光る先端・粒を出さない（動きを減らす設定・光がオフ）。cfg：描き方の設定（スマホ版 v8.11。バーの数・太さ）
+function _npvDrawBars(g, W, H, col, amp, dt, reduced, cfg) {
   var dark = _npvDark();
-  var nb = Math.max(14, Math.min(56, Math.floor(W / 30))), gap = W / nb, bw = gap * 0.74, fl = np.freq.length, rad = Math.min(bw * 0.3, 8);
+  var bc = (typeof NVZ_BARS !== 'undefined' && cfg && NVZ_BARS[cfg.bars]) || { k: 1, min: 14, max: 56 }, tc = (typeof NVZ_THICK !== 'undefined' && cfg && NVZ_THICK[cfg.thick]) || { bar: 0.74 };
+  var nb = Math.max(bc.min, Math.min(bc.max, Math.floor(W * bc.k / 30))), gap = W / nb, bw = gap * tc.bar, fl = np.freq.length, rad = Math.min(bw * 0.3, 8);
   if (!_npvBarVals || _npvBarVals.length !== nb) { _npvBarVals = new Float32Array(nb); _npvPrevBar = new Float32Array(nb); _npvLoBar = new Float32Array(nb); }
   for (var j = 0; j < nb; j++) {
     var a0 = Math.floor(Math.pow(j / nb, 1.7) * fl * 0.75), a1 = Math.max(a0 + 1, Math.floor(Math.pow((j + 1) / nb, 1.7) * fl * 0.75)), s = 0;
@@ -175,37 +196,44 @@ function _npvDrawBars(g, W, H, col, amp, dt, reduced) {
     var bv = _npvBurstV(e, H, H * 0.05, y0 + H * 0.12);   // 最大はキャップから画面の上端＋高さの 12% 上まで
     _npvSpark(x0, y0, 0, -1, bv.v, sz * (1 + e * 0.8), 0.9 * (1 - e * 0.6), bv.life, e);
   }, 'riseBar');
-  for (var k = 0; k < nb; k++) {
-    var vv = _npvBarVals[k], bh = Math.max(2, vv * full), x = k * gap + (gap - bw) / 2, ph = pk[k] * full;
-    // 尾：上端ほど明るく輝くグラデーション
-    if (!reduced && ph > bh + 1) {
-      var tg = g.createLinearGradient(0, H - ph, 0, H - bh);
-      tg.addColorStop(0, 'rgba(' + col + ',' + (dark ? 0.42 : 0.3) + ')');
-      tg.addColorStop(1, 'rgba(' + col + ',0.05)');
-      g.fillStyle = tg;
-      g.fillRect(x, H - ph, bw, ph - bh);
+  // スマホ版 v8.11：重ねて描いても重くならないよう、尾は1つのグラデーション（画面の下から上へ明るく）でまとめて塗り、
+  // 光るキャップもまとめて1回で塗る（v8.9.5〜8.10 は棒ごとにグラデーションを作り、合成の切り替えも棒ごと）
+  if (!reduced) {
+    var tgA = g.createLinearGradient(0, H - full, 0, H);
+    tgA.addColorStop(0, 'rgba(' + col + ',' + (dark ? 0.42 : 0.3) + ')');
+    tgA.addColorStop(1, 'rgba(' + col + ',0.05)');
+    g.fillStyle = tgA;
+    g.beginPath();
+    for (var t1 = 0; t1 < nb; t1++) {
+      var bh1 = Math.max(2, _npvBarVals[t1] * full), ph1 = pk[t1] * full;
+      if (ph1 > bh1 + 1) g.rect(t1 * gap + (gap - bw) / 2, H - ph1, bw, ph1 - bh1);
     }
+    g.fill();
+  }
+  for (var k = 0; k < nb; k++) {
+    var vv = _npvBarVals[k], bh = Math.max(2, vv * full), x = k * gap + (gap - bw) / 2;
     g.fillStyle = 'rgba(' + col + ',' + (0.25 + vv * 0.6).toFixed(3) + ')';
     _npvRect(g, x, H - bh, bw, bh, rad);
-    // 光るキャップ（にじみ＋芯）
-    if (!reduced && pk[k] > 0.02) {
-      var cy = H - ph - capH, ca = 0.35 + pk[k] * 0.55;
-      if (dark) {
-        g.globalCompositeOperation = 'lighter';
-        g.fillStyle = 'rgba(' + col + ',' + (ca * 0.35).toFixed(3) + ')';
-        g.fillRect(x - bw * 0.12, cy - capH * 1.6, bw * 1.24, capH * 4.2);
-        g.fillStyle = 'rgba(255,248,230,' + (ca * 0.85).toFixed(3) + ')';
-        g.fillRect(x + bw * 0.08, cy, bw * 0.84, capH);
-        g.globalCompositeOperation = 'source-over';
-      } else {
-        g.fillStyle = 'rgba(' + col + ',' + (ca * 0.18).toFixed(3) + ')';
-        g.fillRect(x - bw * 0.06, cy - capH, bw * 1.12, capH * 3);
-        g.fillStyle = 'rgba(' + col + ',' + Math.min(1, ca + 0.15).toFixed(3) + ')';
-        g.fillRect(x, cy, bw, capH);
+  }
+  // 光るキャップ（にじみ＋芯）：明るさはピークの平均から
+  if (!reduced) {
+    var ps = 0, pn = 0;
+    for (var c1 = 0; c1 < nb; c1++) if (pk[c1] > 0.02) { ps += pk[c1]; pn++; }
+    if (pn) {
+      var ca = 0.35 + ps / pn * 0.55, halo = new Path2D(), core = new Path2D();
+      for (var c2 = 0; c2 < nb; c2++) {
+        if (pk[c2] <= 0.02) continue;
+        var x2 = c2 * gap + (gap - bw) / 2, cy = H - pk[c2] * full - capH;
+        if (dark) { halo.rect(x2 - bw * 0.12, cy - capH * 1.6, bw * 1.24, capH * 4.2); core.rect(x2 + bw * 0.08, cy, bw * 0.84, capH); }
+        else { halo.rect(x2 - bw * 0.06, cy - capH, bw * 1.12, capH * 3); core.rect(x2, cy, bw, capH); }
       }
+      if (dark) g.globalCompositeOperation = 'lighter';
+      g.fillStyle = 'rgba(' + col + ',' + (ca * (dark ? 0.35 : 0.18)).toFixed(3) + ')'; g.fill(halo);
+      g.fillStyle = dark ? 'rgba(255,248,230,' + (ca * 0.85).toFixed(3) + ')' : 'rgba(' + col + ',' + Math.min(1, ca + 0.15).toFixed(3) + ')'; g.fill(core);
+      g.globalCompositeOperation = 'source-over';
     }
   }
-  if (!reduced) _npvSparksDraw(g, H, col, dark, dt);
+  // 粒は _npDraw の最後でまとめて動かして描く（スマホ版 v8.11。円と重ねても2回動かさない）
 }
 
 /* ---------- 円（スマホ版 v8.9.6：先端が光り、外へ粒が散る）----------
@@ -215,15 +243,17 @@ function _npvDrawBars(g, W, H, col, amp, dt, reduced) {
 var NPV_CIRC_BARS = 96;                    // 円の線の本数（37 の元の描き方と同じ）
 var NPV_CIRC_SPARK_KEEP = 56 / 96;         // 円の粒を出す割合（v8.9.7 の 56本のときと同じくらいの数にする）
 function NPV_CIRC_SPARK_LW(W, H) { return Math.max(3, Math.min(W, H) / 95); }   // 粒の大きさの元にする太さ（v8.9.7 の線の太さ）
-function _npvDrawCircle(g, W, H, col, amp, dt, reduced, cv) {
+function _npvDrawCircle(g, W, H, col, amp, dt, reduced, cv, cfg) {
   var dark = _npvDark(), vc = _npVizCenter(cv);
-  var cx = vc ? vc.x : W / 2, cy = vc ? vc.y : H / 2, r0 = Math.max(Math.min(W, H) * 0.22, vc ? vc.r : 0), bars = NPV_CIRC_BARS, fl = np.freq.length;
+  var bc = (typeof NVZ_BARS !== 'undefined' && cfg && NVZ_BARS[cfg.bars]) || null, tc = (typeof NVZ_THICK !== 'undefined' && cfg && NVZ_THICK[cfg.thick]) || { line: 1 };
+  var cx = vc ? vc.x : W / 2, cy = vc ? vc.y : H / 2, r0 = Math.max(Math.min(W, H) * 0.22, vc ? vc.r : 0), bars = bc ? bc.circ : NPV_CIRC_BARS, fl = np.freq.length;
+  var keep = Math.min(1, 56 / bars);   // 粒の数が本数によらず v8.9.7（56本）と同じくらいになるように間引く
   if (!_npvCircVals || _npvCircVals.length !== bars) { _npvCircVals = new Float32Array(bars); _npvPrevCirc = new Float32Array(bars); _npvLoCirc = new Float32Array(bars); }
   for (var k = 0; k < bars; k++) _npvCircVals[k] = np.freq[Math.floor(Math.pow(k / bars, 1.6) * fl * 0.7)] / 255;
   var pk = _npvPeaks(_npvCircVals, bars, 'cpeak', 'chold', dt, reduced);
-  var lw = Math.max(2, Math.min(W, H) / 160), slw = NPV_CIRC_SPARK_LW(W, H);   // 線の太さ（37 と同じ）・粒の大きさの元
+  var lw = Math.max(2, Math.min(W, H) / 160) * tc.line, slw = NPV_CIRC_SPARK_LW(W, H);   // 線の太さ（37 と同じ × 太さの設定）・粒の大きさの元
   if (!reduced) _npvEmit(pk, _npvPrevCirc, _npvCircVals, _npvLoCirc, bars, dt, function (i, power, e) {
-    if (Math.random() > NPV_CIRC_SPARK_KEEP) return;   // 本数が増えた分を間引く
+    if (Math.random() > keep) return;   // 本数が増えた分を間引く（v8.10 の NPV_CIRC_SPARK_KEEP〔56/96〕を本数に合わせて）
     var ang = i / bars * Math.PI * 2 - Math.PI / 2, c = Math.cos(ang), s = Math.sin(ang), d = r0 + r0 * 0.9 * pk[i] * amp + 2, sz = Math.max(1.6, slw * 0.32);
     var x0 = cx + c * d, y0 = cy + s * d;
     if (e < 0) { _npvSpark(x0, y0, c, s, r0 * 0.9 * power, sz); return; }
@@ -233,37 +263,52 @@ function _npvDrawCircle(g, W, H, col, amp, dt, reduced, cv) {
     _npvSpark(x0, y0, c, s, bv.v, sz * (1 + e * 0.8), 0.9 * (1 - e * 0.6), bv.life, e);
   }, 'riseCirc');
   g.lineCap = 'round';
-  for (var i = 0; i < bars; i++) {
-    var v = _npvCircVals[i], len = r0 * 0.9 * v * amp + 2, plen = r0 * 0.9 * pk[i] * amp + 2, ang = i / bars * Math.PI * 2 - Math.PI / 2;
-    var c = Math.cos(ang), s = Math.sin(ang);
-    // 尾：外側（ピーク側）ほど明るく
-    if (!reduced && plen > len + 2) {
-      var x1 = cx + c * (r0 + len), y1 = cy + s * (r0 + len), x2 = cx + c * (r0 + plen), y2 = cy + s * (r0 + plen);
-      var tg = g.createLinearGradient(x1, y1, x2, y2);
-      tg.addColorStop(0, 'rgba(' + col + ',0.05)');
-      tg.addColorStop(1, 'rgba(' + col + ',' + (dark ? 0.45 : 0.32) + ')');
-      g.lineWidth = lw * 0.7; g.strokeStyle = tg;
-      g.beginPath(); g.moveTo(x1, y1); g.lineTo(x2, y2); g.stroke();
+  // スマホ版 v8.11：尾は円の中心からの1つのグラデーション（外側ほど明るく）でまとめて描き、光る先端もまとめて1回で塗る（軽くするため）
+  if (!reduced) {
+    var rg = g.createRadialGradient(cx, cy, r0, cx, cy, r0 + r0 * 0.9 * amp + 2);
+    rg.addColorStop(0, 'rgba(' + col + ',0.05)');
+    rg.addColorStop(1, 'rgba(' + col + ',' + (dark ? 0.45 : 0.32) + ')');
+    g.lineWidth = lw * 0.7; g.strokeStyle = rg;
+    g.beginPath();
+    for (var t1 = 0; t1 < bars; t1++) {
+      var l1 = r0 * 0.9 * _npvCircVals[t1] * amp + 2, p1 = r0 * 0.9 * pk[t1] * amp + 2;
+      if (p1 <= l1 + 2) continue;
+      var a1 = t1 / bars * Math.PI * 2 - Math.PI / 2, c1 = Math.cos(a1), s1 = Math.sin(a1);
+      g.moveTo(cx + c1 * (r0 + l1), cy + s1 * (r0 + l1)); g.lineTo(cx + c1 * (r0 + p1), cy + s1 * (r0 + p1));
     }
-    g.lineWidth = lw;
+    g.stroke();
+  }
+  g.lineWidth = lw;
+  for (var i = 0; i < bars; i++) {
+    var v = _npvCircVals[i], len = r0 * 0.9 * v * amp + 2, ang = i / bars * Math.PI * 2 - Math.PI / 2;
+    var c = Math.cos(ang), s = Math.sin(ang);
     g.strokeStyle = 'rgba(' + col + ',' + (0.35 + v * 0.6).toFixed(3) + ')';
     g.beginPath(); g.moveTo(cx + c * r0, cy + s * r0); g.lineTo(cx + c * (r0 + len), cy + s * (r0 + len)); g.stroke();
-    // 光る先端（ピークの点）
-    if (!reduced && pk[i] > 0.02) {
-      var px = cx + c * (r0 + plen), py = cy + s * (r0 + plen), ca = 0.35 + pk[i] * 0.55;
+  }
+  // 光る先端（ピークの点）：明るさはピークの平均から
+  if (!reduced) {
+    var ps = 0, pn = 0, halo = new Path2D(), core = new Path2D();
+    for (var t2 = 0; t2 < bars; t2++) {
+      if (pk[t2] <= 0.02) continue;
+      ps += pk[t2]; pn++;
+      var a2 = t2 / bars * Math.PI * 2 - Math.PI / 2, p2 = r0 + r0 * 0.9 * pk[t2] * amp + 2, px = cx + Math.cos(a2) * p2, py = cy + Math.sin(a2) * p2;
+      halo.moveTo(px + lw * 1.5, py); halo.arc(px, py, lw * 1.5, 0, 6.283);
+      core.moveTo(px + lw * 0.6, py); core.arc(px, py, lw * 0.6, 0, 6.283);
+    }
+    if (pn) {
+      var ca = 0.35 + ps / pn * 0.55;
       if (dark) g.globalCompositeOperation = 'lighter';
-      g.fillStyle = 'rgba(' + col + ',' + (ca * (dark ? 0.35 : 0.2)).toFixed(3) + ')';
-      g.beginPath(); g.arc(px, py, lw * 1.5, 0, 6.283); g.fill();
-      g.fillStyle = dark ? 'rgba(255,248,230,' + (ca * 0.85).toFixed(3) + ')' : 'rgba(' + col + ',' + Math.min(1, ca + 0.15).toFixed(3) + ')';
-      g.beginPath(); g.arc(px, py, lw * 0.6, 0, 6.283); g.fill();
+      g.fillStyle = 'rgba(' + col + ',' + (ca * (dark ? 0.35 : 0.2)).toFixed(3) + ')'; g.fill(halo);
+      g.fillStyle = dark ? 'rgba(255,248,230,' + (ca * 0.85).toFixed(3) + ')' : 'rgba(' + col + ',' + Math.min(1, ca + 0.15).toFixed(3) + ')'; g.fill(core);
       g.globalCompositeOperation = 'source-over';
     }
   }
-  if (!reduced) _npvSparksDraw(g, H, col, dark, dt);
+  // 粒は _npDraw の最後でまとめて動かして描く（スマホ版 v8.11）
 }
 
 /* ---------- 波形 ---------- */
-function _npvDrawWave(g, W, H, col, amp, dt, reduced) {
+// glow：線のまわりにうすい光（スマホ版 v8.11。光がオンのとき。なめらかさ・速さは変えない）
+function _npvDrawWave(g, W, H, col, amp, dt, reduced, glow) {
   var w = np.wave, n = w.length, win = Math.min(NPV_WAVE_WINDOW, n), P = NPV_WAVE_POINTS;
   // 上向きに 0（128）を横切る所から描き始める（左右のぶれを止める）
   var start = 0, lim = n - win;
@@ -286,5 +331,13 @@ function _npvDrawWave(g, W, H, col, amp, dt, reduced) {
     g.quadraticCurveTo(x0, y0, (x0 + x1) / 2, (y0 + y1) / 2);   // 点と点の中点を通る2次曲線（なめらか）
   }
   g.lineTo(W, mid + sm[P - 1] * A);
+  if (glow) {   // 同じ線を太く・うすく先に重ねて、にじむ光に（shadowBlur より軽い）
+    var lw0 = g.lineWidth, dark = _npvDark();
+    if (dark) g.globalCompositeOperation = 'lighter';
+    g.lineWidth = lw0 * 4; g.strokeStyle = 'rgba(' + col + ',' + (dark ? 0.16 : 0.1) + ')'; g.stroke();
+    g.lineWidth = lw0 * 2.2; g.strokeStyle = 'rgba(' + col + ',' + (dark ? 0.22 : 0.14) + ')'; g.stroke();
+    g.globalCompositeOperation = 'source-over';
+    g.lineWidth = lw0; g.strokeStyle = 'rgba(' + col + ',0.85)';
+  }
   g.stroke();
 }

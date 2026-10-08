@@ -20,8 +20,7 @@ var albView = {
   list: [],          // 今表示しているアルバム一覧
   current: null,     // 今開いているアルバム
   dragFrom: -1,      // カスタム順でドラッグ中のカードの位置
-  pinDragFrom: -1,   // Pin の区切りの中でドラッグ中のカードの位置（v4.1）
-  pinSorting: false, // Pin の並べ替え（見出しの「並べ替え」を押している間。v4.1）
+  pinSorting: false, // Pin の並べ替えモード（Pin の並べ替えボタンを押している間。v4.1。v8.7.8 からドラッグは 60-pin-sort-drag.js）
   focusAfter: null   // 並べ替えたあと、動かしたカードのボタンにフォーカスを戻すため
 };
 var ALB_PAGE_SIZE = 200;
@@ -345,7 +344,10 @@ function renderAlbumsPage() {
   // Pin（v3.4）：先頭の「Pin の区切り」の下に並べ、通常の一覧には重ねて出さない（非表示のアルバムを見ている間は分けない）
   var sp = albView.showHidden ? { pinned: [], rest: list } : splitPinnedAlbums(list);
   albView.pinned = sp.pinned;
-  if (sp.pinned.length < 2) albView.pinSorting = false;
+  // Pin の並べ替えモード（v8.7.8）：検索・絞り込みで Pin の一部しか見えていないときは使えない（並べ替えボタンを押せなくし、モードも終わる）
+  var pinPartial = !albView.showHidden && sp.pinned.length < pinPresentN;
+  albView.pinSortBlocked = pinPartial;
+  if (sp.pinned.length < 2 || pinPartial) albView.pinSorting = false;
   var fullList = pinOnly ? sp.pinned : list;
   list = pinOnly ? [] : sp.rest;
   // グループ表示（v5.3。38-album-groups.js）：並べ替えたあとの一覧をグループに分け、グループの順につなげたものを albView.list にする
@@ -369,14 +371,20 @@ function renderAlbumsPage() {
   var h = '';
   if (sp.pinned.length) {   // Pin の区切り（v3.4）
     var ps = albView.pinSorting;
+    var canSort = sp.pinned.length > 1 || (pinPartial && pinPresentN > 1);
     h += '<div class="album-section-head album-pin-head"><span class="album-section-icon">' + ICONS.pin + '</span>Pin<span class="album-section-count">' + sp.pinned.length + '枚</span>' +
-      // Pin の並べ替えボタン（v4.1）：押すと「← 前へ」「後ろへ →」で動かせる（タッチの画面用。パソコンはそのままドラッグでも動かせる）
-      (sp.pinned.length > 1 ? '<span class="pin-sort-wrap"><button class="btn-inline-small pin-sort-btn' + (ps ? ' active' : '') + '" data-act="pin-sort" aria-pressed="' + ps + '" title="' +
-        (ps ? 'Pin の並べ替えを終わる' : 'Pin したアルバムの順番を変える（パソコンはカードをドラッグしても動かせます）') + '">' + (ps ? '完了' : ICONS.grip + '並べ替え') + '</button>' +
+      '<span class="pin-head-btns">' +
+      // Pin の再生ボタン・Pin のシャッフル再生ボタン（v8.7.8。62-album-set-play.js）：並べ替えモード中は押せない
+      albumSetPlayBtnsHtml({ act: 'pin', name: 'Pin ', btnName: 'Pin', albums: sp.pinned, disabled: ps, labels: true }) +
+      // Pin の並べ替えボタン（v4.1。v8.7.8 から押すと「Pin の並べ替えモード」：カードをドラッグで動かす）
+      (canSort ? '<span class="pin-sort-wrap"><button class="btn-inline-small pin-sort-btn' + (ps ? ' active' : '') + '" data-act="pin-sort" aria-pressed="' + ps + '"' + (pinPartial ? ' disabled' : '') + ' title="' +
+        (pinPartial ? 'Pin の並べ替え（検索・絞り込みで Pin の一部だけを表示している間は使えません。検索・絞り込みを解除してください）'
+          : ps ? 'Pin の並べ替えモードを終わる（Esc でも終わります）' : 'Pin したアルバムの順番をドラッグで変える') + '">' + (ps ? '完了' : ICONS.grip + '並べ替え') + '</button>' +
         '<span class="ui-label-tag ui-label-tag-onlight" style="top:-10px;right:-4px" onclick="copyUiLabel(\'Pin の並べ替えボタン\', event)" title="クリックで「Pin の並べ替えボタン」をコピー">□</span></span>' : '') +
+      '</span>' +
       '<span class="ui-label-tag ui-label-tag-onlight" style="top:-6px;right:0" onclick="copyUiLabel(\'Pin の区切り\', event)" title="クリックで「Pin の区切り」をコピー">□</span></div>' +
-      (ps ? '<p class="pin-sort-hint">カードをドラッグするか「←」「→」で順番を変えます。並びは自動で保存されます（tools の「Pin のアルバム」と同じ順番）。</p>' : '') +
-      '<div class="album-grid album-pin-grid' + (ps ? ' is-editing' : '') + '">' + sp.pinned.map(function (a, i) { return _albumCardHtml(a, i, false, sp.pinned.length, true); }).join('') + '</div>' +
+      (ps ? '<p class="pin-sort-hint"><strong>Pin の並べ替えモード</strong>　カードをドラッグして好きな位置へ動かします（キーボードはカードを選んで ← →）。並びは自動で保存されます。終わるときは「完了」か Esc。</p>' : '') +
+      '<div class="album-grid album-pin-grid' + (ps ? ' is-editing pin-sort-mode' : '') + '"' + (ps ? ' role="list" aria-label="Pin の並べ替えモード"' : '') + '>' + sp.pinned.map(function (a, i) { return _albumCardHtml(a, i, false, sp.pinned.length, true); }).join('') + '</div>' +
       (list.length ? '<div class="album-section-head">アルバム<span class="album-section-count">' + (fullList.length - sp.pinned.length) + '枚</span></div>' : '');
   }
   if (custom) {
@@ -434,15 +442,12 @@ function _albumCardHtml(a, i, custom, total, pinSection) {
     '<span class="album-card-count" title="' + albumCardCountTitle(a, a.tracks.length + '曲' + (a.byFolder ? ' ・ フォルダでまとめたアルバム' : '')) + '">' + a.tracks.length + '曲' + (a.byFolder ? ' ・ フォルダでまとめたアルバム' : '') + albumCardGenreHtml(a) + '</span>';
     // 非表示のアルバムを見ているときの「表示に戻す」は、v3.6 からジャケットの右上のボタン（カードの非表示ボタンと同じ位置）
   var title = escapeHtml(a.name + (a.artist ? ' ／ ' + a.artist : ''));
-  // Pin の区切りのカード：ドラッグで Pin の中だけ並べ替えられる（v4.1。data-pin-drag）
+  // Pin の並べ替えモードのカード（v8.7.8）：ボタンではなく div。ドラッグ（60-pin-sort-drag.js）・キーボードの ← → で動かす
   if (pinSort) {
-    return '<div class="album-card" draggable="true" data-pin-album="' + i + '" data-pin-drag="1" title="' + title + '（ドラッグで並べ替え）">' + inner +
-      '<span class="album-move-btns pin-move-btns">' +
-        '<button class="btn-inline-small" data-act="pin-move-prev" data-i="' + i + '"' + (i === 0 ? ' disabled' : '') + ' title="1つ前へ" aria-label="1つ前へ">←</button>' +
-        '<button class="btn-inline-small" data-act="pin-move-next" data-i="' + i + '"' + (i === total - 1 ? ' disabled' : '') + ' title="1つ後ろへ" aria-label="1つ後ろへ">→</button>' +
-      '</span></div>';
+    return '<div class="album-card pin-sort-card" role="listitem" tabindex="0" data-pin-album="' + i + '" data-pin-key="' + escapeHtml(a.key) + '"' +
+      ' title="' + title + '（ドラッグで並べ替え。キーボードは ← →）" aria-label="' + title + '（' + (i + 1) + ' / ' + total + '番目。← → で動かす）">' + inner + '</div>';
   }
-  if (pinSection) return '<button class="album-card" draggable="' + (total > 1) + '" data-pin-album="' + i + '"' + (total > 1 ? ' data-pin-drag="1"' : '') + ' title="' + title + '">' + inner + '</button>';
+  if (pinSection) return '<button class="album-card" data-pin-album="' + i + '" title="' + title + '">' + inner + '</button>';
   if (custom) {
     return '<div class="album-card" draggable="true" data-album="' + i + '" title="' + title + '（ドラッグで並べ替え）">' + inner +
       '<span class="album-move-btns">' +
@@ -814,12 +819,8 @@ function initAlbumsPage() {
     }
     // Pin の並べ替え（v4.1）
     if (act0 === 'pin-sort') { togglePinSorting(); var sb = albBody.querySelector('[data-act="pin-sort"]'); if (sb) sb.focus(); return; }
-    if (act0 === 'pin-move-prev' || act0 === 'pin-move-next') {
-      var pi = +btn.getAttribute('data-i'), pto = act0 === 'pin-move-prev' ? pi - 1 : pi + 1;
-      albView.focusAfter = { act: act0, i: pto };
-      movePinnedAlbumShown(pi, pto);
-      return;
-    }
+    if (act0 === 'pin-play' || act0 === 'pin-shuffle') { if (!btn.disabled && !albView.pinSorting) playPinnedAlbums(act0 === 'pin-shuffle'); return; }   // v8.7.8
+    if (act0 === 'grp-play' || act0 === 'grp-shuffle') { if (!btn.disabled) playAlbumSetFromBtn(btn, act0 === 'grp-shuffle'); return; }   // ソートキーの枠・グループの見出し（v8.7.8）
     var pcard = ev.target.closest('[data-pin-album]');   // Pin の区切りの中のカード（v3.4）
     if (pcard && albView.pinSorting) return;   // 並べ替え中は開かない
     if (pcard) { var pa = (albView.pinned || [])[+pcard.getAttribute('data-pin-album')]; if (pa) openAlbum(pa); return; }
@@ -859,29 +860,7 @@ function initAlbumsPage() {
   });
 
   // カスタム順：アルバムカードをドラッグで並べ替え
-  // Pin の区切りの中だけのドラッグ（v4.1）：通常の一覧とは行き来しない
-  albBody.addEventListener('dragstart', function (ev) {
-    var pc = ev.target.closest && ev.target.closest('[data-pin-drag]');
-    if (!pc) return;
-    albView.pinDragFrom = +pc.getAttribute('data-pin-album');
-    pc.classList.add('dragging');
-    try { ev.dataTransfer.effectAllowed = 'move'; ev.dataTransfer.setData('text/plain', 'pin:' + albView.pinDragFrom); } catch (e) { /* 無視 */ }
-  });
-  albBody.addEventListener('dragover', function (ev) {
-    var pc = ev.target.closest && ev.target.closest('[data-pin-drag]');
-    if (!pc || albView.pinDragFrom < 0) return;
-    ev.preventDefault();
-    albBody.querySelectorAll('.album-card.drag-over').forEach(function (x) { if (x !== pc) x.classList.remove('drag-over'); });
-    pc.classList.add('drag-over');
-  });
-  albBody.addEventListener('drop', function (ev) {
-    var pc = ev.target.closest && ev.target.closest('[data-pin-drag]');
-    if (!pc || albView.pinDragFrom < 0) return;
-    ev.preventDefault();
-    var from = albView.pinDragFrom;
-    albView.pinDragFrom = -1;
-    movePinnedAlbumShown(from, +pc.getAttribute('data-pin-album'));
-  });
+  // Pin の区切りのドラッグは v8.7.8 から 60-pin-sort-drag.js（Pointer Events。Pin の並べ替えモードの間だけ）
   albBody.addEventListener('dragstart', function (ev) {
     var card = ev.target.closest && ev.target.closest('.album-card[draggable="true"][data-album]');
     if (!card) return;
@@ -906,7 +885,6 @@ function initAlbumsPage() {
   });
   albBody.addEventListener('dragend', function () {
     albView.dragFrom = -1;
-    albView.pinDragFrom = -1;
     albBody.querySelectorAll('.dragging, .drag-over').forEach(function (x) { x.classList.remove('dragging', 'drag-over'); });
   });
 }

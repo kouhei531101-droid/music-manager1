@@ -54,9 +54,13 @@ function albumGroupedHtml(groups, limit) {
   groups.forEach(function (g, gi) {
     var closed = albumGroupClosed(g.key);
     h += '<section class="album-group' + (closed ? ' is-closed' : '') + '" data-group-sec="' + escapeHtml(g.key) + '">' +
+      // v8.7.8：見出しの行に、グループの再生ボタン・グループのシャッフル再生ボタン（62-album-set-play.js）を並べる（折りたたむボタンの中には入れない）
+      '<div class="album-group-headrow">' +
       '<button class="album-group-head" data-group-toggle="' + escapeHtml(g.key) + '" aria-expanded="' + !closed + '" title="押すと' + (closed ? '開く' : '折りたたむ') + '">' +
         '<span class="album-group-chev">' + ICONS.down + '</span>' + (g.badge || '<span class="album-group-label">' + escapeHtml(g.label) + '</span>') +
         '<span class="album-section-count">' + g.albums.length + '枚</span></button>' +
+      (typeof albumSetPlayBtnsHtml === 'function' ? albumSetPlayBtnsHtml({ act: 'grp', kind: 'group', key: g.key, name: '「' + g.label + '」', btnName: 'グループ', albums: g.albums, labels: gi === 0 }) : '') +
+      '</div>' +
       (gi === 0 ? '<span class="ui-label-tag ui-label-tag-onlight" style="top:2px;right:0" onclick="copyUiLabel(\'グループの見出し\', event)" title="クリックで「グループの見出し」をコピー">□</span>' : '');
     if (!closed) {
       openTotal += g.albums.length;
@@ -148,6 +152,8 @@ function albumClusterGridHtml(items, limit) {
       (canPick ? '<button type="button" class="album-sk-label" data-sk-cover="' + escapeHtml(c.key) + '" title="押すと代表ジャケット（枠の背景）を選べます">' : '<div class="album-sk-label">') +
         ICONS.tag + '<span class="album-sk-name">' + escapeHtml(c.label) + '</span><span class="album-sk-count">' + c.albums.length + '枚</span>' + (canPick ? '</button>' : '</div>') +
       (canPick ? skCoverButtonHtml(c, !labeled) : '') +
+      // v8.7.8：ソートキーの再生ボタン・ソートキーのシャッフル再生ボタン（62-album-set-play.js。枠の右上、代表ジャケットを選ぶボタンの左）
+      (typeof albumSetPlayBtnsHtml === 'function' ? '<span class="album-sk-play">' + albumSetPlayBtnsHtml({ act: 'grp', kind: 'sk', key: c.key, name: '「' + c.label + '」', btnName: 'ソートキー', albums: c.albums, labels: !labeled }) + '</span>' : '') +
       (!labeled ? '<span class="ui-label-tag ui-label-tag-onlight" style="top:4px;right:44px" onclick="copyUiLabel(\'ソートキーの枠\', event)" title="クリックで「ソートキーの枠」をコピー">□</span>' +
         (bg ? '<span class="ui-label-tag ui-label-tag-onlight" style="bottom:4px;right:6px" onclick="copyUiLabel(\'ソートキーの枠の背景\', event)" title="クリックで「ソートキーの枠の背景」をコピー">□</span>' : '') : '') +
       '<div class="album-sk-cards">' + c.albums.map(function (a, k) { return _albumCardHtml(a, idx + k, false, 0); }).join('') + '</div></section>';

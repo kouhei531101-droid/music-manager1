@@ -7,8 +7,9 @@
      アルバムカードには、Pin 中の目印（小さなピン）だけを出す（カードから直接は変えない：押し間違えやすいため）
    ・検索中は、検索に合う Pin だけを先頭に。非表示のアルバム（v3.0）は、Pin していても一覧には出さない（非表示が優先）
    ・目印が変わったときは 14-albums.js の migrateAlbumKeys()、17-tag-edit.js の _renameAlbumKeysAfter() が付け替える
-   ・v4.1：Pin の並べ替え（Pin の区切りの中だけでドラッグ。タッチ用に見出しの「並べ替え」→「← 前へ」「後ろへ →」）、
-     Pin のみボタン（Pin したアルバムだけを表示。db.settings.albumPinOnly）
+   ・v4.1：Pin の並べ替え、Pin のみボタン（Pin したアルバムだけを表示。db.settings.albumPinOnly）
+   ・v8.7.8：Pin の並べ替えは「Pin の並べ替えボタン」→「Pin の並べ替えモード」の間だけ、カードをドラッグ（60-pin-sort-drag.js。
+     Pointer Events）・キーボードの ← →。モード外のカードはドラッグできない（前の HTML5 のドラッグと「←」「→」ボタンはやめた）
    ・ファイルは一切触らない
    ========================================================= */
 
@@ -143,9 +144,12 @@ function movePinnedAlbumShown(i, j) {
   if (i < 0 || j < 0 || i >= ps.length || j >= ps.length || i === j) return;
   if (movePinnedAlbumKey(ps[i].key, ps[j].key)) renderAlbumsPage();
 }
-// Pin の並べ替え（見出しの「並べ替え」「完了」）：カードのボタンを隠し、「← 前へ」「後ろへ →」を出す
+// Pin の並べ替えボタン（見出しの「並べ替え」「完了」）：Pin の並べ替えモードを切り替える（v8.7.8 からカードはドラッグで動かす）。
+// 検索・絞り込みで Pin の一部しか見えていないとき（albView.pinSortBlocked）は入らない
 function togglePinSorting(on) {
-  albView.pinSorting = typeof on === 'boolean' ? on : !albView.pinSorting;
+  var next = typeof on === 'boolean' ? on : !albView.pinSorting;
+  if (next && albView.pinSortBlocked) next = false;
+  albView.pinSorting = next;
   renderAlbumsPage();
 }
 

@@ -1005,17 +1005,55 @@ body.np-open { overflow: hidden; }
 /* Pin のみボタン（v4.1）：オンはオレンジ（Pin の色） */
 .album-pin-only.active { background: var(--accent); color: #fff; border-color: var(--accent); }
 .album-pin-only:disabled { opacity: 0.45; cursor: default; }
-/* Pin の並べ替え（v4.1）：見出しの「並べ替え」ボタン、説明、ドラッグ中の見た目、← → ボタン */
-.pin-sort-wrap { position: relative; display: inline-flex; margin-left: auto; font-family: var(--font); }
+/* Pin の区切りの見出しのボタン（v8.7.8）：Pin の再生ボタン・Pin のシャッフル再生ボタン・Pin の並べ替えボタン（右寄せ） */
+.pin-head-btns { display: inline-flex; align-items: center; gap: 6px; margin-left: auto; margin-right: 18px; font-family: var(--font); }
+/* まとまりの再生ボタン（v8.7.8。62-album-set-play.js）：Pin の区切り・ソートキーの枠・グループの見出しで同じ見た目 */
+.set-play-btns { display: inline-flex; align-items: center; gap: 6px; font-family: var(--font); }
+.set-play-wrap { position: relative; display: inline-flex; }
+.set-play-btns .btn-inline-small { height: 30px; min-height: 30px; box-sizing: border-box; }
+.set-play-btn { font-size: 12px; font-weight: 400; gap: 4px; }
+.set-play-btn svg { width: 12px; height: 12px; }
+.set-play-btns .set-shuffle-btn { width: 30px; padding: 0; justify-content: center; }
+.set-play-btn:disabled, .set-shuffle-btn:disabled { opacity: 0.45; cursor: default; }
+/* グループの見出しの行（折りたたむボタン＋再生ボタン） */
+.album-group-headrow { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; border-bottom: 1px solid var(--border2); }
+.album-group-headrow .album-group-head { flex: 1; min-width: 0; margin-bottom: 0; border-bottom: none; }
+.album-group-headrow .set-play-btns { flex: none; padding-right: 4px; }
+.album-group.is-closed .album-group-headrow { margin-bottom: 0; }
+/* ソートキーの枠の再生ボタン：右上（代表ジャケットを選ぶボタンの左） */
+.album-sk-play { position: absolute; top: 7px; right: 46px; z-index: 2; }
+.album-sk-cluster .album-sk-play .btn-inline-small { background: hsl(var(--sk-h) 60% 97% / 0.9); border-color: hsl(var(--sk-h) 45% 72%); color: hsl(var(--sk-h) 50% 30%); }
+:root[data-theme="dark"] .album-sk-cluster .album-sk-play .btn-inline-small { background: hsl(var(--sk-h) 30% 20% / 0.9); border-color: hsl(var(--sk-h) 35% 42%); color: hsl(var(--sk-h) 70% 85%); }
+/* Pin の並べ替え（v4.1。v8.7.8 から「Pin の並べ替えモード」：ドラッグは 60-pin-sort-drag.js） */
+.pin-sort-wrap { position: relative; display: inline-flex; font-family: var(--font); }
 .pin-sort-btn { font-size: 12px; font-weight: 400; }
 .pin-sort-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); font-weight: 700; }
 .pin-sort-hint { margin: -6px 0 10px; font-size: 12px; color: var(--text-sub); }
-.album-pin-grid .album-card[draggable="true"] { -webkit-user-drag: element; }
-.album-pin-grid .album-card.dragging { opacity: 0.4; }
-.album-pin-grid .album-card.drag-over .art-card { outline: 3px solid var(--accent); outline-offset: 2px; }
-.album-pin-grid.is-editing .album-card { cursor: grab; }
-.pin-move-btns { gap: 4px; margin-top: 4px; }
-.pin-move-btns .btn-inline-small { padding: 4px 2px; min-height: 30px; font-size: 14px; }
+/* Pin の並べ替えモード：カードは点線の枠で少し揺れる（つかめる合図）。タッチでもスクロールせずにドラッグできるよう touch-action: none */
+.album-pin-grid.pin-sort-mode { padding: 10px 8px 20px; margin: 0 -8px; border-radius: 12px; background: var(--accent-pale, rgba(240, 140, 60, 0.06)); }
+.album-pin-grid.pin-sort-mode .pin-sort-card { cursor: grab; touch-action: none; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; border-radius: 12px; }
+.album-pin-grid.pin-sort-mode .pin-sort-card img { -webkit-user-drag: none; pointer-events: none; }
+.album-pin-grid.pin-sort-mode .pin-sort-card .card-art-wrap { display: block; animation: pin-wiggle 0.42s ease-in-out infinite alternate; transform-origin: 50% 60%; }
+.album-pin-grid.pin-sort-mode .pin-sort-card:nth-child(2n) .card-art-wrap { animation-delay: -0.21s; animation-duration: 0.46s; }
+.album-pin-grid.pin-sort-mode .pin-sort-card .art-card { outline: 2px dashed var(--accent); outline-offset: 3px; }
+.album-pin-grid.pin-sort-mode .pin-sort-card:hover .art-card { transform: none; }
+.album-pin-grid.pin-sort-mode .pin-sort-card:focus-visible { outline: 3px solid var(--primary); outline-offset: 4px; }
+@keyframes pin-wiggle { from { transform: rotate(-1.1deg); } to { transform: rotate(1.1deg); } }
+/* 持ち上げたカードの元の場所（空き）：中身を消して点線の枠だけ */
+.album-pin-grid.pin-sort-mode .pin-sort-card.is-drag-source > * { visibility: hidden; }
+.album-pin-grid.pin-sort-mode .pin-sort-card.is-drag-source { outline: 2px dashed var(--accent); outline-offset: 2px; background: rgba(240, 140, 60, 0.10); }
+.album-pin-grid.pin-sort-mode .pin-sort-card.is-drag-source .card-art-wrap { animation: none; }
+/* 持ち上げたカード（複製）：少し大きく・影付きでポインターに付いてくる */
+.album-pin-grid.pin-sort-ghost { position: fixed; z-index: 2000; margin: 0; padding: 0; border: none; pointer-events: none; transform: scale(1.08) rotate(-1.5deg); transform-origin: 50% 40%;
+  filter: drop-shadow(0 14px 22px rgba(20, 15, 50, 0.35)); }
+.album-pin-grid.pin-sort-ghost .album-card { width: 100%; height: 100%; padding: 6px; margin: -6px; box-sizing: content-box; border-radius: 12px; background: var(--surface, #fff); }
+.album-pin-grid.pin-sort-ghost .card-art-wrap { animation: none; }
+.album-pin-grid.pin-sort-ghost .art-card { outline: 3px solid var(--accent); outline-offset: 2px; }
+.album-pin-grid.pin-sort-ghost.is-dropping { transition: left 0.2s ease, top 0.2s ease, transform 0.2s ease; transform: none; }
+body.pin-dragging, body.pin-dragging * { cursor: grabbing !important; user-select: none; }
+@media (prefers-reduced-motion: reduce) {
+  .album-pin-grid.pin-sort-mode .pin-sort-card .card-art-wrap { animation: none; }
+}
 .art-item.dragging { opacity: 0.4; }
 .art-item.drag-over { box-shadow: inset 0 2px 0 var(--accent); }
 /* 下の4行は v3.8 から使っていない（ボタンは写真の上の .head-art-pin / .head-art-hide へ移した）。念のため残す */
@@ -1788,6 +1826,7 @@ button.album-sk-label:focus-visible, .album-sk-cover-btn:focus-visible { outline
 :root[data-theme="dark"] .album-sk-cover-btn { border-color: hsl(var(--sk-h) 35% 42%); background: hsl(var(--sk-h) 30% 20% / 0.85); color: hsl(var(--sk-h) 70% 85%); }
 :root[data-theme="dark"] .album-sk-cover-btn:hover { background: hsl(var(--sk-h) 30% 28%); }
 .album-sk-cluster .album-sk-label { margin-right: 40px; max-width: calc(100% - 40px); }
+.album-sk-cluster .album-sk-play ~ .album-sk-label, .album-sk-cluster:has(.album-sk-play) .album-sk-label { max-width: calc(100% - 170px); }   /* v8.7.8：再生ボタンの分をあける */
 @media (max-width: 760px), (orientation: landscape) and (max-height: 500px) and (max-width: 1000px) {
   .album-sk-cover-wrap { top: 6px; right: 6px; }
   .album-sk-cover-btn { width: 26px; height: 26px; }
@@ -3066,4 +3105,57 @@ body.alb-fab-on #main { padding-bottom: calc(var(--player-h) + var(--lyr-bottom)
   .modal-body { min-height: 0; overflow-y: auto; }
   .modal-header { padding: 10px 16px 8px 20px; }
   .modal-footer { padding: 8px 16px 10px; }
+}
+
+/* ---------- スマホ版 v8.11：Pin の並べ替えモード・まとまりの再生ボタン・描き方メニュー（72・73・74・67）----------
+   ・Pin の並べ替えモード（72-pin-sort-drag.js。見た目は上の PC版 v8.7.8 と同じ）：スマホ幅でも Pin の区切りは折り返しのグリッド（.is-editing）に戻し、
+     カードを上下左右にドラッグする。モード中だけカードに touch-action: none（モード外の一覧はいつもどおりスクロールできる）
+   ・まとまりの再生ボタン（74-album-set-play.js）：スマホ幅では「再生」の文字を出さず ▷ のアイコンだけ（30px の四角。名前は title）。
+     ソートキーの枠では右上（代表ジャケットを選ぶボタンの左）、枠の中の横スライドとは別の行なのでスライドを邪魔しない
+   ・描き方メニュー（67-np-viz-menu.js）：上に「描き方」の4つのチップ（バー・波形・円・なし）、下に「描き方の設定」（バーの数・太さ・光）。
+     画面の高さ・幅からはみ出さない（中でスクロール） */
+@media (max-width: 760px), (orientation: landscape) and (max-height: 500px) and (max-width: 1000px) {
+  .pin-head-btns { gap: 6px; margin-right: 6px; }
+  .set-play-btns { gap: 6px; }
+  .set-play-btns .set-play-btn { width: 32px; height: 32px; min-height: 32px; padding: 0; gap: 0; font-size: 0; justify-content: center; }
+  .set-play-btns .set-play-btn svg { width: 14px; height: 14px; margin-left: 2px; }
+  .set-play-btns .set-shuffle-btn { width: 32px; height: 32px; min-height: 32px; }
+  .set-play-btns .set-shuffle-btn svg { width: 15px; height: 15px; }
+  .album-sk-play { top: 5px; right: 44px; }
+  .album-sk-cluster .album-sk-play ~ .album-sk-label, .album-sk-cluster:has(.album-sk-play) .album-sk-label { max-width: calc(100% - 128px); }
+  .album-group-headrow .set-play-btns { padding-right: 0; }
+  /* Pin の並べ替えモード：折り返しのグリッド（スマホ幅のカードの大きさ）。説明は小さめ */
+  .album-grid.album-pin-grid.is-editing { grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); gap: 14px 10px; }
+  .pin-sort-hint { margin: -4px 0 8px; font-size: 12px; line-height: 1.5; }
+}
+
+/* 描き方メニュー（スマホ版 v8.11）：描き方の複数選択と描き方の設定 */
+.np-viz-menu { width: min(320px, calc(100vw - 40px)); min-width: 0; max-height: calc(100vh - 80px); overflow-y: auto; padding: 10px 10px 8px; box-sizing: border-box; }
+.np-viz-mtitle { position: relative; display: flex; align-items: baseline; gap: 4px; margin: 0 2px 6px; font-size: 12.5px; font-weight: 700; color: var(--ink); }
+.np-viz-msub { font-size: 11px; font-weight: 400; color: var(--text-sub); }
+.np-viz-set-title { margin-top: 10px; padding-top: 8px; border-top: 1px solid var(--border); }
+.np-viz-chips { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; }
+.np-viz-chip { position: relative; min-height: 58px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; padding: 6px 2px 5px;
+  border: 1px solid var(--border2); border-radius: 12px; background: var(--surface-2); color: var(--text); font-size: 12px; cursor: pointer; }
+.np-viz-chip .np-viz-ico { width: 30px; height: 30px; }
+.np-viz-chip .np-viz-name { flex: none; white-space: nowrap; }
+.np-viz-chip .np-viz-check { position: absolute; top: 3px; right: 4px; width: 14px; }
+.np-viz-chip .np-viz-check svg { width: 13px; height: 13px; }
+.np-viz-chip.is-cur { border-color: var(--primary-mid); background: var(--primary-pale); color: var(--ink); font-weight: 700; }
+.np-viz-chip.is-cur .np-viz-ico { background: var(--primary-mid); color: #fff; }
+.np-viz-chip[data-viz-none].is-cur .np-viz-ico { background: var(--text-sub); }
+.np-viz-chip:focus-visible, .np-viz-seg-btn:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+.np-viz-row { display: flex; align-items: center; gap: 8px; margin: 6px 2px; }
+.np-viz-row.is-off { opacity: 0.5; }
+.np-viz-row-label { flex: none; width: 4.6em; font-size: 12px; color: var(--text-sub); }
+.np-viz-seg { flex: 1; min-width: 0; display: inline-flex; gap: 2px; padding: 2px; border-radius: 999px; background: var(--surface-2); border: 1px solid var(--border2); }
+.np-viz-seg-btn { flex: 1; min-width: 0; min-height: 32px; border: none; border-radius: 999px; background: transparent; color: var(--text-sub); font-size: 12.5px; padding: 4px 4px; cursor: pointer; white-space: nowrap; }
+.np-viz-seg-btn.active { background: var(--primary-mid); color: #fff; font-weight: 700; }
+.np-viz-note { margin: 6px 2px 0; font-size: 11px; line-height: 1.5; color: var(--text-faint, var(--text-sub)); }
+.np-viz-btn.is-none { opacity: 0.7; }
+@media (orientation: landscape) and (max-height: 500px) and (max-width: 1000px) {
+  .np-viz-menu { width: min(320px, calc(50vw - 24px)); max-height: calc(100vh - 64px); }
+  .np-viz-chip { min-height: 50px; }
+  .np-viz-chip .np-viz-ico { width: 26px; height: 26px; }
+  .np-viz-seg-btn { min-height: 28px; }
 }

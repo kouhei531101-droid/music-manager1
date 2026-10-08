@@ -13,6 +13,7 @@ var acm = { el: null, album: null, lpTimer: 0, lpX: 0, lpY: 0, suppressClick: 0,
 // 押した所からアルバムを探す（ジャケットの上だけ）
 function _acmAlbumAt(target) {
   if (!target || !target.closest) return null;
+  if (typeof isPinSortTarget === 'function' && isPinSortTarget(target)) return null;   // Pin の並べ替えモードのカードでは出さない（v8.7.8）
   var art = target.closest('.card-art-wrap, .art-card, .album-head-art');
   if (!art) return null;
   if (art.classList.contains('album-head-art')) return albView.current || null;
