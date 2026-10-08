@@ -6,7 +6,7 @@
    ・登録は 59-mobile.js（http / https で開いたときだけ。file:// では登録しない）
    ========================================================= */
 
-var CACHE_NAME = 'music-manager-app-v8.12';
+var CACHE_NAME = 'music-manager-app-v8.12.1';
 
 self.addEventListener('install', function () { self.skipWaiting(); });
 self.addEventListener('activate', function (ev) {

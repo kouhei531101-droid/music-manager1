@@ -281,7 +281,19 @@ function getAlbumList(albums) {
   if (terms.length) {
     // まとめたアルバム（コンピレーション）は、参加しているどのアーティストの名前でも見つかる（v2.9）
     // ソートキー（v4.3）・タグ名（v4.4）・ジャンル（v4.6）でも見つかる
-    arr = arr.filter(function (a) { var h = (a.name + ' ' + a.artist + ' ' + a.artists.join(' ') + (a.sortKey ? ' ' + a.sortKey : '') + (a.tagName ? ' ' + a.tagName : '') + (a.genre ? ' ' + a.genre : '')).toLowerCase(); return terms.every(function (w) { return h.indexOf(w) >= 0; }); });
+    // v8.7.11：ひらがな・カタカナは同じとみなす（kanaFold）。半角英字の言葉はローマ字でも比べる（スマホ版 v8.12.1：76-romaji.js〔PC版 v8.7.11 の 64-romaji.js と同じ〕。名前・アーティスト・ソートキーのかなをローマ字にしたもの）
+    var fold = typeof kanaFold === 'function' ? kanaFold : function (x) { return x; };
+    var useRomaji = typeof romajiSearchKey === 'function';
+    terms = terms.map(function (w) { return { w: fold(w), r: useRomaji && isRomajiQuery(w) ? romajiCanon(w) : '' }; });
+    arr = arr.filter(function (a) {
+      var h = fold((a.name + ' ' + a.artist + ' ' + a.artists.join(' ') + (a.sortKey ? ' ' + a.sortKey : '') + (a.tagName ? ' ' + a.tagName : '') + (a.genre ? ' ' + a.genre : '')).toLowerCase()), rk = null;
+      return terms.every(function (t) {
+        if (h.indexOf(t.w) >= 0) return true;
+        if (!t.r) return false;
+        if (rk === null) rk = romajiSearchKey(a.name) + ' ' + romajiSearchKey(a.artist) + ' ' + (a.artists.length > 1 ? a.artists.map(romajiSearchKey).join(' ') + ' ' : '') + (a.sortKey ? romajiSearchKey(a.sortKey) : '');
+        return rk.indexOf(t.r) >= 0;
+      });
+    });
   }
   if (mode === 'custom') return _applyCustomOrder(arr.sort(compareAlbumsStandard));
   // 項目で並べる（v4.0）：チェックした項目を優先の順に。全部同じなら標準の並び

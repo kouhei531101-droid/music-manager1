@@ -3185,7 +3185,7 @@ body.alb-fab-on #main { padding-bottom: calc(var(--player-h) + var(--lyr-bottom)
 }
 
 /* ---------- スマホ版 v8.12：描き方を15種類に（75-np-viz-more.js・67-np-viz-menu.js）----------
-   ・描き方メニューのチップは小さな絵付きの4列のグリッド（15種類＋なし＝4行）。同時に重ねられるのは3つまで（73 の NVZ_MAX）
+   ・描き方メニューのチップは小さな絵付きの4列のグリッド（15種類＋なし＝4行）。同時に重ねられるのは4つまで（73 の NVZ_MAX。PC版と同じ）
    ・メニューが画面に入らないとき（横向きなど）は、今までどおりメニューの中で縦にスクロール */
 .np-viz-chips { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 5px; }
 .np-viz-chip { min-height: 50px; padding: 5px 1px 4px; gap: 2px; font-size: 11px; border-radius: 10px; }
