@@ -16,6 +16,11 @@
      重ねる順（奥から）：円 → バー → 波形 → 光の粒（粒はまとめて1回だけ動かして描く）。「なし」は何も描かない
      バーの数・円の線の本数（NVZ_BARS）・太さ（NVZ_THICK）を設定から。光がオフ（cfg.glow）のときは、残像・光る先端・粒を出さない
      （動きを減らす設定と同じ描き方。振幅は変えない）。波形はゆったりした描き方（96点・なめらか）のまま、光がオンなら線のまわりにうすい光
+   ・スマホ版 v8.11.1：「光の調整」（73-np-viz-settings.js の vizGlowAmt・vizSparkAmt・vizSparkHeight・vizTrailAmt。0〜200%、既定 100%）を npvTune で効かせる：
+       光の量 glow：尾・光る先端（にじみ・芯）・波形の光の明るさに掛ける（粒の明るさは変えない）
+       粒の数 spark：落ちながら出る粒の出る割合・はじける粒の数に掛ける（0 で粒なし。同時に出す上限 NPV_SPARK_MAX＝200 個は変えない）
+       はじける高さ height：はじける粒が届く高さ（小さいとき・いちばん強いとき両方）に掛ける（50〜200%。寿命も高さに合わせて伸ばす）
+       残像の長さ trail：ピークが下がり始めるまでの時間に掛け、下がる速さを割る（0 で残像なし＝ピークは今の値のまま）
    ========================================================= */
 
 var NPV_TRAIL_FALL = 0.55;        // ピークが1秒で下がる量（0〜1。1＝棒の一番上から下まで）
@@ -29,16 +34,22 @@ var npv = { peak: null, hold: null, cpeak: null, chold: null, waveS: null, lastT
 function _npvArr(name, n) { if (!npv[name] || npv[name].length !== n) npv[name] = new Float32Array(n); return npv[name]; }
 // ピークを今の値まで上げる・時間とともに下げる。返り値はピークの配列
 function _npvPeaks(vals, n, pName, hName, dt, reduced) {
-  var pk = _npvArr(pName, n), hd = _npvArr(hName, n), fall = NPV_TRAIL_FALL * dt;
+  // スマホ版 v8.11.1：残像の長さ（npvTune.trail）。0 で残像なし、2 で止める時間 2倍・下がる速さ 1/2
+  var tr = npvTune.trail;
+  if (tr <= 0.001) reduced = true;
+  var pk = _npvArr(pName, n), hd = _npvArr(hName, n), fall = NPV_TRAIL_FALL / Math.max(0.05, tr) * dt, hold = NPV_TRAIL_HOLD * tr;
   for (var i = 0; i < n; i++) {
     var v = vals[i];
-    if (reduced || v >= pk[i]) { pk[i] = v; hd[i] = NPV_TRAIL_HOLD; }
+    if (reduced || v >= pk[i]) { pk[i] = v; hd[i] = hold; }
     else if (hd[i] > 0) hd[i] -= dt;
     else pk[i] = Math.max(v, pk[i] - fall);
   }
   return pk;
 }
 var _npvBarVals = null, _npvCircVals = null;
+// 光の調整（スマホ版 v8.11.1。_npDraw が毎回 npVizCfg() から入れる。1＝100%）
+var npvTune = { glow: 1, spark: 1, height: 1, trail: 1 };
+function _npvA(a) { return Math.max(0, Math.min(1, a * npvTune.glow)).toFixed(3); }   // 光の量を掛けたうすさ（0〜1）
 
 var _npDrawV1 = window._npDraw;   // 37 の今までの描き方（比べるときのために残す。使っていない）
 window._npDraw = function () {
@@ -54,6 +65,8 @@ window._npDraw = function () {
   // スマホ版 v8.11：組み合わせ（奥から 円 → バー → 波形 → 光の粒）。plain：残像・光る先端・粒を出さない（光がオフ・動きを減らす設定）
   var cfg = typeof npVizCfg === 'function' ? npVizCfg() : { modes: [npMode()], bars: 'normal', thick: 'normal', glow: true };
   if (!cfg.modes.length) { _npvSparksClear(); return; }
+  npvTune.glow = (cfg.glowAmt == null ? 100 : cfg.glowAmt) / 100; npvTune.spark = (cfg.sparkAmt == null ? 100 : cfg.sparkAmt) / 100;
+  npvTune.height = (cfg.sparkHeight == null ? 100 : cfg.sparkHeight) / 100; npvTune.trail = (cfg.trailAmt == null ? 100 : cfg.trailAmt) / 100;
   var plain = reduced || !cfg.glow, sparkle = !plain && (cfg.modes.indexOf('bars') >= 0 || cfg.modes.indexOf('circle') >= 0);
   if (!sparkle) _npvSparksClear();   // v8.9.6：波形だけ・動きを減らす設定（v8.11：光がオフ）では粒を消す
   cfg.modes.forEach(function (m) {
@@ -155,12 +168,12 @@ function _npvEmit(pk, prev, vals, lo, n, dt, at, key) {
     else if (rising[i]) {   // 上がりきった
       rising[i] = 0;
       if (rise > NPV_RISE_MIN) {
-        var e = Math.min(1, (_npvAmp(pk[i]) - _npvAmp(lo[i])) / NPV_RISE_FULL), m = 1 + Math.round(e * 8);
+        var e = Math.min(1, (_npvAmp(pk[i]) - _npvAmp(lo[i])) / NPV_RISE_FULL), mf = (1 + e * 8) * npvTune.spark, m = Math.floor(mf) + (Math.random() < mf % 1 ? 1 : 0);   // v8.11.1：粒の数
         if (e > 0.02) for (var b = 0; b < m; b++) at(i, 1.4, e);
       }
       lo[i] = v;   // 使った上昇量は1回だけ
     }
-    else if (jump < 0 && pk[i] > 0.05 && Math.random() < NPV_SPARK_RATE * pk[i] * dt) at(i, 0.8, -1);
+    else if (jump < 0 && pk[i] > 0.05 && Math.random() < NPV_SPARK_RATE * npvTune.spark * pk[i] * dt) at(i, 0.8, -1);
     prev[i] = pk[i];
   }
 }
@@ -168,9 +181,10 @@ function _npvEmit(pk, prev, vals, lo, n, dt, at, key) {
 function _npvAmp(v) { return Math.pow(10, 2 * (v - 1)); }
 // はじける粒の初速と寿命：dist（強さ 1 で届かせたい距離）まで e^カーブで結んだ高さへ届く速さ
 function _npvBurstV(e, H, minDist, dist) {
-  var h = minDist + Math.max(0, dist - minDist) * Math.pow(e, NPV_HEIGHT_CURVE), g = H * NPV_SPARK_GRAV;
+  var k = npvTune.height;   // スマホ版 v8.11.1：はじける高さ（0.5〜2）
+  var h = (minDist + Math.max(0, dist - minDist) * Math.pow(e, NPV_HEIGHT_CURVE)) * k, g = H * NPV_SPARK_GRAV;
   var v0 = Math.sqrt(2 * g * h);
-  return { v: v0, life: Math.min(2.4, Math.max(0.5, v0 / g * 1.15 + 0.2)) };
+  return { v: v0, life: Math.min(2.4 * Math.sqrt(Math.max(1, k)), Math.max(0.5, v0 / g * 1.15 + 0.2)) };
 }
 // 上の角を丸めた四角（roundRect が無いブラウザはふつうの四角）
 function _npvRect(g, x, y, w, h, r) {
@@ -200,8 +214,8 @@ function _npvDrawBars(g, W, H, col, amp, dt, reduced, cfg) {
   // 光るキャップもまとめて1回で塗る（v8.9.5〜8.10 は棒ごとにグラデーションを作り、合成の切り替えも棒ごと）
   if (!reduced) {
     var tgA = g.createLinearGradient(0, H - full, 0, H);
-    tgA.addColorStop(0, 'rgba(' + col + ',' + (dark ? 0.42 : 0.3) + ')');
-    tgA.addColorStop(1, 'rgba(' + col + ',0.05)');
+    tgA.addColorStop(0, 'rgba(' + col + ',' + _npvA(dark ? 0.42 : 0.3) + ')');
+    tgA.addColorStop(1, 'rgba(' + col + ',' + _npvA(0.05) + ')');
     g.fillStyle = tgA;
     g.beginPath();
     for (var t1 = 0; t1 < nb; t1++) {
@@ -228,8 +242,8 @@ function _npvDrawBars(g, W, H, col, amp, dt, reduced, cfg) {
         else { halo.rect(x2 - bw * 0.06, cy - capH, bw * 1.12, capH * 3); core.rect(x2, cy, bw, capH); }
       }
       if (dark) g.globalCompositeOperation = 'lighter';
-      g.fillStyle = 'rgba(' + col + ',' + (ca * (dark ? 0.35 : 0.18)).toFixed(3) + ')'; g.fill(halo);
-      g.fillStyle = dark ? 'rgba(255,248,230,' + (ca * 0.85).toFixed(3) + ')' : 'rgba(' + col + ',' + Math.min(1, ca + 0.15).toFixed(3) + ')'; g.fill(core);
+      g.fillStyle = 'rgba(' + col + ',' + _npvA(ca * (dark ? 0.35 : 0.18)) + ')'; g.fill(halo);
+      g.fillStyle = dark ? 'rgba(255,248,230,' + _npvA(ca * 0.85) + ')' : 'rgba(' + col + ',' + _npvA(Math.min(1, ca + 0.15)) + ')'; g.fill(core);
       g.globalCompositeOperation = 'source-over';
     }
   }
@@ -266,8 +280,8 @@ function _npvDrawCircle(g, W, H, col, amp, dt, reduced, cv, cfg) {
   // スマホ版 v8.11：尾は円の中心からの1つのグラデーション（外側ほど明るく）でまとめて描き、光る先端もまとめて1回で塗る（軽くするため）
   if (!reduced) {
     var rg = g.createRadialGradient(cx, cy, r0, cx, cy, r0 + r0 * 0.9 * amp + 2);
-    rg.addColorStop(0, 'rgba(' + col + ',0.05)');
-    rg.addColorStop(1, 'rgba(' + col + ',' + (dark ? 0.45 : 0.32) + ')');
+    rg.addColorStop(0, 'rgba(' + col + ',' + _npvA(0.05) + ')');
+    rg.addColorStop(1, 'rgba(' + col + ',' + _npvA(dark ? 0.45 : 0.32) + ')');
     g.lineWidth = lw * 0.7; g.strokeStyle = rg;
     g.beginPath();
     for (var t1 = 0; t1 < bars; t1++) {
@@ -298,8 +312,8 @@ function _npvDrawCircle(g, W, H, col, amp, dt, reduced, cv, cfg) {
     if (pn) {
       var ca = 0.35 + ps / pn * 0.55;
       if (dark) g.globalCompositeOperation = 'lighter';
-      g.fillStyle = 'rgba(' + col + ',' + (ca * (dark ? 0.35 : 0.2)).toFixed(3) + ')'; g.fill(halo);
-      g.fillStyle = dark ? 'rgba(255,248,230,' + (ca * 0.85).toFixed(3) + ')' : 'rgba(' + col + ',' + Math.min(1, ca + 0.15).toFixed(3) + ')'; g.fill(core);
+      g.fillStyle = 'rgba(' + col + ',' + _npvA(ca * (dark ? 0.35 : 0.2)) + ')'; g.fill(halo);
+      g.fillStyle = dark ? 'rgba(255,248,230,' + _npvA(ca * 0.85) + ')' : 'rgba(' + col + ',' + _npvA(Math.min(1, ca + 0.15)) + ')'; g.fill(core);
       g.globalCompositeOperation = 'source-over';
     }
   }
@@ -334,8 +348,8 @@ function _npvDrawWave(g, W, H, col, amp, dt, reduced, glow) {
   if (glow) {   // 同じ線を太く・うすく先に重ねて、にじむ光に（shadowBlur より軽い）
     var lw0 = g.lineWidth, dark = _npvDark();
     if (dark) g.globalCompositeOperation = 'lighter';
-    g.lineWidth = lw0 * 4; g.strokeStyle = 'rgba(' + col + ',' + (dark ? 0.16 : 0.1) + ')'; g.stroke();
-    g.lineWidth = lw0 * 2.2; g.strokeStyle = 'rgba(' + col + ',' + (dark ? 0.22 : 0.14) + ')'; g.stroke();
+    g.lineWidth = lw0 * 4; g.strokeStyle = 'rgba(' + col + ',' + _npvA(dark ? 0.16 : 0.1) + ')'; g.stroke();
+    g.lineWidth = lw0 * 2.2; g.strokeStyle = 'rgba(' + col + ',' + _npvA(dark ? 0.22 : 0.14) + ')'; g.stroke();
     g.globalCompositeOperation = 'source-over';
     g.lineWidth = lw0; g.strokeStyle = 'rgba(' + col + ',0.85)';
   }

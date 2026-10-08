@@ -11,6 +11,9 @@
        「なし」を押すと全部オフ（ビジュアライザーを出さない）。選んでもメニューは閉じない
        描き方の設定：バーの数（少ない／ふつう／多い。円の線も 48／96／144 本）・太さ（細い／ふつう／太い）・光（オン／オフ）
      閉じる：メニューの外を押す・もう一度 ⓘ・Esc（再生画面は閉じない）。曲が変わるたび（npRender）には、中身が同じなら書き直さない
+   ・スマホ版 v8.11.1：光がオンのとき、「光」の下に「光の調整」（光の量・粒の数・はじける高さ・残像の長さ のスライダー〔今の値 %〕と「元に戻す」）。
+     動かしている間は値と % の文字だけを変え（setNpVizTune。描き方にはすぐ効く）、メニューは書き直さない。指を離したら保存（change）。
+     動かしている間（npVizTuning）は、曲が変わってもメニューを書き直さない。スライダーの上のキー（← → など）は再生画面へ渡さない
    ========================================================= */
 
 // 描き方のアイコン（バー＝縦棒、波形＝波線、円＝放射状の円）
@@ -51,10 +54,33 @@ function npVizMenuSetup() {
     else if (b.hasAttribute('data-nvz-bars')) { setNpViz({ bars: b.getAttribute('data-nvz-bars') }); sel = '[data-nvz-bars="' + b.getAttribute('data-nvz-bars') + '"]'; }
     else if (b.hasAttribute('data-nvz-thick')) { setNpViz({ thick: b.getAttribute('data-nvz-thick') }); sel = '[data-nvz-thick="' + b.getAttribute('data-nvz-thick') + '"]'; }
     else if (b.hasAttribute('data-nvz-glow')) { setNpViz({ glow: b.getAttribute('data-nvz-glow') === 'on' }); sel = '[data-nvz-glow="' + b.getAttribute('data-nvz-glow') + '"]'; }
+    else if (b.hasAttribute('data-nvz-tune-reset')) { resetNpVizTune(); sel = '[data-nvz-tune-reset]'; }   // v8.11.1：光の調整を全部 100%
     if (sel) { var f = menu.querySelector(sel); if (f) { try { f.focus({ preventScroll: true }); } catch (e) { /* 無視 */ } } }
   });
+  // 光の調整のスライダー（v8.11.1）：動かしている間は値と文字だけ、離したら保存
+  menu.addEventListener('input', function (ev) {
+    var t = ev.target.closest && ev.target.closest('[data-nvz-tune]');
+    if (!t || typeof setNpVizTune !== 'function') return;
+    npVizTuning = true;
+    setNpVizTune(t.getAttribute('data-nvz-tune'), t.value, false);
+    var o = menu.querySelector('[data-nvz-tune-val="' + t.getAttribute('data-nvz-tune') + '"]');
+    if (o) o.textContent = t.value + '%';
+  });
+  menu.addEventListener('change', function (ev) {
+    var t = ev.target.closest && ev.target.closest('[data-nvz-tune]');
+    if (!t || typeof setNpVizTune !== 'function') return;
+    setNpVizTune(t.getAttribute('data-nvz-tune'), t.value, true);
+    npVizTuning = false;
+    npVizMenuRender();
+  });
+  menu.addEventListener('pointerdown', function (ev) { if (ev.target.closest && ev.target.closest('[data-nvz-tune]')) npVizTuning = true; });
+  document.addEventListener('pointerup', function () { if (npVizTuning) setTimeout(function () { npVizTuning = false; }, 0); });
+  document.addEventListener('pointercancel', function () { npVizTuning = false; });
+  // スライダーの上のキー（← → Home End PageUp PageDown・Space）は、再生画面の操作（前後の曲・再生）に渡さない
+  menu.addEventListener('keydown', function (ev) { if (ev.target.closest && ev.target.closest('[data-nvz-tune]') && ev.key !== 'Escape' && ev.key !== 'Tab') ev.stopPropagation(); });
   npVizMenuRender();
 }
+var npVizTuning = false;   // 光の調整のスライダーを動かしている間（v8.11.1）
 
 // 「なし」のアイコン（斜線の円）
 NP_VIZ_ICONS.none = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M6 18L18 6"/></svg>';
@@ -67,7 +93,7 @@ function _npVizSeg(name, cur, table) {
 // メニューの中身（スマホ版 v8.11：描き方の複数選択＋描き方の設定）。中身が同じなら書き直さない（押している最中に部品が入れ替わらないように）
 function npVizMenuRender() {
   var menu = document.getElementById('np-viz-menu'), btn = document.getElementById('np-viz-btn');
-  if (!menu || typeof npVizCfg !== 'function') return;
+  if (!menu || typeof npVizCfg !== 'function' || npVizTuning) return;
   var cfg = npVizCfg(), none = !cfg.modes.length, sum = npVizSummary();
   if (btn) {
     var t = 'ビジュアライザーの描き方：' + sum + (cfg.glow && !none ? '・光' : '');
@@ -88,6 +114,16 @@ function npVizMenuRender() {
     '<div class="np-viz-row' + off + '"><span class="np-viz-row-label">バーの数</span>' + _npVizSeg('bars', cfg.bars, NVZ_BARS) + '</div>' +
     '<div class="np-viz-row' + off + '"><span class="np-viz-row-label">太さ</span>' + _npVizSeg('thick', cfg.thick, NVZ_THICK) + '</div>' +
     '<div class="np-viz-row' + off + '"><span class="np-viz-row-label">光</span>' + _npVizSeg('glow', cfg.glow ? 'on' : 'off', { on: { label: 'オン' }, off: { label: 'オフ' } }) + '</div>' +
+    // 光の調整（v8.11.1）：光がオンのときだけ
+    (cfg.glow && typeof NVZ_TUNE !== 'undefined' ? '<div class="np-viz-tune' + off + '"><div class="np-viz-mtitle np-viz-tune-title">光の調整' +
+      '<span class="ui-label-tag ui-label-tag-onlight" style="position:static;margin-left:6px" onclick="copyUiLabel(\'光の調整\', event)" title="クリックで「光の調整」をコピー">□</span>' +
+      '<button type="button" class="np-viz-tune-reset" data-nvz-tune-reset="1" title="光の調整を全部 100% に戻す">元に戻す</button></div>' +
+      NVZ_TUNE.map(function (t) {
+        var v = cfg[t.prop];
+        return '<label class="np-viz-tune-row" title="' + t.label + '：' + t.help + '"><span class="np-viz-tune-name">' + t.label + '</span>' +
+          '<input type="range" class="np-viz-tune-range" min="' + t.min + '" max="' + t.max + '" step="5" value="' + v + '" data-nvz-tune="' + t.prop + '" aria-label="' + t.label + '（' + t.help + '）">' +
+          '<output class="np-viz-tune-val" data-nvz-tune-val="' + t.prop + '">' + v + '%</output></label>';
+      }).join('') + '</div>' : '') +
     '<p class="np-viz-note">円の線：' + NVZ_BARS[cfg.bars].circ + '本。光：残像・光る先端・はじける粒' + (typeof np !== 'undefined' && np.reduced ? '（動きを減らす設定のため、残像と粒は出しません）' : '') + '</p>' +
     '<span class="ui-label-tag ui-label-tag-onlight" style="top:4px;right:6px" onclick="copyUiLabel(\'描き方メニュー\', event)" title="クリックで「描き方メニュー」をコピー">□</span>';
   if (menu._npvHtml === html) return;

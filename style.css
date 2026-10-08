@@ -3159,3 +3159,27 @@ body.alb-fab-on #main { padding-bottom: calc(var(--player-h) + var(--lyr-bottom)
   .np-viz-chip .np-viz-ico { width: 26px; height: 26px; }
   .np-viz-seg-btn { min-height: 28px; }
 }
+
+/* ---------- スマホ版 v8.11.1：描き方メニューの「光の調整」（67-np-viz-menu.js・73-np-viz-settings.js）----------
+   ・光がオンのとき「光」の下に4つのスライダー（光の量・粒の数・はじける高さ・残像の長さ。右に今の値 %）と「元に戻す」
+   ・つまみは指で動かしやすい大きさ（26px）・溝は 8px。スライダーの上では指を横に動かしてもメニューの縦スクロールにならない（touch-action: none）
+   ・メニューが画面に入らないときは、メニューの中で縦にスクロール（v8.11 の max-height のまま） */
+.np-viz-tune { margin-top: 4px; }
+.np-viz-tune.is-off { opacity: 0.5; }
+.np-viz-tune-title { justify-content: flex-start; margin-top: 10px; padding-top: 8px; border-top: 1px solid var(--border); align-items: center; }
+.np-viz-tune-reset { margin-left: auto; min-height: 30px; padding: 3px 12px; border: 1px solid var(--border2); border-radius: 999px; background: var(--surface-2); color: var(--text-sub);
+  font-size: 12px; font-weight: 400; cursor: pointer; }
+.np-viz-tune-reset:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+.np-viz-tune-row { display: flex; align-items: center; gap: 8px; margin: 2px 2px; min-height: 40px; }
+.np-viz-tune-name { flex: none; width: 6.2em; font-size: 12px; color: var(--text-sub); white-space: nowrap; }
+.np-viz-tune-val { flex: none; width: 3.4em; text-align: right; font-size: 12.5px; font-variant-numeric: tabular-nums; color: var(--ink); font-weight: 700; }
+.np-viz-tune-range { flex: 1; min-width: 0; height: 32px; margin: 0; background: transparent; -webkit-appearance: none; appearance: none; touch-action: none; cursor: pointer; }
+.np-viz-tune-range::-webkit-slider-runnable-track { height: 8px; border-radius: 4px; background: var(--border2); }
+.np-viz-tune-range::-webkit-slider-thumb { -webkit-appearance: none; width: 26px; height: 26px; margin-top: -9px; border-radius: 50%; border: 2px solid #fff;
+  background: var(--primary-mid); box-shadow: 0 1px 4px rgba(0, 0, 0, 0.35); }
+.np-viz-tune-range::-moz-range-track { height: 8px; border-radius: 4px; background: var(--border2); }
+.np-viz-tune-range::-moz-range-thumb { width: 22px; height: 22px; border-radius: 50%; border: 2px solid #fff; background: var(--primary-mid); box-shadow: 0 1px 4px rgba(0, 0, 0, 0.35); }
+.np-viz-tune-range:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; border-radius: 6px; }
+@media (orientation: landscape) and (max-height: 500px) and (max-width: 1000px) {
+  .np-viz-tune-row { min-height: 36px; }
+}

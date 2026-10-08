@@ -5,6 +5,8 @@
        db.settings.vizBars：'few' | 'normal' | 'many'（バーの数。円の線の本数も 48／96／144 本に連動）
        db.settings.vizThick：'thin' | 'normal' | 'thick'（バーと円の線の太さ。波形の線は変えない）
        db.settings.vizGlow：true | false（光：残像・光る先端・はじける粒。スマホ版は保存が無いときはオン〔v8.9.5〜8.10 の見た目のまま〕）
+       光の調整（スマホ版 v8.11.1。PC版と同じ）：db.settings.vizGlowAmt（光の量 0〜200）・vizSparkAmt（粒の数 0〜200）・
+         vizSparkHeight（はじける高さ 50〜200）・vizTrailAmt（残像の長さ 0〜200）。単位は %、保存が無いときは 100。光がオンのときだけ効く
      古い ui.vizMode（1つの文字列）は、vizModes が無いとき1回だけ配列に直す（_nvzMigrate）。前の版に戻したときのため、ui.vizMode にも先頭を書く
    ・「なし」：キャンバスを隠し、描くループ（37 の _npStartLoop）も回さない
    ・描くのは 70-np-viz-trail.js（_npDraw。npVizCfg() を見て 円 → バー → 波形 → 光の粒 の順に重ねる）。
@@ -18,6 +20,14 @@ var NVZ_MENU_ORDER = ['bars', 'wave', 'circle'];   // メニューの並び
 var NVZ_BARS = { few: { label: '少ない', k: 0.5, min: 7, max: 28, circ: 48 }, normal: { label: 'ふつう', k: 1, min: 14, max: 56, circ: 96 }, many: { label: '多い', k: 1.6, min: 22, max: 90, circ: 144 } };
 // 太さ：bar はバーの幅（1本分の場所に対する割合。スマホ版の「ふつう」は 0.74）、line は円の線の太さの倍率
 var NVZ_THICK = { thin: { label: '細い', bar: 0.45, line: 0.6 }, normal: { label: 'ふつう', bar: 0.74, line: 1 }, thick: { label: '太い', bar: 0.9, line: 1.7 } };
+// 光の調整（スマホ版 v8.11.1）：key＝db.settings の名前、prop＝npVizCfg() の名前、min・max（%）。既定はどれも 100
+var NVZ_TUNE = [
+  { key: 'vizGlowAmt', prop: 'glowAmt', label: '光の量', min: 0, max: 200, help: '先端の輝き・にじみ・尾の明るさ' },
+  { key: 'vizSparkAmt', prop: 'sparkAmt', label: '粒の数', min: 0, max: 200, help: 'はじける粒・落ちながら出る粒の量（0 で粒なし）' },
+  { key: 'vizSparkHeight', prop: 'sparkHeight', label: 'はじける高さ', min: 50, max: 200, help: '強く鳴ったときに粒が届く高さ' },
+  { key: 'vizTrailAmt', prop: 'trailAmt', label: '残像の長さ', min: 0, max: 200, help: 'ピークが落ちる速さ・尾の残り方（0 で残像なし）' }
+];
+function _nvzTuneVal(t, v) { v = Math.round(+v); return isFinite(v) ? Math.max(t.min, Math.min(t.max, v)) : 100; }
 
 /* ---------- 設定 ---------- */
 // 古い ui.vizMode（'bars'|'wave'|'circle'）→ db.settings.vizModes（配列）。直したら true
@@ -32,7 +42,9 @@ function npVizCfg() {
   if (_nvzMigrate()) saveDB();
   var s = db.settings;
   var modes = NVZ_ORDER.filter(function (k) { return s.vizModes.indexOf(k) >= 0; });
-  return { modes: modes, bars: NVZ_BARS[s.vizBars] ? s.vizBars : 'normal', thick: NVZ_THICK[s.vizThick] ? s.vizThick : 'normal', glow: s.vizGlow !== false };
+  var cfg = { modes: modes, bars: NVZ_BARS[s.vizBars] ? s.vizBars : 'normal', thick: NVZ_THICK[s.vizThick] ? s.vizThick : 'normal', glow: s.vizGlow !== false };
+  NVZ_TUNE.forEach(function (t) { cfg[t.prop] = s[t.key] == null ? 100 : _nvzTuneVal(t, s[t.key]); });   // 光の調整（v8.11.1）
+  return cfg;
 }
 function npVizModes() { return npVizCfg().modes; }
 // 変える（patch：{ modes, bars, thick, glow } の一部）
@@ -43,11 +55,27 @@ function setNpViz(patch) {
   if (patch.bars && NVZ_BARS[patch.bars]) s.vizBars = patch.bars;
   if (patch.thick && NVZ_THICK[patch.thick]) s.vizThick = patch.thick;
   if (typeof patch.glow === 'boolean') s.vizGlow = patch.glow;
+  NVZ_TUNE.forEach(function (t) { if (patch[t.prop] != null) s[t.key] = _nvzTuneVal(t, patch[t.prop]); });   // 光の調整（v8.11.1）
   saveDB();
   ui.vizMode = s.vizModes.length ? NVZ_MENU_ORDER.filter(function (k) { return s.vizModes.indexOf(k) >= 0; })[0] : 'bars'; saveUi();   // 前の版との互換
   if (!npVizCfg().glow && typeof _npvSparksClear === 'function') _npvSparksClear();
   if (typeof _npModesUi === 'function') _npModesUi();
   _nvzApplyRunning();
+}
+// 光の調整のスライダーを動かしている間（スマホ版 v8.11.1）：値だけを変えて保存し、メニューは書き直さない（指の下のスライダーが入れ替わらないように）。
+// 保存（saveDB）は指を離したとき（save = true）だけ
+function setNpVizTune(prop, value, save) {
+  var t = NVZ_TUNE.filter(function (x) { return x.prop === prop; })[0];
+  if (!t) return;
+  _nvzMigrate();
+  db.settings[t.key] = _nvzTuneVal(t, value);
+  if (save) saveDB();
+}
+// 光の調整を全部 100% に戻す
+function resetNpVizTune() {
+  var p = {};
+  NVZ_TUNE.forEach(function (t) { p[t.prop] = 100; });
+  setNpViz(p);
 }
 // 「なし」なら描くのをやめてキャンバスを消す。何か選んでいれば（再生画面を開いていれば）描き始める
 function _nvzApplyRunning() {
