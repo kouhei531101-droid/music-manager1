@@ -8,7 +8,7 @@
      （64 は renderAlbumsPage を包んでいるが、画面の描き直し〔PAGE_RENDERERS.albums〕は包む前の関数を呼ぶので、洋楽の指定などのあとにタグボタンが消えていた）。PC 幅との境目をまたいで幅が変わったら描き直す
    ========================================================= */
 
-function albumHeadMobileNarrow() { return window.innerWidth <= 760; }
+function albumHeadMobileNarrow() { return isMobileLayout(); }   // スマホ版 v8.10.1：横向きのスマホも（59-mobile.js）
 function albumHeadMobileApply() {
   if (!albumHeadMobileNarrow()) return;
   var head = document.querySelector('#alb-body .album-head:not(.artist-head)');

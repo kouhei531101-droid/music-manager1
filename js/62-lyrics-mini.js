@@ -40,7 +40,7 @@ function npOpenLyricsPanel() {
     var r = f.apply(this, arguments);
     try {
       var box = document.getElementById('np-lyrics');
-      if (box && window.innerWidth <= 760 && box.querySelector('.np-lyr-none') && player.currentPath) {
+      if (box && isMobileLayout() && box.querySelector('.np-lyr-none') && player.currentPath) {
         box.innerHTML = '<button type="button" class="np-lyr-panel-btn" id="np-lyr-panel-btn" title="歌詞パネルを開く（歌詞の入力・Google で検索）">' + ICONS.lyrics + '歌詞パネルを開く（入力・検索）</button>';
       }
     } catch (e) { console.warn(e); }
@@ -48,7 +48,7 @@ function npOpenLyricsPanel() {
   };
 })();
 document.addEventListener('click', function (ev) {
-  if (window.innerWidth > 760 || !ev.target.closest) return;
+  if (!isMobileLayout() || !ev.target.closest) return;   // スマホ版 v8.10.1：横向きのスマホも
   if (ev.target.closest('#np-lyr-panel-btn') || ev.target.closest('#now-playing .np-lyrics .np-lyr.active')) { ev.preventDefault(); npOpenLyricsPanel(); }
 });
 if (document.readyState !== 'loading') syncLyricsMiniEmpty();

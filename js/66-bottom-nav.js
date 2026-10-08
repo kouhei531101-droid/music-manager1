@@ -9,6 +9,8 @@
    ・高さは style.css の --bnav-h。再生バー・歌詞パネル・トースト・スクロールボタン・再生中ボタン・本文の下の余白は、この高さの分だけ上に積む
    ・本文を左右にスワイプして画面を切り替える機能は入れていない（Pin の区切りなどの横スクロールとぶつかるため）
    ・PC 幅（761px 以上）では出さない（style.css で display:none）
+   ・スマホ版 v8.10.1：横向きのスマホでは、画面の左端の縦の帯「ナビレール」になる（style.css の「スマホ版 v8.10.1：横向き」）。
+     中は上下にスクロールするので、端のぼかし（.can-left＝上に続きがある／.can-right＝下に続きがある）と今の項目へのスクロールも上下で行う（_bnavVertical）
    ========================================================= */
 
 // 下部メニューバーのラベル（サイドバーより短く。無い画面はサイドバーのラベルのまま）
@@ -60,14 +62,17 @@ function buildBottomNav() {
   syncBottomNav(true);
 }
 
-// 端のぼかし（左右に続きがあるか）
+// ナビレール（横向き。項目が縦に並ぶ）かどうか（スマホ版 v8.10.1）
+function _bnavVertical(sc) { return getComputedStyle(sc).flexDirection === 'column'; }
+// 端のぼかし（左右〔ナビレールは上下〕に続きがあるか）
 function _bnavEdges() {
   var nav = document.getElementById('bottom-nav');
   var sc = document.getElementById('bnav-scroll');
   if (!nav || !sc) return;
-  var max = sc.scrollWidth - sc.clientWidth;
-  nav.classList.toggle('can-left', sc.scrollLeft > 2);
-  nav.classList.toggle('can-right', sc.scrollLeft < max - 2);
+  var v = _bnavVertical(sc);
+  var pos = v ? sc.scrollTop : sc.scrollLeft, max = v ? sc.scrollHeight - sc.clientHeight : sc.scrollWidth - sc.clientWidth;
+  nav.classList.toggle('can-left', pos > 2);
+  nav.classList.toggle('can-right', pos < max - 2);
 }
 
 // 今の画面の項目を強調し、その項目が見える位置（真ん中あたり）へスクロールする
@@ -83,9 +88,15 @@ function syncBottomNav(instant) {
     if (on) { b.setAttribute('aria-current', 'page'); act = b; } else b.removeAttribute('aria-current');
   });
   if (act && sc.clientWidth > 0) {
-    var left = act.offsetLeft - (sc.clientWidth - act.offsetWidth) / 2;
-    left = Math.max(0, Math.min(left, sc.scrollWidth - sc.clientWidth));
-    sc.scrollTo({ left: left, behavior: (instant || _bnavReduceMotion()) ? 'auto' : 'smooth' });
+    var beh = (instant || _bnavReduceMotion()) ? 'auto' : 'smooth';
+    if (_bnavVertical(sc)) {   // ナビレール（横向き）：上下の真ん中あたりへ
+      var top = act.offsetTop - (sc.clientHeight - act.offsetHeight) / 2;
+      sc.scrollTo({ top: Math.max(0, Math.min(top, sc.scrollHeight - sc.clientHeight)), behavior: beh });
+    } else {
+      var left = act.offsetLeft - (sc.clientWidth - act.offsetWidth) / 2;
+      left = Math.max(0, Math.min(left, sc.scrollWidth - sc.clientWidth));
+      sc.scrollTo({ left: left, behavior: beh });
+    }
   }
   _bnavEdges();
 }

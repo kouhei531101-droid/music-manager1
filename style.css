@@ -785,7 +785,7 @@ code { background: var(--primary-pale); padding: 1px 5px; border-radius: 4px; fo
 .plp-q-btns { flex: none; display: inline-flex; }
 .plp-q-btns .btn-icon { width: 26px; height: 26px; }
 .plp-open-wrap { position: relative; display: inline-flex; }
-@media (max-width: 760px) {
+@media (max-width: 760px), (orientation: landscape) and (max-height: 500px) and (max-width: 1000px) {
   .np-pl-head { padding: 4px 18px 0; }
   .plp-cover { width: 52px; height: 52px; }
   .plp-name { font-size: 18px; }
@@ -819,7 +819,7 @@ code { background: var(--primary-pale); padding: 1px 5px; border-radius: 4px; fo
 .np.np-pl-mode .np-flow-wrap { --c: min(20vw, 42vh, 300px); }
 .np.np-pl-mode .np-info { width: min(340px, 26vw); }
 .np.np-pl-mode .np-queue { width: min(360px, 26vw); }
-@media (max-width: 760px) {
+@media (max-width: 760px), (orientation: landscape) and (max-height: 500px) and (max-width: 1000px) {
   .np-flow-wrap { --c: min(58vw, 34vh); width: 100%; }
   .np.np-pl-mode .np-flow-wrap { --c: min(50vw, 28vh); }
   .np.np-pl-mode .np-info, .np.np-pl-mode .np-queue { width: 100%; }
@@ -828,7 +828,7 @@ code { background: var(--primary-pale); padding: 1px 5px; border-radius: 4px; fo
 .album-sk-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 18px 14px; }
 :root[data-theme="dark"] .album-sk-cluster { border-color: hsl(var(--sk-h) 35% 42%); background: hsl(var(--sk-h) 30% 16%); }
 :root[data-theme="dark"] .album-sk-label { background: hsl(var(--sk-h) 35% 26%); color: hsl(var(--sk-h) 70% 85%); }
-@media (max-width: 700px) {
+@media (max-width: 700px), (orientation: landscape) and (max-height: 500px) and (max-width: 1000px) {
   .album-sk-cluster { padding: 8px 8px 10px; }
   .album-sk-cards { grid-template-columns: repeat(auto-fill, minmax(118px, 1fr)); gap: 12px 10px; }
 }
@@ -881,7 +881,7 @@ code { background: var(--primary-pale); padding: 1px 5px; border-radius: 4px; fo
 .np-volume input { width: min(220px, 50%); accent-color: var(--primary-mid); }
 .np .pb-repeat-one { position: absolute; font-size: 9px; font-weight: 700; right: 9px; top: 8px; }
 body.np-open { overflow: hidden; }
-@media (max-width: 760px) {
+@media (max-width: 760px), (orientation: landscape) and (max-height: 500px) and (max-width: 1000px) {
   .np-top { padding: 10px 12px 0 34px; }
   .np-main { flex-direction: column; justify-content: flex-start; gap: 14px; padding: 10px 18px 20px; overflow-y: auto; }
   .np-art { width: min(64vw, 36vh); }
@@ -1047,7 +1047,7 @@ body.np-open { overflow: hidden; }
   .card-act-play:not(.is-current), .card-act-pin:not(.is-pinned), .card-act-hide:not(.is-hidden-state) { opacity: 0; }
   .album-card:hover .card-act, .album-card:focus-within .card-act, .album-card:focus-visible .card-act { opacity: 1; }
 }
-@media (max-width: 700px) {
+@media (max-width: 700px), (orientation: landscape) and (max-height: 500px) and (max-width: 1000px) {
   .card-act-play { width: 38px; height: 38px; right: 6px; bottom: 6px; }
   .card-act-pin { width: 30px; height: 30px; left: 5px; top: 5px; }
   .card-act-hide { width: 30px; height: 30px; right: 5px; top: 5px; }
@@ -1063,10 +1063,10 @@ body.np-open { overflow: hidden; }
   .card-act-sortkey { opacity: 0; }
   .album-card:hover .card-act-sortkey, .album-card:focus-within .card-act-sortkey, .album-card:focus-visible .card-act-sortkey { opacity: 1; }
 }
-@media (max-width: 700px) { .card-act-sortkey { width: 30px; height: 30px; left: 5px; bottom: 5px; } }
+@media (max-width: 700px), (orientation: landscape) and (max-height: 500px) and (max-width: 1000px) { .card-act-sortkey { width: 30px; height: 30px; left: 5px; bottom: 5px; } }
 .album-pin-grid .card-act-sortkey { width: 21px; height: 21px; left: 4px; bottom: 4px; }
 .album-pin-grid .card-act-sortkey svg { width: 10px; height: 10px; }
-@media (max-width: 700px) { .album-pin-grid .card-act-sortkey { width: 20px; height: 20px; left: 3px; bottom: 3px; } }
+@media (max-width: 700px), (orientation: landscape) and (max-height: 500px) and (max-width: 1000px) { .album-pin-grid .card-act-sortkey { width: 20px; height: 20px; left: 3px; bottom: 3px; } }
 /* カードのソートキーの表示（入っていれば、アルバム名の下に小さく） */
 .album-card-sortkey { display: inline-flex; align-items: center; gap: 3px; max-width: 100%; font-size: 11px; color: var(--ink-mid); min-width: 0; }
 .album-card-sortkey svg { flex: none; width: 11px; height: 11px; }
@@ -1133,7 +1133,7 @@ body.np-open { overflow: hidden; }
 .album-pin-grid .card-act-hide svg { width: 11px; height: 11px; }
 .album-pin-grid .album-pin-mark { width: 16px; height: 16px; top: 4px; left: 4px; }
 .album-pin-grid .album-pin-mark svg { width: 9px; height: 9px; }
-@media (max-width: 700px) {
+@media (max-width: 700px), (orientation: landscape) and (max-height: 500px) and (max-width: 1000px) {
   .album-pin-grid .card-act-play { width: 25px; height: 25px; right: 4px; bottom: 4px; }
   .album-pin-grid .card-act-play svg { width: 11px; height: 11px; }
   .album-pin-grid .card-act-pin { width: 20px; height: 20px; left: 3px; top: 3px; }
@@ -1162,7 +1162,7 @@ body.np-open { overflow: hidden; }
 /* 曲情報の編集のジャンル・発売年（v3.2）：2つを横に並べる */
 .form-group-half { display: inline-block; width: calc(50% - 6px); vertical-align: top; }
 .form-group-half + .form-group-half { margin-left: 12px; }
-@media (max-width: 700px) { .form-group-half { display: block; width: auto; } .form-group-half + .form-group-half { margin-left: 0; } }
+@media (max-width: 700px), (orientation: landscape) and (max-height: 500px) and (max-width: 1000px) { .form-group-half { display: block; width: auto; } .form-group-half + .form-group-half { margin-left: 0; } }
 /* アルバムの曲一覧の幅が狭いとき（歌詞パネルを開いた狭いウィンドウ・スマホ幅）：写真を小さくして、横並びのまま */
 @container albumdetail (max-width: 560px) {
   .album-head { gap: 14px; padding: 12px 24px 12px 12px; }
@@ -1531,7 +1531,7 @@ body.library-loading [data-rescan] svg { animation: spin 1s steps(8) infinite; }
 .load-settings { position: relative; margin-top: 14px; padding: 12px 14px; border: 1px solid var(--border); border-radius: var(--r-sm); background: var(--surface-2); }
 .load-days { display: inline-flex; align-items: center; gap: 6px; margin-left: 16px; font-size: 13px; }
 .load-days select { font: inherit; padding: 2px 6px; border: 1px solid var(--border2); border-radius: 6px; background: var(--surface); }
-@media (max-width: 700px) { .load-days { margin-left: 0; margin-top: 6px; } }
+@media (max-width: 700px), (orientation: landscape) and (max-height: 500px) and (max-width: 1000px) { .load-days { margin-left: 0; margin-top: 6px; } }
 
 /* ---------- 16. 呼び方コピーのラベル（□） ---------- */
 .ui-label-tag {
@@ -1555,13 +1555,13 @@ body.hide-ui-labels .ui-label-tag { display: none !important; }
 #player-bar > .ui-label-tag { z-index: 31; }
 
 /* ---------- 17. スマホ幅 ---------- */
-@media (max-width: 900px) {
+@media (max-width: 900px), (orientation: landscape) and (max-height: 500px) and (max-width: 1000px) {
   .col-album, .col-folder { display: none; }
   .col-title { width: 50%; }
   .pl-layout, .org-layout { grid-template-columns: minmax(0, 1fr); }   /* 中身の長さで横にはみ出さない（v2.2） */
   .pl-list-panel { position: static; }
 }
-@media (max-width: 700px) {
+@media (max-width: 700px), (orientation: landscape) and (max-height: 500px) and (max-width: 1000px) {
   :root { --player-h: 150px; }
   #app { flex-direction: column; }
   #sidebar { position: static; width: 100%; height: auto; padding-bottom: 6px; }
@@ -1638,7 +1638,7 @@ body.hide-ui-labels .ui-label-tag { display: none !important; }
 }
 
 /* 高さの低いスマホ幅（横向きなど）では、歌詞パネルを低めの固定値にする（v1.9） */
-@media (max-width: 700px) and (max-height: 640px) {
+@media (max-width: 700px) and (max-height: 640px), (orientation: landscape) and (max-height: 500px) and (max-width: 1000px) and (max-height: 640px) {
   :root { --lyrics-mh: 220px; }
 }
 /* 動きを減らす設定の人には、今の行の拡大を行わない */
@@ -1729,7 +1729,7 @@ td.abe-c-western { min-width: 172px; }
 .abe-update:disabled, .abe-foot .btn-cancel:disabled { opacity: 0.5; cursor: default; }
 
 /* スマホ幅：1アルバム1カードの縦並び（見出しは隠し、セルの前に項目名） */
-@media (max-width: 760px) {
+@media (max-width: 760px), (orientation: landscape) and (max-height: 500px) and (max-width: 1000px) {
   .abe-head { padding: 10px 12px 10px 26px; gap: 8px; }
   .abe-title { font-size: 16px; }
   .abe-search-box { order: 5; flex: 1 1 100%; max-width: none; }
@@ -1788,7 +1788,7 @@ button.album-sk-label:focus-visible, .album-sk-cover-btn:focus-visible { outline
 :root[data-theme="dark"] .album-sk-cover-btn { border-color: hsl(var(--sk-h) 35% 42%); background: hsl(var(--sk-h) 30% 20% / 0.85); color: hsl(var(--sk-h) 70% 85%); }
 :root[data-theme="dark"] .album-sk-cover-btn:hover { background: hsl(var(--sk-h) 30% 28%); }
 .album-sk-cluster .album-sk-label { margin-right: 40px; max-width: calc(100% - 40px); }
-@media (max-width: 760px) {
+@media (max-width: 760px), (orientation: landscape) and (max-height: 500px) and (max-width: 1000px) {
   .album-sk-cover-wrap { top: 6px; right: 6px; }
   .album-sk-cover-btn { width: 26px; height: 26px; }
   .album-sk-bg img { filter: saturate(1.15); }
@@ -1815,7 +1815,7 @@ button.album-sk-label:focus-visible, .album-sk-cover-btn:focus-visible { outline
 .sk-pos-range input { width: 100%; }
 .sk-pos-range output { font-size: 12px; color: var(--text-sub); text-align: right; }
 .sk-pos-reset { margin: 6px 0; }
-@media (max-width: 760px) {
+@media (max-width: 760px), (orientation: landscape) and (max-height: 500px) and (max-width: 1000px) {
   .sk-pos-body { grid-template-columns: 1fr; }
   .sk-cover-choices { max-height: 24vh; }
 }
@@ -1824,7 +1824,7 @@ button.album-sk-label:focus-visible, .album-sk-cover-btn:focus-visible { outline
    （ほかの画面の検索欄は .search-box のまま。スマホ幅も半分にして、並べ替えボタンなどと同じ行に並べる） */
 #alb-filter-bar .search-box { flex: 1 1 170px; max-width: 230px; min-width: 150px; }
 #alb-filter-bar .search-box .form-input { text-overflow: ellipsis; }
-@media (max-width: 760px) {
+@media (max-width: 760px), (orientation: landscape) and (max-height: 500px) and (max-width: 1000px) {
   #alb-filter-bar .search-box { flex: 1 1 150px; max-width: 50%; }
 }
 
@@ -1837,7 +1837,7 @@ button.album-sk-label:focus-visible, .album-sk-cover-btn:focus-visible { outline
 .abe-del-list li { margin: 2px 0; }
 .abe-del-artist { color: var(--text-sub); }
 .abe-del-more { color: var(--text-sub); list-style: none; margin-left: -1.2em !important; }
-@media (max-width: 760px) {
+@media (max-width: 760px), (orientation: landscape) and (max-height: 500px) and (max-width: 1000px) {
   .abe-bulk-delete-wrap { margin-left: 0; flex: 1 1 100%; }
   .abe-bulk .abe-bulk-delete { width: 100%; justify-content: center; }
 }
@@ -1883,7 +1883,7 @@ button.album-sk-label:focus-visible, .album-sk-cover-btn:focus-visible { outline
 .paa-order { flex: none; display: inline-flex; align-items: center; justify-content: center; min-width: 20px; height: 20px; border-radius: 10px; background: var(--primary); color: #fff; font-size: 11px; font-weight: 700; }
 .paa-more { padding: 12px; text-align: center; font-size: 12px; color: var(--text-faint); }
 .paa-picked { margin-top: 8px; font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-@media (max-width: 760px) {
+@media (max-width: 760px), (orientation: landscape) and (max-height: 500px) and (max-width: 1000px) {
   /* スマホ幅：チェック・ジャケット・名前・曲数の1段目、その下に「追加済み」 */
   .paa-row { display: grid; grid-template-columns: 16px 36px minmax(0, 1fr) auto auto; column-gap: 8px; row-gap: 2px; padding: 6px 8px; }
   .paa-row input { grid-row: 1; grid-column: 1; }
@@ -1897,7 +1897,7 @@ button.album-sk-label:focus-visible, .album-sk-cover-btn:focus-visible { outline
 .paa-tabs { margin: 4px 0 2px; }
 .paa-sort { flex: none; width: auto; max-width: 190px; padding: 7px 8px; font-size: 13px; }
 .paa-name .album-tag-badge { font-size: 12px; }
-@media (max-width: 760px) {
+@media (max-width: 760px), (orientation: landscape) and (max-height: 500px) and (max-width: 1000px) {
   .paa-top { flex-wrap: wrap; }
   .paa-search { flex: 1 1 100%; }
   .paa-sort { flex: 1 1 auto; max-width: none; }
@@ -1908,7 +1908,7 @@ button.album-sk-label:focus-visible, .album-sk-cover-btn:focus-visible { outline
 .pl-icon-btn { width: 36px; height: 34px; justify-content: center; padding: 0; }
 .pl-icon-btn svg { width: 18px; height: 18px; margin: 0; }
 .pl-head-sep { flex: 1 1 0; min-width: 12px; height: 1px; margin: 0; background: none; }   /* 削除の前のすき間（削除ボタンを右寄せ） */
-@media (max-width: 760px) {
+@media (max-width: 760px), (orientation: landscape) and (max-height: 500px) and (max-width: 1000px) {
   .pl-detail-head .btn-row { gap: 6px; }
   .pl-icon-btn { width: 34px; }
   .pl-detail-head { padding-right: 0; }
@@ -1928,7 +1928,7 @@ button.album-sk-label:focus-visible, .album-sk-cover-btn:focus-visible { outline
 .alb-scroll-btn.is-loading { opacity: 1; }
 .alb-scroll-btn.is-loading svg { animation: alb-scroll-pulse 0.8s ease-in-out infinite alternate; }
 @keyframes alb-scroll-pulse { from { transform: translateY(-3px); } to { transform: translateY(3px); } }
-@media (max-width: 760px) {
+@media (max-width: 760px), (orientation: landscape) and (max-height: 500px) and (max-width: 1000px) {
   /* スマホ幅：画面の右端の余白に寄せて小さめに（カードのボタンにかかりにくく） */
   .alb-scroll { right: 2px; bottom: calc(var(--player-h) + var(--lyr-bottom) + var(--load-h) + 10px); gap: 10px; }
   .alb-scroll-btn { width: 34px; height: 34px; opacity: 0.6; }
@@ -1960,7 +1960,7 @@ button.album-sk-label:focus-visible, .album-sk-cover-btn:focus-visible { outline
 .sea-set-icon { display: inline-flex; vertical-align: -3px; margin-right: 6px; }
 .wes-chip.sea-chip-weak { border-style: dashed; }
 .wes-chip.sea-chip-ex { opacity: 0.75; text-decoration: line-through; text-decoration-thickness: 1px; }
-@media (max-width: 760px) {
+@media (max-width: 760px), (orientation: landscape) and (max-height: 500px) and (max-width: 1000px) {
   .sea-tab { padding: 5px 9px; font-size: 12px; }
   .sea-search-box { max-width: none; }
   #page-seasons .song-table .col-extra { width: 84px; }
@@ -1979,7 +1979,7 @@ button.album-sk-label:focus-visible, .album-sk-cover-btn:focus-visible { outline
 .acm-item { display: flex; align-items: center; gap: 10px; width: 100%; padding: 8px 10px; border: none; border-radius: 6px; background: none; color: var(--text); font: inherit; font-size: 13.5px; text-align: left; cursor: pointer; }
 .acm-item svg { width: 16px; height: 16px; color: var(--ink-soft); flex: none; }
 .acm-item:hover, .acm-item:focus-visible { background: var(--primary-pale); outline: none; }
-@media (max-width: 760px) { .acm-item { padding: 11px 12px; font-size: 14.5px; } }
+@media (max-width: 760px), (orientation: landscape) and (max-height: 500px) and (max-width: 1000px) { .acm-item { padding: 11px 12px; font-size: 14.5px; } }
 /* 長押しのとき、スマホのブラウザの画像のメニューを出さない */
 .album-card .card-art-wrap, .album-card .art-card, .album-head-art { -webkit-touch-callout: none; }
 
@@ -1988,7 +1988,7 @@ button.album-sk-label:focus-visible, .album-sk-cover-btn:focus-visible { outline
 .lib-table td.col-yt { padding: 4px; text-overflow: clip; }
 .btn-row-youtube svg { color: var(--red); width: 18px; height: 18px; }
 .btn-row-youtube:hover { background: var(--red-pale); }
-@media (max-width: 760px) {
+@media (max-width: 760px), (orientation: landscape) and (max-height: 500px) and (max-width: 1000px) {
   /* スマホ幅：曲名の幅をとるため、曲番号・長さ・ボタンの列を詰める */
   .album-track-table .col-yt, .album-track-table .col-add { width: 30px; }
   /* スマホ版 v8.9.4：番号の列は文字の幅（ch）で決める（文字を大きくする設定でも「105」「1-12」が切れない。v8.9.3 までは 30px 固定で「1-01」「100」が「…」になった） */
@@ -2020,7 +2020,7 @@ button.album-sk-label:focus-visible, .album-sk-cover-btn:focus-visible { outline
 .upb-src { font-size: 10.5px; padding: 0 5px; border-radius: 999px; background: var(--surface-2); color: var(--text-sub); border: 1px solid var(--border); }
 .upb-src-manual .upb-src { background: var(--primary-pale); color: var(--ink-mid); border-color: var(--primary-dim); }
 .upb-src-tag .upb-src { background: var(--abe-changed); color: var(--text); }
-@media (max-width: 760px) {
+@media (max-width: 760px), (orientation: landscape) and (max-height: 500px) and (max-width: 1000px) {
   #page-upbeat .song-table .col-extra { width: 64px; }
   .upb-src { display: none; }
 }
@@ -2028,7 +2028,7 @@ button.album-sk-label:focus-visible, .album-sk-cover-btn:focus-visible { outline
 .sea-head { flex-wrap: wrap; }
 .sea-head-name { white-space: nowrap; }
 .sea-play-all { white-space: nowrap; }
-@media (max-width: 760px) {
+@media (max-width: 760px), (orientation: landscape) and (max-height: 500px) and (max-width: 1000px) {
   .sea-head-name { font-size: 19px; }
   .sea-head .sea-play-all { padding-left: 12px; padding-right: 12px; }
 }
@@ -2045,7 +2045,7 @@ button.album-sk-label:focus-visible, .album-sk-cover-btn:focus-visible { outline
 .art-thumb.npal-art { width: 44px; height: 44px; flex: none; border-radius: 6px; }
 .npal-head-text { min-width: 0; display: flex; flex-direction: column; }
 .npal-name { font-weight: 700; color: var(--ink); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-@media (max-width: 760px) {
+@media (max-width: 760px), (orientation: landscape) and (max-height: 500px) and (max-width: 1000px) {
   .np.np-al-mode .np-main { justify-content: flex-start; }
   .np.np-al-mode .np-flow-wrap { --c: min(50vw, 28vh); }
   .np.np-al-mode .np-info { width: 100%; }
@@ -2053,7 +2053,7 @@ button.album-sk-label:focus-visible, .album-sk-cover-btn:focus-visible { outline
   .np.np-al-mode .np-al-list .plp-q-list { flex: none; max-height: 50vh; }
 }
 .np:not(.np-al-mode) .np-al-list { display: none !important; }   /* プレイリストの play画面・隠したときは出さない */
-@media (max-width: 760px) {
+@media (max-width: 760px), (orientation: landscape) and (max-height: 500px) and (max-width: 1000px) {
   .np-top { flex-wrap: nowrap; gap: 6px; padding-left: 28px; padding-right: 12px; }
   .np-top .np-lyr-toggle { white-space: nowrap; padding: 6px 9px; }
   .np-top .np-mode { white-space: nowrap; }
@@ -2144,7 +2144,7 @@ button.album-sk-label:focus-visible, .album-sk-cover-btn:focus-visible { outline
 .np-vis-frame { display: none; }
 .np.np-vis-mode .np-vis-frame { display: block; position: absolute; z-index: 0; left: 0; top: 0; bottom: 0; width: var(--visW); pointer-events: none; }
 /* PC 幅の並び：プレイヤー表示の右に「ジャケットの並び（上）・曲名と操作（下）」、さらに右に曲リスト・キュー */
-@media (min-width: 761px) {
+@media (min-width: 761px) and (min-height: 501px), (min-width: 1001px) {
   /* v8.3.2：列は「ジャケットの並び・曲名と操作」（残りの幅の中央）＋「曲リスト・キュー」（右端に寄せる。プレイヤー表示がなしのときと同じ右の余白） */
   .np.np-vis-mode .np-main { display: grid; grid-template-columns: minmax(0, 1fr); grid-template-rows: auto auto; grid-auto-flow: column; grid-auto-columns: auto; align-content: center; justify-content: stretch; align-items: center;
     column-gap: var(--cdGap); row-gap: 2px; padding-left: calc(var(--visW) + var(--cdGap)); }
@@ -2167,26 +2167,26 @@ button.album-sk-label:focus-visible, .album-sk-cover-btn:focus-visible { outline
   .np.np-vis-mode.np-al-mode .np-info, .np.np-vis-mode.np-pl-mode .np-info { width: clamp(230px, 25vw, 340px); }
   .np.np-vis-mode.np-al-mode .np-queue, .np.np-vis-mode.np-pl-mode .np-queue { width: clamp(260px, 25vw, 340px); }
 }
-@media (min-width: 761px) and (max-width: 1100px) {
+@media (min-width: 761px) and (min-height: 501px) and (max-width: 1100px), (min-width: 1001px) and (max-width: 1100px) {
   .np.np-vis-mode.np-al-mode, .np.np-vis-mode.np-pl-mode { --cdD: min(30vw, calc(100vh - 190px), 620px); }
   /* v8.6.4：幅の狭い PC で曲リストを出すと曲名と操作の列が細く、アーティストなどが折り返して高くなるので、高さの上限をもう少し低く */
   .np.np-vis-mode.np-al-mode .np-flow-wrap { --c: max(min(15.6vw, 26vh, 234px), min(23.4vw, 39vh, 351px, calc(100vh - 500px))); }
   .np.np-vis-mode.np-pl-mode .np-flow-wrap { --c: max(min(15.6vw, 26vh, 234px), min(23.4vw, 39vh, 351px, calc(100vh - 575px))); }
 }
 /* v8.6.4：高さの低い PC 画面（760px 以下）では、時間付き歌詞の場所の最低の高さを少し詰めて、曲名と操作が下にはみ出さないように */
-@media (min-width: 761px) and (max-height: 760px) {
+@media (min-width: 761px) and (min-height: 501px) and (max-height: 760px), (min-width: 1001px) and (max-height: 760px) {
   .np.np-vis-mode .np-lyrics { min-height: 6em; margin: 4px 0; }
   /* 詰めた分（約25px）、ジャケットの並びの高さの上限をゆるめる */
   .np.np-vis-mode .np-flow-wrap { --c: max(min(18.2vw, 28.6vh, 260px), min(27.3vw, 42.9vh, 390px, calc(100vh - 455px))); }
   .np.np-vis-mode.np-al-mode .np-flow-wrap { --c: max(min(15.6vw, 26vh, 234px), min(23.4vw, 39vh, 351px, calc(100vh - 455px))); }
   .np.np-vis-mode.np-pl-mode .np-flow-wrap { --c: max(min(15.6vw, 26vh, 234px), min(23.4vw, 39vh, 351px, calc(100vh - 530px))); }
 }
-@media (min-width: 761px) and (max-width: 1100px) and (max-height: 760px) {
+@media (min-width: 761px) and (min-height: 501px) and (max-width: 1100px) and (max-height: 760px), (min-width: 1001px) and (max-width: 1100px) and (max-height: 760px) {
   .np.np-vis-mode.np-al-mode .np-flow-wrap { --c: max(min(15.6vw, 26vh, 234px), min(23.4vw, 39vh, 351px, calc(100vh - 475px))); }
   .np.np-vis-mode.np-pl-mode .np-flow-wrap { --c: max(min(15.6vw, 26vh, 234px), min(23.4vw, 39vh, 351px, calc(100vh - 550px))); }
 }
 /* スマホ幅：縦に並ぶ一番上にプレイヤー表示、その下にジャケットの並び（小さめ）・曲名・操作 */
-@media (max-width: 760px) {
+@media (max-width: 760px), (orientation: landscape) and (max-height: 500px) and (max-width: 1000px) {
   .np.np-vis-mode, .np.np-vis-mode.np-al-mode, .np.np-vis-mode.np-pl-mode { --cdD: min(116vw, 60vh); }
   .np.np-vis-mode .np-main { overflow-x: hidden; }
   /* 枠は縦の並びの一番上に、画面の幅いっぱい（左右の余白 18px の分も外へ）・高さは CD の直径で固定 */
@@ -2250,7 +2250,7 @@ button.album-sk-label:focus-visible, .album-sk-cover-btn:focus-visible { outline
 .np-cs-screw-3 { left: 1.6%; bottom: 2.4%; }
 .np-cs-screw-4 { right: 1.6%; bottom: 2.4%; }
 /* スマホ幅：一番上に、全体が見えるように */
-@media (max-width: 760px) {
+@media (max-width: 760px), (orientation: landscape) and (max-height: 500px) and (max-width: 1000px) {
   .np.np-cs-mode .np-cs-big { left: 50%; width: min(calc(100% - 36px), 440px); transform: translate(-50%, -50%); }   /* 枠の真ん中に、全体が見えるように */
 }
 
@@ -2314,7 +2314,7 @@ button.album-sk-label:focus-visible, .album-sk-cover-btn:focus-visible { outline
   background: radial-gradient(circle at 35% 35%, var(--rc-arm-1), var(--rc-arm-2)); box-shadow: 0 0.4cqw 1cqw rgba(0, 0, 0, 0.4); }
 .np-rc-speed { position: absolute; right: 3.4cqw; bottom: 2.6cqw; font: 600 3.2cqw/1 var(--font-heading); letter-spacing: 0.04em; color: var(--rc-text); }
 /* スマホ幅：枠の真ん中に、全体が見えるように */
-@media (max-width: 760px) {
+@media (max-width: 760px), (orientation: landscape) and (max-height: 500px) and (max-width: 1000px) {
   .np.np-rc-mode .np-rc-big { left: 50%; width: min(calc(100% - 36px), 440px, calc(var(--cdD) * 1.2)); transform: translate(-50%, -50%); }
 }
 
@@ -2388,7 +2388,7 @@ button.album-sk-label:focus-visible, .album-sk-cover-btn:focus-visible { outline
 .np-md-cap { font: 700 4.2cqw/1 var(--font-heading); color: var(--md-ink); }
 .np-md-logo { font: 800 italic 7cqw/0.9 var(--font); letter-spacing: 0.01em; color: var(--md-ink); }
 /* スマホ幅：v8.5 の大きさ --spW の右端にそろえて 1.3倍（高さが枠に入るように --spW を決める） */
-@media (max-width: 760px) {
+@media (max-width: 760px), (orientation: landscape) and (max-height: 500px) and (max-width: 1000px) {
   .np.np-md-mode .np-md-big { --spW: min(calc(100% - 36px), 440px, calc(var(--cdD) * 0.75));   /* v8.6.3：正方形の高さ（幅と同じ）が枠に入る最大 */
     left: auto; right: calc(50% - var(--spW) / 2); width: calc(var(--spW) * 1.3); }
 }
@@ -2401,7 +2401,7 @@ button.album-sk-label:focus-visible, .album-sk-cover-btn:focus-visible { outline
 .np.np-cs-mode .np-cs-big, .np.np-rc-mode .np-rc-big { left: auto; right: 0; width: calc((var(--visW) - var(--visL)) * 1.3); }
 .np.np-cs-mode .np-cs-big { --cs-clip: max(0px, calc(var(--visW) * 0.3 - var(--visL) * 1.3)); }   /* 左に見切れる幅（枠の左端＝画面の左端） */
 .np-cs-big .np-cs-strip { padding-left: max(3cqw, calc(var(--cs-clip, 0px) - 5.5cqw + 3cqw)); }
-@media (max-width: 760px) {
+@media (max-width: 760px), (orientation: landscape) and (max-height: 500px) and (max-width: 1000px) {
   /* スマホ幅：v8.5 の大きさ --spW の右端にそろえて 1.3倍（枠は画面の幅いっぱい・高さは固定なので、下の部品は動かない） */
   .np.np-cs-mode .np-cs-big { --spW: min(calc(100% - 36px), 440px); --cs-clip: max(0px, calc(min(calc(100vw - 36px), 440px) * 0.8 - 50vw)); }
   .np.np-rc-mode .np-rc-big { --spW: min(calc(100% - 36px), 440px, calc(var(--cdD) * 0.96)); }   /* 1.3倍しても高さが枠（--cdD）に入るように */
@@ -2415,7 +2415,7 @@ button.album-sk-label:focus-visible, .album-sk-cover-btn:focus-visible { outline
    ・スマホ幅は枠の高さ（--cdD）が固定なので、高さが枠に入る最大（幅 ＝ --cdD × 1.25）で止める（下の部品は動かない） */
 .np.np-rc-mode .np-rc-big { width: min(calc((var(--visW) - var(--visL)) * 1.69), calc((100vh - 70px) * 1.25)); }
 .np.np-rc-mode.np-pl-mode .np-rc-big { width: min(calc((var(--visW) - var(--visL)) * 1.69), calc((100vh - 150px) * 1.25)); }   /* 上にプレイリストの見出しがある分 */
-@media (max-width: 760px) {
+@media (max-width: 760px), (orientation: landscape) and (max-height: 500px) and (max-width: 1000px) {
   .np.np-rc-mode .np-rc-big, .np.np-rc-mode.np-pl-mode .np-rc-big { width: min(calc(var(--spW) * 1.69), calc(var(--cdD) * 1.25)); }
 }
 
@@ -2459,7 +2459,7 @@ body.readonly-mode #page-organizer [data-act="move"],
 body.readonly-mode #page-organizer [data-act="trash"],
 body.readonly-mode #page-organizer [data-act="rename"],
 body.readonly-mode [data-act="copy-folder"] { opacity: 0.45; pointer-events: none; }   /* フォルダの中身を見るボタンはそのまま */
-@media (max-width: 760px) {
+@media (max-width: 760px), (orientation: landscape) and (max-height: 500px) and (max-width: 1000px) {
   .readonly-banner { margin: 10px 12px 0; }
 }
 
@@ -2468,7 +2468,7 @@ body.readonly-mode [data-act="copy-folder"] { opacity: 0.45; pointer-events: non
      本文の下の余白・歌詞パネル・トースト・スクロールボタンも再生バーの分を詰める。再生は止めない
    ・接続状態（サイドバーの「未接続（スマホ）」「読み込み済み（スマホ）」の枠）はスマホ版では全体で出さない。
      音楽フォルダを選ぶ・選び直すは、読み取り専用モードの表示と「設定・バックアップ」の画面から */
-@media (max-width: 760px) {
+@media (max-width: 760px), (orientation: landscape) and (max-height: 500px) and (max-width: 1000px) {
   body.alb-detail-open { --player-h: 0px; }
   body.alb-detail-open #player-bar { display: none; }
 }
@@ -2479,7 +2479,7 @@ body.readonly-mode [data-act="copy-folder"] { opacity: 0.45; pointer-events: non
    ・絞り込み中のアイコンは右上に点。検索アイコンを押すと、アイコンの代わりに検索欄がヘッダーの中に開く
    ・絞り込みシートは画面の下から出る（再生バー・歌詞パネルより上） */
 .alb-ficons { display: none; }
-@media (max-width: 760px) {
+@media (max-width: 760px), (orientation: landscape) and (max-height: 500px) and (max-width: 1000px) {
   #alb-filter-bar { display: none !important; }
   #page-albums .page-header .header-actions { flex-wrap: nowrap; min-width: 0; max-width: 100%; }
   .alb-ficons { position: relative; display: flex; align-items: center; gap: 6px; flex: 1 1 auto; min-width: 0; }
@@ -2521,7 +2521,7 @@ body.readonly-mode [data-act="copy-folder"] { opacity: 0.45; pointer-events: non
 
 /* ---------- スマホ版 v8.7.2：縮小した歌詞パネルは歌詞があるときだけ（62-lyrics-mini.js）----------
    歌詞が無い・探している途中・曲を選んでいないときは、縮小した帯を出さず、その分の下の余白（--lyr-bottom）も詰める。開いた状態はそのまま */
-@media (max-width: 760px) {
+@media (max-width: 760px), (orientation: landscape) and (max-height: 500px) and (max-width: 1000px) {
   body.lyr-collapsed.lyr-mini-empty { --lyr-bottom: 0px; }
   body.lyr-collapsed.lyr-mini-empty .lyrics-panel { display: none; }
 }
@@ -2530,7 +2530,7 @@ body.readonly-mode [data-act="copy-folder"] { opacity: 0.45; pointer-events: non
    ・スマホ幅では、Pin の区切りのアルバムカードを縦に並べず、1行で横に並べて区切りの中だけ横にスクロールする（scroll-snap で1枚ずつ止まる）
    ・カードの幅は、2.4枚分見える大きさ（次のカードが少し見切れて、横に続くと分かる）。ページ全体には横スクロールを出さない
    ・v8.7.7：いつも1行（v8.7.2〜8.7.6 は3枚以上で2行）。Pin の並べ替え中（.is-editing）は今までの並べ方 */
-@media (max-width: 760px) {
+@media (max-width: 760px), (orientation: landscape) and (max-height: 500px) and (max-width: 1000px) {
   .album-grid.album-pin-grid:not(.is-editing) {
     grid-template-columns: none; grid-auto-flow: column; grid-template-rows: auto;
     grid-auto-columns: calc((100% - 20px) / 2.4); gap: 12px 10px;
@@ -2544,7 +2544,7 @@ body.readonly-mode [data-act="copy-folder"] { opacity: 0.45; pointer-events: non
    スマホ幅では、サイドバーのロゴ（MUSIC と版）を隠し、各画面のヘッダーの見出しの左に「MUSIC」と小さな版番号を出す（ヘッダーのアイコンの代わり）。
    書体・色はサイドバーのロゴと同じ（Cinzel・金色）。版番号は「MUSIC」の下の右端（サイドバーと同じ並び） */
 .hdr-brand { display: none; }
-@media (max-width: 760px) {
+@media (max-width: 760px), (orientation: landscape) and (max-height: 500px) and (max-width: 1000px) {
   .sidebar-header { display: none; }
   .page-header .page-header-icon { display: none; }
   .hdr-brand { flex: none; display: inline-flex; flex-direction: column; align-items: flex-end; gap: 1px; padding: 2px 4px; margin: 0;
@@ -2583,7 +2583,7 @@ body.alb-fab-on #main { padding-bottom: calc(var(--player-h) + var(--lyr-bottom)
 
 /* ---------- スマホ版 v8.7.6：Pin の区切りのカードの再生ボタン・Pin ボタン・Pin の目印を、通常のカードと同じ大きさ・位置に ----------
    （v8.7.2 で Pin のカードを大きくしたので、2/3 の大きさのボタンは不要になった。スマホ幅の通常のカードと同じ px） */
-@media (max-width: 700px) {
+@media (max-width: 700px), (orientation: landscape) and (max-height: 500px) and (max-width: 1000px) {
   .album-pin-grid .card-act-play { width: 38px; height: 38px; right: 6px; bottom: 6px; }
   .album-pin-grid .card-act-play svg { width: 18px; height: 18px; }
   .album-pin-grid .card-act-pin { width: 30px; height: 30px; left: 5px; top: 5px; }
@@ -2601,7 +2601,7 @@ body.alb-fab-on #main { padding-bottom: calc(var(--player-h) + var(--lyr-bottom)
    ・PC 幅（761px 以上）はサイドバーのまま（下部メニューバーは出さない） */
 :root { --bnav-h: 0px; --bnav-bar: 56px; }
 .bottom-nav { display: none; }
-@media (max-width: 760px) {
+@media (max-width: 760px), (orientation: landscape) and (max-height: 500px) and (max-width: 1000px) {
   :root { --sidebar-w: 0px; --bnav-h: calc(var(--bnav-bar) + env(safe-area-inset-bottom, 0px)); }
   body.np-open, body.bnav-kbd { --bnav-h: 0px; }
   body { padding-top: env(safe-area-inset-top, 0px); }
@@ -2647,7 +2647,7 @@ body.alb-fab-on #main { padding-bottom: calc(var(--player-h) + var(--lyr-bottom)
   .alb-np-fab { bottom: calc(var(--bnav-h) + var(--player-h) + var(--lyr-bottom) + var(--load-h) + 16px); }
   .art-layout.is-wide .art-list-panel { max-height: calc(100vh - var(--bnav-h) - var(--player-h) - var(--lyr-bottom) - var(--load-h) - 36px); }
 }
-@media (max-width: 760px) and (prefers-reduced-motion: reduce) {
+@media (max-width: 760px) and (prefers-reduced-motion: reduce), (orientation: landscape) and (max-height: 500px) and (max-width: 1000px) and (prefers-reduced-motion: reduce) {
   .bottom-nav::before, .bottom-nav::after { transition: none; }
 }
 
@@ -2690,7 +2690,7 @@ body.alb-fab-on #main { padding-bottom: calc(var(--player-h) + var(--lyr-bottom)
    ・時間付き歌詞は今の1行だけ（長い行は2行まで）。時間付きの歌詞が無い曲では場所をとらない。アーティスト・アルバム・再生元の行は1行（入らなければ「…」）
    ・音量は1行の細い行（消音ボタン＋音量バー）。下の端は safe-area（ホームバー）の分あける
    ・#now-playing の ID で、今までのスマホ幅の指定（.np.np-vis-mode など）より優先させる */
-@media (max-width: 760px) {
+@media (max-width: 760px), (orientation: landscape) and (max-height: 500px) and (max-width: 1000px) {
   #now-playing { padding-top: env(safe-area-inset-top, 0px); padding-left: env(safe-area-inset-left, 0px); padding-right: env(safe-area-inset-right, 0px); }
   #now-playing .np-top { padding-top: 8px; }
   #now-playing .np-pl-head { padding: 4px 16px 0; gap: 10px; }
@@ -2751,7 +2751,7 @@ body.alb-fab-on #main { padding-bottom: calc(var(--player-h) + var(--lyr-bottom)
   #now-playing .np-volume input { width: min(200px, 55%); margin: 0; }
 }
 /* 低い画面（高さ 700px 以下）：すきまを詰め、曲名を少し小さく（ビジュアルの場所を残す） */
-@media (max-width: 760px) and (max-height: 700px) {
+@media (max-width: 760px) and (max-height: 700px), (orientation: landscape) and (max-height: 500px) and (max-width: 1000px) and (max-height: 700px) {
   #now-playing .np-top { padding-top: 6px; }
   #now-playing .np-main { gap: 4px; padding-top: 4px; }
   #now-playing .np-info { gap: 2px; }
@@ -2766,7 +2766,7 @@ body.alb-fab-on #main { padding-bottom: calc(var(--player-h) + var(--lyr-bottom)
    ・カードの幅は、枠の中に 2.4列分見える大きさ（次の列が少し見切れて、横に続くと分かる）。カードのボタンは通常のカードと同じ大きさ
    ・枚数が少ない枠：3枚以下は1行の横並び、4枚は2行（2列）。5枚以上で3行
    ・枠の見た目・見出し（ラベル・代表ジャケットを選ぶボタン）は今までどおり。ページ全体には横スクロールを出さない */
-@media (max-width: 760px) {
+@media (max-width: 760px), (orientation: landscape) and (max-height: 500px) and (max-width: 1000px) {
   .album-sk-grid .album-sk-cluster { min-width: 0; }
   .album-sk-cluster > .album-sk-cards {
     min-width: 0; grid-template-columns: none; grid-auto-flow: column; grid-template-rows: repeat(3, auto);
@@ -2788,7 +2788,7 @@ body.alb-fab-on #main { padding-bottom: calc(var(--player-h) + var(--lyr-bottom)
    ・作り方：写真の枠（.album-head-art-wrap）・右下の重ねる場所（.album-art-overlay）・右の列（.album-head-info）を display: contents にして、
      中の部品をアルバムの見出しの grid に直接並べる（ボタンの要素は動かさないので、押したときの働きは変わらない）
    ・アーティストの見出し（.artist-head）・PC 幅は今までどおり */
-@media (max-width: 760px) {
+@media (max-width: 760px), (orientation: landscape) and (max-height: 500px) and (max-width: 1000px) {
   #alb-body .album-head:not(.artist-head) {
     display: grid; grid-template-columns: minmax(0, 1fr) repeat(5, 40px) minmax(0, 1fr); column-gap: 12px; row-gap: 0;
     justify-items: center; align-items: center; padding: 16px 12px 14px; }
@@ -2855,7 +2855,7 @@ body.alb-fab-on #main { padding-bottom: calc(var(--player-h) + var(--lyr-bottom)
    ・再生バーを出さない・下の余白を詰めるのは v8.7.1 の body.alb-detail-open の指定（60-album-bar.js が全部の画面で付ける）
    ・再生画面の時間付き歌詞の場所の「歌詞パネルを開く（入力・検索）」ボタン（62-lyrics-mini.js）。時間付きの歌詞の今の行も押せる
    ・album の一覧の一番下の説明「うすい文字のアルバム名は…」（.alb-legend）はスマホ幅では出さない */
-@media (max-width: 760px) {
+@media (max-width: 760px), (orientation: landscape) and (max-height: 500px) and (max-width: 1000px) {
   #now-playing .np-lyr-panel-btn { display: inline-flex; align-items: center; gap: 6px; max-width: 100%; margin: 0 auto; padding: 2px 12px; min-height: 26px;
     border: 1px solid var(--border2); border-radius: 999px; background: var(--surface); color: var(--text-sub); font-size: 12.5px; cursor: pointer;
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -2955,4 +2955,115 @@ body.alb-fab-on #main { padding-bottom: calc(var(--player-h) + var(--lyr-bottom)
   #now-playing .np-title { font-size: 24px; }
   #now-playing .np-sub { font-size: 16px; }
   #now-playing .np-btn.np-play { width: 58px; height: 58px; }
+}
+
+/* ---------- スマホ版 v8.10.1：横向き（全部の画面）（59-mobile.js の isMobileLayout・66-bottom-nav.js）----------
+   ・横向きのスマホ（横長で高さ 500px 以下・幅 1000px 以下）は、幅が 760px を超えていても PC の並び（サイドバー・右の歌詞パネル・再生バー）にしない。
+     今までの「スマホ幅」の @media（max-width: 760px／700px／900px）に同じ条件を「,」で足し、PC 幅の @media（min-width: 761px）からは外した
+   ・高さが 360〜412px しかないので、縦の場所を節約する：
+     ① 下部メニューバーは、画面の左端の縦の細い帯「ナビレール」にする（幅 64px＋左の safe-area。アイコン＋小さなラベル。中を上下にスクロール）。
+        再生中ボタンはナビレールの一番下に置く（本文に重ならない）。本文・固定の部品（歌詞の帯・読み込みの帯・トースト・スクロールボタン）は、その右から
+     ② ヘッダー（ヘッダーのアプリ名・見出し・枚数・フィルターアイコン／ボタン）を1行にまとめて低く。見出しは真ん中に重ねず、左から順に並べる
+     ③ 読み取り専用モードの表示は1行（説明は「…」）
+     ④ 歌詞パネルを開いたときは、下の帯ではなく右の列（幅 42%・最大 360px）。縮小した歌詞の帯は今までどおり下に1行
+   ・本文：album の一覧のカードは 1列 120px 以上（667px で4列・812px で5列・915px で6列）。Pin の区切りは1行の横スクロールのまま（カードは通常と同じくらいの幅）。
+     ソートキーの枠は1行の横スライド（縦向きの3行・2行では、枠の高さが画面の高さ〔360〜412px〕を超えるため）
+   ・アルバムの見出し：ジャケット（160px）を左、アルバム名・アーティスト・曲数・見出しのボタン列・ボタンの行を右に並べる
+   ・絞り込みシートは高さの上限（画面の 88%）の中でスクロール。ダイアログも画面の高さに収めて中でスクロール */
+@media (orientation: landscape) and (max-height: 500px) and (max-width: 1000px) {
+  :root { --bnav-h: 0px; --rail-w: calc(64px + env(safe-area-inset-left, 0px)); --lyrics-mh: 170px; }
+  body.np-open, body.bnav-kbd { --bnav-h: 0px; }
+
+  /* ① ナビレール（下部メニューバーを左端の縦の帯に） */
+  #app { padding-left: var(--rail-w); padding-right: env(safe-area-inset-right, 0px); }
+  .bottom-nav { top: 0; bottom: 0; right: auto; width: var(--rail-w); height: auto;
+    padding: env(safe-area-inset-top, 0px) 0 env(safe-area-inset-bottom, 0px) env(safe-area-inset-left, 0px);
+    border-top: none; border-right: 1px solid rgba(255, 255, 255, 0.10); box-shadow: 4px 0 14px rgba(20, 15, 50, 0.22); }
+  body.bnav-kbd .bottom-nav { display: block; }   /* 横向きは左の帯なので、文字の入力中も隠さない（本文の位置が動かないように） */
+  .bnav-scroll { flex-direction: column; width: 64px; height: 100%; padding: 4px 0;
+    overflow-x: hidden; overflow-y: auto; scroll-snap-type: y mandatory; overscroll-behavior-x: auto; overscroll-behavior-y: contain; touch-action: pan-y; }
+  .bnav-item { flex: 0 0 50px; width: 64px; gap: 2px; padding: 3px 2px; scroll-snap-align: center; }
+  .bnav-icon svg { width: 20px; height: 20px; }
+  .bnav-label { font-size: 10px; }
+  .bnav-item.active::before { top: 9px; bottom: 9px; left: 0; right: auto; width: 3px; height: auto; border-radius: 0 3px 3px 0; }
+  .bnav-item.active .bnav-icon { padding: 1px 10px; }
+  .bnav-sep { width: auto; height: 1px; margin: 4px 12px; }
+  .bottom-nav::before, .bottom-nav::after { left: env(safe-area-inset-left, 0px); right: 0; width: auto; height: 24px; }
+  .bottom-nav::before { top: env(safe-area-inset-top, 0px); background: linear-gradient(180deg, var(--primary-deep), transparent); }
+  .bottom-nav::after { top: auto; bottom: env(safe-area-inset-bottom, 0px); background: linear-gradient(0deg, var(--primary-deep), transparent); }
+  .bottom-nav > .ui-label-tag { top: auto !important; bottom: 2px; right: 2px !important; }
+  /* 固定の部品は、ナビレールの右から */
+  #player-bar, .lyrics-panel, .load-progress { left: var(--rail-w); }
+  .toast-area { left: calc(var(--rail-w) + 16px); right: calc(var(--lyr-right) + 16px + env(safe-area-inset-right, 0px)); }
+  /* 再生中ボタン：ナビレールの一番下に置く（本文に重ならない）。そのぶんナビレールの項目の場所を短くする */
+  .alb-np-fab { left: calc(env(safe-area-inset-left, 0px) + 7px); bottom: calc(env(safe-area-inset-bottom, 0px) + 7px); z-index: 71; width: 50px; height: 50px; box-shadow: 0 3px 10px rgba(0, 0, 0, 0.35); }
+  .alb-np-fab .anf-bars { height: 20px; }
+  body.alb-fab-on .bnav-scroll { height: calc(100% - 64px); }
+  body.alb-fab-on .bottom-nav::after { bottom: calc(env(safe-area-inset-bottom, 0px) + 64px); }
+  .alb-scroll { right: calc(var(--lyr-right) + 12px + env(safe-area-inset-right, 0px)); bottom: calc(var(--player-h) + var(--lyr-bottom) + var(--load-h) + 12px); }
+  #main { padding-bottom: calc(var(--player-h) + var(--lyr-bottom) + var(--load-h) + 20px); }
+  body.alb-fab-on #main { padding-bottom: calc(var(--player-h) + var(--lyr-bottom) + var(--load-h) + 20px); }
+
+  /* ② ヘッダーを1行に（アプリ名・見出し・枚数・ボタン／フィルターアイコン） */
+  .page-header { flex-wrap: nowrap; gap: 8px; padding: 6px 30px 6px 12px; min-height: 0; }
+  .page-header h1 { position: static; transform: none; flex: 0 1 auto; min-width: 2.5em; font-size: 24px; line-height: 1.2; text-align: left; }
+  .page-header .count-badge { flex: none; }
+  .page-header .header-actions { flex: 1 1 auto; width: auto; min-width: 0; margin-left: auto; flex-wrap: nowrap; justify-content: flex-end;
+    overflow-x: auto; overflow-y: hidden; scrollbar-width: none; }
+  .page-header .header-actions::-webkit-scrollbar { display: none; }
+  .page-header .header-actions > * { flex: none; }
+  #page-albums .page-header .header-actions > .alb-ficons:not(.is-search) { flex: none; }
+  .alb-ficons.is-search { flex: 1 1 auto; }
+  .hdr-brand-title { font-size: 15px; }
+
+  /* ③ 読み取り専用モードの表示：1行 */
+  .readonly-banner { margin: 6px 12px 0; }
+  .readonly-banner.is-loaded { flex-wrap: nowrap; padding: 4px 10px 4px 12px; gap: 10px; }
+  .readonly-banner.is-loaded .ro-text { min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .readonly-banner.is-loaded .ro-title { flex: none; white-space: nowrap; }
+  .readonly-banner .ro-repick { flex: none; min-height: 32px; padding: 4px 12px; }
+
+  /* ④ 歌詞パネル：開いたときは右の列（縮小したときは下に1行のまま） */
+  body.lyr-expanded { --lyr-right: min(42vw, 360px); --lyr-bottom: 0px; }
+  body.lyr-expanded .lyrics-panel { top: 0; bottom: 0; left: auto; right: 0; width: calc(var(--lyr-right) + env(safe-area-inset-right, 0px)); height: auto;
+    padding-right: env(safe-area-inset-right, 0px); border-top: none; border-left: 1px solid var(--border2); box-shadow: -6px 0 24px rgba(40, 30, 90, 0.12); }
+  body.lyr-expanded .lyrics-collapse-btn svg { transform: none; }
+  .lyrics-body { padding-bottom: 30vh; }
+
+  /* 本文：album の一覧のカード（1列 120px 以上）・Pin の区切り・ソートキーの枠 */
+  .album-grid { grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 14px 12px; }
+  .album-grid.album-pin-grid:not(.is-editing) { grid-auto-columns: clamp(110px, 16vw, 150px); }
+  .album-sk-cluster > .album-sk-cards, .album-sk-cluster > .album-sk-cards:has(> :nth-child(4)):not(:has(> :nth-child(5))) {
+    grid-template-rows: auto; grid-auto-columns: clamp(110px, 16vw, 150px); }   /* 1行の横スライド（2行だと枠の高さが画面の高さを超えるため） */
+
+  /* アルバムの見出し：ジャケットを左、情報とボタンを右 */
+  #alb-body .album-head:not(.artist-head) {
+    grid-template-columns: auto repeat(5, 40px) minmax(0, 1fr); grid-template-rows: auto auto auto auto auto; column-gap: 10px; row-gap: 0;
+    justify-items: start; align-items: center; align-content: center; padding: 12px; }
+  #alb-body .album-head:not(.artist-head) .album-head-art { grid-row: 1 / span 5; grid-column: 1; align-self: start; width: 160px; height: 160px; margin: 0 6px 0 0; }
+  #alb-body .album-head:not(.artist-head) .album-head-title { grid-row: 1; grid-column: 2 / -1; justify-self: stretch; justify-content: flex-start; }
+  #alb-body .album-head:not(.artist-head) .album-head-artist { grid-row: 2; grid-column: 2 / -1; justify-self: stretch; text-align: left; margin-top: 2px; }
+  #alb-body .album-head:not(.artist-head) .album-head-meta { grid-row: 3; grid-column: 2 / -1; justify-self: stretch; text-align: left; }
+  #alb-body .album-head:not(.artist-head) .head-art-pin-wrap,
+  #alb-body .album-head:not(.artist-head) .head-art-tag-wrap,
+  #alb-body .album-head:not(.artist-head) .head-art-hide-wrap,
+  #alb-body .album-head:not(.artist-head) .album-yt-wrap,
+  #alb-body .album-head:not(.artist-head) .album-art-set-wrap { grid-row: 4; margin-top: 8px; }
+  #alb-body .album-head:not(.artist-head) .album-head-info .btn-row { grid-row: 5; grid-column: 2 / -1; justify-self: stretch; justify-content: flex-start; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+  #alb-body .album-head:not(.artist-head) .album-head-info .btn-row [data-act="edit-album"] { flex: 0 1 auto; max-width: none; }
+  #alb-body .album-head:not(.artist-head) .album-head-name { text-align: left; font-size: 20px !important; }
+  #alb-body .album-head:not(.artist-head) .album-head-artist { font-size: 16px; }
+  #alb-body .album-head:not(.artist-head) [data-act="play-all"] { top: calc(12px + 160px - 46px - 8px); left: calc(12px + 160px - 46px - 8px); }
+  #alb-body .album-track-table .lib-title { font-size: 16px; }
+  #alb-body .album-track-table .album-row-artist { font-size: 13.5px; }
+
+  /* 絞り込みシート・ダイアログ：画面の高さに収めて中でスクロール */
+  .afs-panel { max-height: 88vh; max-width: 560px; }
+  .afs-head { padding: 8px 14px 6px; }
+  .afs-item { min-height: 42px; padding: 8px 12px; }
+  .modal-overlay { padding: 8px; }
+  .modal-box { max-height: calc(100vh - 16px); display: flex; flex-direction: column; }
+  .modal-body { min-height: 0; overflow-y: auto; }
+  .modal-header { padding: 10px 16px 8px 20px; }
+  .modal-footer { padding: 8px 16px 10px; }
 }

@@ -13,6 +13,13 @@
 
 var RO_MSG = 'スマホでは使えません（PCで操作してください）';
 
+// スマホ版 v8.10.1：スマホの並び（下部メニューバー・フィルターアイコン・再生中ボタンなど）にするかどうか。
+// style.css の「スマホ幅」の @media と同じ条件：幅 760px 以下、または横向きのスマホ（横長で高さ 500px 以下・幅 1000px 以下。71-np-landscape.js の NP_LAND_MQ と同じ）。
+// 今までの「window.innerWidth <= 760」の代わりに使う（横向きで幅が 760px を超えるスマホでも PC の並びにしない）
+var MOBILE_MQ = '(max-width: 760px), (orientation: landscape) and (max-height: 500px) and (max-width: 1000px)';
+var _mobileMql = window.matchMedia ? window.matchMedia(MOBILE_MQ) : null;
+function isMobileLayout() { return _mobileMql ? _mobileMql.matches : window.innerWidth <= 760; }
+
 // 読み取り専用モードの表示（02 の renderConnectionStatus から呼ばれる）
 function renderReadonlyBanner() {
   var el = document.getElementById('readonly-banner');
@@ -77,7 +84,7 @@ function _roOrganizerNote() {
 
 // スマホで初めて開いたときは、歌詞パネルを縮小で始める（スマホの画面では、歌詞パネルが本文の大半をおおってしまうため。
 // 1回だけ。あとで出した・縮めたのはそのまま覚える）。12-init.js の initLyrics より前に読まれるので、最初の表示から縮小になる
-if (fsa.readOnly && window.innerWidth <= 760 && !ui.mobileStartDone) {
+if (fsa.readOnly && isMobileLayout() && !ui.mobileStartDone) {
   ui.lyricsCollapsed = true;
   ui.mobileStartDone = true;
   saveUi();

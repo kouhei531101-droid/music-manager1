@@ -13,7 +13,7 @@
    ========================================================= */
 
 // スマホ版 v8.10：横向きのスマホ（71-np-landscape.js の npOneLand）も、幅が 760px を超えていてもスマホの扱い（曲リストボタン・円の中心）にする
-function npOneNarrow() { return window.innerWidth <= 760 || (typeof npOneLand === 'function' && npOneLand()); }
+function npOneNarrow() { return isMobileLayout() || (typeof npOneLand === 'function' && npOneLand()); }   // スマホ版 v8.10.1：59-mobile.js の isMobileLayout
 function npListMobileOn() { return ui.npListMobile === true; }
 
 // スマホ幅では、アルバムの曲リストを出すかどうかをスマホ幅だけの設定で決める

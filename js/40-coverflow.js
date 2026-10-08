@@ -25,7 +25,7 @@ function _flowIndexAt(i) {   // 並びの番号（端を越えたら、リピー
 }
 // 見た目：e は中央からのずれ（枚数。途中の値もある）
 function _flowStyle(e) {
-  var a = Math.abs(e), s = e < 0 ? -1 : 1, narrow = window.innerWidth <= 760;
+  var a = Math.abs(e), s = e < 0 ? -1 : 1, narrow = (typeof isMobileLayout === 'function' ? isMobileLayout() : window.innerWidth <= 760);   // スマホ版 v8.10.1：横向きのスマホも
   var step1 = narrow ? 0.34 : 0.42, step2 = narrow ? 0.18 : 0.24;
   var x = s * (a <= 1 ? step1 * a : step1 + step2 * Math.min(a - 1, 2));
   var scale = 1 - (a <= 1 ? 0.22 * a : 0.22 + 0.14 * Math.min(a - 1, 2));
@@ -154,7 +154,7 @@ function _flowBind(box) {
       try { box.setPointerCapture(ev.pointerId); } catch (e) { /* 無視 */ }   // 引っぱり始めてから捕まえる（外に出ても追える）
     }
     if (!flow.moved) return;
-    var step = W() * (window.innerWidth <= 760 ? 0.34 : 0.42);
+    var step = W() * ((typeof isMobileLayout === 'function' ? isMobileLayout() : window.innerWidth <= 760) ? 0.34 : 0.42);
     flow.drag = -dx / step;
     var n = _flowQueue().length;
     if ((db.settings.repeat || 'off') !== 'all') flow.drag = Math.max(-flow.view - 0.3, Math.min(n - 1 - flow.view + 0.3, flow.drag));

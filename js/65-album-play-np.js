@@ -14,7 +14,7 @@
      ・再生中ボタンを出す。再生中ボタンを長押し（0.55秒）すると、歌詞パネルを元の大きさで開く（62-lyrics-mini.js の npOpenLyricsPanel）
    ========================================================= */
 
-function _apnOn() { return window.innerWidth <= 760; }   // スマホ版 v8.9.4：全部の画面（v8.7.5〜8.9.3 は album の画面だけ）
+function _apnOn() { return isMobileLayout(); }   // スマホ版 v8.10.1：横向きのスマホも（59-mobile.js）   // スマホ版 v8.9.4：全部の画面（v8.7.5〜8.9.3 は album の画面だけ）
 function _apnOpen() {
   if (typeof np !== 'undefined' && np.open) return;
   if (typeof openNowPlaying === 'function') openNowPlaying();   // 再生中のプレイリストがあればプレイリストの play画面（37 が決める）

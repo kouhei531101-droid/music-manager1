@@ -48,7 +48,7 @@ function openFolderInOrganizer(folder) {
   }
   // 画面は、フォルダの中身が見える所へ（スマホ幅では一覧の下に中身がある）
   var files = document.getElementById('org-files');
-  if (files && window.innerWidth <= 700) files.scrollIntoView({ block: 'start' });
+  if (files && (typeof isMobileLayout === 'function' ? isMobileLayout() : window.innerWidth <= 700)) files.scrollIntoView({ block: 'start' });
   else window.scrollTo(0, 0);
 }
 
