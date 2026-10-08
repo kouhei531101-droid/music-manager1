@@ -13,9 +13,15 @@
      メニューは 67-np-viz-menu.js（ⓘ の描き方ボタン・描き方メニュー）
    ========================================================= */
 
-var NVZ_ORDER = ['circle', 'bars', 'wave'];        // 重ねる順（奥から）
-var NVZ_LABEL = { bars: 'バー', wave: '波形', circle: '円' };
-var NVZ_MENU_ORDER = ['bars', 'wave', 'circle'];   // メニューの並び
+// スマホ版 v8.12：描き方を12種類ふやした（75-np-viz-more.js。ID は PC版と同じ）。知らない ID は読み込みで捨てる（NVZ_ORDER にあるものだけ）
+var NVZ_ORDER = ['hills', 'blob', 'pulse', 'circle', 'ring', 'orbs', 'ribbon', 'mirror', 'bars', 'led', 'updown', 'lines', 'dotwave', 'wave', 'neon'];   // 重ねる順（奥から。PC版 v8.7.10 と同じ）
+var NVZ_LABEL = { bars: 'バー', wave: '波形', circle: '円', blob: 'ブロブ', mirror: '上下対称', ribbon: '色の波', hills: '塗りの山', dotwave: 'ドット波', pulse: 'パルス',
+  led: 'LED', orbs: '光る粒', neon: 'ネオン', ring: 'リング', updown: '上下バー', lines: '波線' };
+// 正式な名前（DESIGN.md・title）
+var NVZ_NAME = { bars: 'バー', wave: '波形', circle: '円', blob: '波打つブロブ', mirror: '上下対称バー', ribbon: '重なる色の波', hills: '塗りの山', dotwave: 'ドット波',
+  pulse: '同心円パルス', led: 'LEDバー', orbs: '光る粒', neon: 'ネオン波形', ring: '揺れるリング', updown: '上下バー', lines: '平行の波線' };
+var NVZ_MENU_ORDER = ['bars', 'wave', 'circle', 'blob', 'mirror', 'ribbon', 'hills', 'dotwave', 'pulse', 'led', 'orbs', 'neon', 'ring', 'updown', 'lines'];   // メニューの並び
+var NVZ_MAX = 4;   // 同時に重ねられる数（PC版 v8.7.10 と同じ4つまで。保存に5つ以上あれば、重ねる順の先頭から4つだけ残す。スマホでも4つ重ねて描く時間は数 ms）
 // バーの数：k はスマホ版の「ふつう」（キャンバスの幅 30 点に1本。375px 幅で 25本）に対する倍率。circ は円の線の本数
 var NVZ_BARS = { few: { label: '少ない', k: 0.5, min: 7, max: 28, circ: 48 }, normal: { label: 'ふつう', k: 1, min: 14, max: 56, circ: 96 }, many: { label: '多い', k: 1.6, min: 22, max: 90, circ: 144 } };
 // 太さ：bar はバーの幅（1本分の場所に対する割合。スマホ版の「ふつう」は 0.74）、line は円の線の太さの倍率
@@ -42,6 +48,7 @@ function npVizCfg() {
   if (_nvzMigrate()) saveDB();
   var s = db.settings;
   var modes = NVZ_ORDER.filter(function (k) { return s.vizModes.indexOf(k) >= 0; });
+  if (modes.length > NVZ_MAX) modes = modes.slice(0, NVZ_MAX);   // v8.12：5つ以上は重ねる順の先頭4つだけ
   var cfg = { modes: modes, bars: NVZ_BARS[s.vizBars] ? s.vizBars : 'normal', thick: NVZ_THICK[s.vizThick] ? s.vizThick : 'normal', glow: s.vizGlow !== false };
   NVZ_TUNE.forEach(function (t) { cfg[t.prop] = s[t.key] == null ? 100 : _nvzTuneVal(t, s[t.key]); });   // 光の調整（v8.11.1）
   return cfg;
@@ -51,13 +58,13 @@ function npVizModes() { return npVizCfg().modes; }
 function setNpViz(patch) {
   _nvzMigrate();
   var s = db.settings;
-  if (patch.modes) s.vizModes = NVZ_ORDER.filter(function (k) { return patch.modes.indexOf(k) >= 0; });
+  if (patch.modes) s.vizModes = NVZ_ORDER.filter(function (k) { return patch.modes.indexOf(k) >= 0; }).slice(0, NVZ_MAX);   // 知らない ID は捨て、4つまで
   if (patch.bars && NVZ_BARS[patch.bars]) s.vizBars = patch.bars;
   if (patch.thick && NVZ_THICK[patch.thick]) s.vizThick = patch.thick;
   if (typeof patch.glow === 'boolean') s.vizGlow = patch.glow;
   NVZ_TUNE.forEach(function (t) { if (patch[t.prop] != null) s[t.key] = _nvzTuneVal(t, patch[t.prop]); });   // 光の調整（v8.11.1）
   saveDB();
-  ui.vizMode = s.vizModes.length ? NVZ_MENU_ORDER.filter(function (k) { return s.vizModes.indexOf(k) >= 0; })[0] : 'bars'; saveUi();   // 前の版との互換
+  ui.vizMode = ['bars', 'wave', 'circle'].filter(function (k) { return s.vizModes.indexOf(k) >= 0; })[0] || 'bars'; saveUi();   // 前の版との互換（前の版が知っている3種類だけ）
   if (!npVizCfg().glow && typeof _npvSparksClear === 'function') _npvSparksClear();
   if (typeof _npModesUi === 'function') _npModesUi();
   _nvzApplyRunning();
@@ -89,12 +96,13 @@ function _nvzApplyRunning() {
   } else if (typeof np !== 'undefined' && np.open) { _npSizeCanvas(); _npStartLoop(); }
 }
 // 37 の npMode()（1つだけの描き方）も、いちばん手前の描き方を返す（ほかから使われても困らないように。「なし」は 'none'）
-window.npMode = function () { var m = npVizModes(); return m.length ? m[m.length - 1] : 'none'; };
+window.npMode = function () { var m = npVizModes(); var x = m.length ? m[m.length - 1] : 'none'; return { bars: 1, wave: 1, circle: 1 }[x] || x === 'none' ? x : 'bars'; };   // 37 は3種類しか知らないので、新しい描き方は 'bars' と答える
 // 今の組み合わせの名前（例「バー＋波形」。なしは「なし」）
 function npVizSummary() {
   var m = npVizModes();
   if (!m.length) return 'なし';
-  return NVZ_MENU_ORDER.filter(function (k) { return m.indexOf(k) >= 0; }).map(function (k) { return NVZ_LABEL[k]; }).join('＋');
+  var names = NVZ_MENU_ORDER.filter(function (k) { return m.indexOf(k) >= 0; }).map(function (k) { return NVZ_NAME[k]; });
+  return names.length >= 3 ? names.slice(0, 2).join('＋') + '＋ほか' + (names.length - 2) : names.join('＋');   // 3つ以上は「バー＋ネオン波形＋ほか2」
 }
 
 // 「なし」のときは描くループを回さない（37 の _npStartLoop を包む）

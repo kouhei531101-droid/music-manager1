@@ -48,6 +48,10 @@ function npVizMenuSetup() {
     var sel = null;
     if (b.hasAttribute('data-viz')) {   // バー・波形・円：オン／オフ
       var k = b.getAttribute('data-viz'), m = npVizModes().slice(), i = m.indexOf(k);
+      if (i < 0 && typeof NVZ_MAX !== 'undefined' && m.length >= NVZ_MAX) {   // v8.12：同時に重ねられるのは NVZ_MAX（4）つまで（チップは押せなくしてあるが念のため）
+        if (typeof showToast === 'function') showToast('描き方を同時に重ねられるのは ' + NVZ_MAX + ' つまでです（どれかを外してから選んでください）');
+        return;
+      }
       if (i >= 0) m.splice(i, 1); else m.push(k);
       setNpViz({ modes: m }); sel = '[data-viz="' + k + '"]';
     } else if (b.hasAttribute('data-viz-none')) { setNpViz({ modes: [] }); sel = '[data-viz-none]'; }
@@ -82,6 +86,23 @@ function npVizMenuSetup() {
 }
 var npVizTuning = false;   // 光の調整のスライダーを動かしている間（v8.11.1）
 
+// スマホ版 v8.12：ふやした12種類の小さな絵（75-np-viz-more.js の描き方の形を簡単に描いたもの）
+(function () {
+  var S = function (body, fill) { return '<svg width="20" height="20" viewBox="0 0 24 24" fill="' + (fill ? 'currentColor' : 'none') + '" stroke="' + (fill ? 'none' : 'currentColor') + '" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + body + '</svg>'; };
+  NP_VIZ_ICONS.blob = S('<path d="M12 3c3 0 5 2 6.5 4.5S21 13 19 16s-5 5-8 4.5S4.5 18 3.8 14 5 6 7.5 4.5 10.5 3 12 3z"/><path d="M12 7.5c2 0 3.2 1.4 3.8 3s.3 3.4-1.2 4.4-3.6 1.2-5 .2-2-2.8-1.4-4.6S10.6 7.5 12 7.5z"/>');
+  NP_VIZ_ICONS.mirror = S('<path d="M3 12h18M5 9v6M7.5 6v12M10 8v8M12.5 4v16M15 7v10M17.5 9.5v5M20 11v2"/>');
+  NP_VIZ_ICONS.ribbon = S('<path d="M2 12c3-6 6-6 9 0s6 6 9 0"/><path d="M2 12c3 5 6 5 9 0s6-5 9 0" opacity=".6"/>');
+  NP_VIZ_ICONS.hills = S('<path d="M2 20c3-8 5-8 7-3 2-9 5-9 7-2 2-4 4-4 6 5z" fill="currentColor" fill-opacity=".35"/>');
+  NP_VIZ_ICONS.dotwave = '<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="3" cy="12" r="1.3"/><circle cx="6" cy="8.5" r="1.3"/><circle cx="9" cy="7" r="1.3"/><circle cx="12" cy="10" r="1.3"/><circle cx="15" cy="14" r="1.3"/><circle cx="18" cy="16" r="1.3"/><circle cx="21" cy="13" r="1.3"/></svg>';
+  NP_VIZ_ICONS.pulse = '<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="12" cy="12" r="2.6"/>' +
+    [0, 1, 2, 3, 4, 5, 6, 7].map(function (i) { var a = i / 8 * 6.283; return '<circle cx="' + (12 + Math.cos(a) * 6).toFixed(1) + '" cy="' + (12 + Math.sin(a) * 6).toFixed(1) + '" r="1"/><circle cx="' + (12 + Math.cos(a + 0.4) * 9.5).toFixed(1) + '" cy="' + (12 + Math.sin(a + 0.4) * 9.5).toFixed(1) + '" r=".8"/>'; }).join('') + '</svg>';
+  NP_VIZ_ICONS.led = '<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="3" y="17" width="4" height="2.2"/><rect x="3" y="13.8" width="4" height="2.2"/><rect x="3" y="6" width="4" height="1.4"/><rect x="10" y="17" width="4" height="2.2"/><rect x="10" y="13.8" width="4" height="2.2"/><rect x="10" y="10.6" width="4" height="2.2"/><rect x="10" y="3.5" width="4" height="1.4"/><rect x="17" y="17" width="4" height="2.2"/><rect x="17" y="10" width="4" height="1.4"/></svg>';
+  NP_VIZ_ICONS.orbs = '<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="5" cy="13" r="2"/><circle cx="10" cy="9" r="1.4"/><circle cx="13" cy="15" r="2.6"/><circle cx="18" cy="8" r="1.8"/><circle cx="20" cy="15" r="1.1"/></svg>';
+  NP_VIZ_ICONS.neon = S('<path d="M2 12c2 0 2-6 4-6s2 12 4 12 2-9 4-9 2 6 4 6 2-3 4-3" stroke-width="2.4"/>');
+  NP_VIZ_ICONS.ring = S('<path d="M12 3.5l2 1.2 2.2-.3 1.2 2 2 1 .1 2.3 1.2 2-1 2 .1 2.3-2 1-1.1 2-2.3-.2-2 1.2-2-1.1-2.3.2-1.1-2-2-1 .2-2.3-1.2-2 1.2-2-.2-2.3 2-1.1 1.2-2 2.3.3z"/>');
+  NP_VIZ_ICONS.updown = '<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="3" y="9" width="1.6" height="5"/><rect x="7" y="5" width="1.6" height="9"/><rect x="11" y="3" width="1.6" height="11"/><rect x="15" y="7" width="1.6" height="7"/><rect x="19" y="10" width="1.6" height="4"/><circle cx="7.8" cy="17" r=".9"/><circle cx="11.8" cy="16.5" r=".9"/><circle cx="12.3" cy="19.5" r=".8"/><circle cx="15.8" cy="17.5" r=".9"/><circle cx="4" cy="17" r=".8"/></svg>';
+  NP_VIZ_ICONS.lines = S('<path d="M2 7c2.5-2 5-2 7.5 0s5 2 7.5 0 4-2 5 0M2 12c2.5-2 5-2 7.5 0s5 2 7.5 0 4-2 5 0M2 17c2.5-2 5-2 7.5 0s5 2 7.5 0 4-2 5 0"/>');
+})();
 // 「なし」のアイコン（斜線の円）
 NP_VIZ_ICONS.none = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M6 18L18 6"/></svg>';
 // 設定の段（少ない／ふつう／多い など）
@@ -100,14 +121,17 @@ function npVizMenuRender() {
     if (btn.title !== t) { btn.title = t; btn.setAttribute('aria-label', t); }
     btn.classList.toggle('is-none', none);
   }
+  var full_ = typeof NVZ_MAX !== 'undefined' && cfg.modes.length >= NVZ_MAX;
   var chip = function (k, on, attr, name) {
-    return '<button type="button" class="np-viz-chip' + (on ? ' is-cur' : '') + '" role="menuitemcheckbox" aria-checked="' + on + '" ' + attr + ' title="' + name + '" aria-label="' + name + '">' +
+    var full = (typeof NVZ_NAME !== 'undefined' && NVZ_NAME[k]) || name, dis = !on && k !== 'none' && full_ ? ' disabled' : '';   // v8.12：4つ選んでいるときは、ほかのチップは押せない
+    return '<button type="button" class="np-viz-chip' + (on ? ' is-cur' : '') + '" role="menuitemcheckbox" aria-checked="' + on + '" ' + attr + dis + ' title="' + full + (dis ? '（同時に ' + NVZ_MAX + ' つまで。どれかを外すと選べます）' : '') + '" aria-label="' + full + '">' +
       '<span class="np-viz-ico">' + NP_VIZ_ICONS[k] + '</span><span class="np-viz-name">' + name + '</span>' +
       '<span class="np-viz-check">' + (on ? NP_VIZ_CHECK : '') + '</span></button>';
   };
   var off = none ? ' is-off' : '';
   var html =
-    '<div class="np-viz-mtitle">描き方<span class="np-viz-msub">（いくつでも重ねられます）</span></div>' +
+    '<div class="np-viz-mtitle">描き方<span class="np-viz-msub">（' + (typeof NVZ_MAX !== 'undefined' ? NVZ_MAX + 'つまで重ねられます' : 'いくつでも重ねられます') + '）</span>' +
+      (typeof NVZ_MAX !== 'undefined' ? '<span class="np-viz-count' + (full_ ? ' is-full' : '') + '">' + cfg.modes.length + ' / ' + NVZ_MAX + '</span>' : '') + '</div>' +
     '<div class="np-viz-chips">' + NVZ_MENU_ORDER.map(function (k) { return chip(k, cfg.modes.indexOf(k) >= 0, 'data-viz="' + k + '"', NVZ_LABEL[k]); }).join('') +
       chip('none', none, 'data-viz-none="1"', 'なし') + '</div>' +
     '<div class="np-viz-mtitle np-viz-set-title">描き方の設定</div>' +

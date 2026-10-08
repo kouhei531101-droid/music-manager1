@@ -67,12 +67,15 @@ window._npDraw = function () {
   if (!cfg.modes.length) { _npvSparksClear(); return; }
   npvTune.glow = (cfg.glowAmt == null ? 100 : cfg.glowAmt) / 100; npvTune.spark = (cfg.sparkAmt == null ? 100 : cfg.sparkAmt) / 100;
   npvTune.height = (cfg.sparkHeight == null ? 100 : cfg.sparkHeight) / 100; npvTune.trail = (cfg.trailAmt == null ? 100 : cfg.trailAmt) / 100;
-  var plain = reduced || !cfg.glow, sparkle = !plain && (cfg.modes.indexOf('bars') >= 0 || cfg.modes.indexOf('circle') >= 0);
+  var plain = reduced || !cfg.glow, sparkle = !plain && (cfg.modes.indexOf('bars') >= 0 || cfg.modes.indexOf('circle') >= 0 || cfg.modes.indexOf('led') >= 0);   // v8.12：LEDバーも粒を出す
   if (!sparkle) _npvSparksClear();   // v8.9.6：波形だけ・動きを減らす設定（v8.11：光がオフ）では粒を消す
+  npv.frame = (npv.frame || 0) + 1;
+  var more = { g: g, W: W, H: H, col: col, amp: amp, dt: dt, glow: !plain, cfg: cfg, cv: cv, dark: _npvDark(), reduced: reduced, stamp: npv.frame };
   cfg.modes.forEach(function (m) {
     if (m === 'circle') _npvDrawCircle(g, W, H, col, amp, dt, plain, cv, cfg);
     else if (m === 'bars') _npvDrawBars(g, W, H, col, amp, dt, plain, cfg);
     else if (m === 'wave') _npvDrawWave(g, W, H, col, amp, dt, reduced, !plain);
+    else if (typeof npvDrawMore === 'function') npvDrawMore(m, more);   // スマホ版 v8.12：ふやした12種類（75-np-viz-more.js）
   });
   if (sparkle) _npvSparksDraw(g, H, col, _npvDark(), dt);
 };

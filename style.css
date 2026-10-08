@@ -3183,3 +3183,23 @@ body.alb-fab-on #main { padding-bottom: calc(var(--player-h) + var(--lyr-bottom)
 @media (orientation: landscape) and (max-height: 500px) and (max-width: 1000px) {
   .np-viz-tune-row { min-height: 36px; }
 }
+
+/* ---------- スマホ版 v8.12：描き方を15種類に（75-np-viz-more.js・67-np-viz-menu.js）----------
+   ・描き方メニューのチップは小さな絵付きの4列のグリッド（15種類＋なし＝4行）。同時に重ねられるのは3つまで（73 の NVZ_MAX）
+   ・メニューが画面に入らないとき（横向きなど）は、今までどおりメニューの中で縦にスクロール */
+.np-viz-chips { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 5px; }
+.np-viz-chip { min-height: 50px; padding: 5px 1px 4px; gap: 2px; font-size: 11px; border-radius: 10px; }
+.np-viz-chip .np-viz-ico { width: 26px; height: 26px; }
+.np-viz-chip .np-viz-ico svg { width: 17px; height: 17px; }
+.np-viz-chip .np-viz-name { max-width: 100%; overflow: hidden; text-overflow: ellipsis; }
+.np-viz-chip .np-viz-check { top: 2px; right: 3px; }
+.np-viz-chip .np-viz-check svg { width: 11px; height: 11px; }
+@media (orientation: landscape) and (max-height: 500px) and (max-width: 1000px) {
+  .np-viz-chip { min-height: 46px; }
+  .np-viz-chip .np-viz-ico { width: 24px; height: 24px; }
+}
+
+/* スマホ版 v8.12：描き方の数（「n / 4」）と、4つ選んでいるときの押せないチップ */
+.np-viz-count { margin-left: auto; padding: 1px 8px; border-radius: 999px; background: var(--surface-2); border: 1px solid var(--border2); font-size: 11px; font-weight: 700; color: var(--text-sub); font-variant-numeric: tabular-nums; }
+.np-viz-count.is-full { background: var(--primary-mid); border-color: var(--primary-mid); color: #fff; }
+.np-viz-chip:disabled { opacity: 0.38; cursor: default; }
