@@ -13,7 +13,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,700&family=Cinzel:wght@400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=20261009-3">
+<link rel="stylesheet" href="style.css?v=20261010-6">
 <!-- 画面の色（v3.7）：最初の描画の前にブラックモードを当てる（白→黒のちらつきを防ぐ）。保存場所は musicManager_ui の theme -->
 <script>
 (function () {
@@ -334,12 +334,8 @@
       </div>
       <div class="filter-bar" id="sea-filter-bar">
         <span class="ui-label-tag ui-label-tag-onlight" style="top:4px;right:6px" onclick="copyUiLabel('Seasons Songのフィルターバー', event)" title="クリックで「Seasons Songのフィルターバー」をコピー">□</span>
-        <!-- 季節のタブ（Spring／Summer／Fall／Winter と件数） -->
+        <!-- 季節のタブ（Spring／Summer／Fall／Winter と件数。大きなボタン。v8.12.7 で検索欄は外した） -->
         <div class="sea-tabs" id="sea-tabs" role="group" aria-label="季節のタブ"></div>
-        <div class="search-box sea-search-box">
-          <span class="search-icon" data-icon="search"></span>
-          <input type="search" id="sea-search" class="form-input" placeholder="曲名・アーティスト・アルバムで検索" autocomplete="off">
-        </div>
         <!-- 歌詞を調べる進み具合 -->
         <div class="sea-progress" id="sea-progress" aria-live="polite"></div>
       </div>
@@ -455,7 +451,7 @@
           <span class="ui-label-tag ui-label-tag-onlight" style="top:6px;right:8px" onclick="copyUiLabel('バックアップ・復元', event)" title="クリックで「バックアップ・復元」をコピー">□</span>
           <h2 class="panel-title">バックアップ・復元</h2>
           <p class="panel-desc">
-            プレイリスト・操作履歴・設定（アルバムの並べ替え・カスタム順を含む）・入力した歌詞・アプリ内の曲情報の上書きを JSON ファイルに書き出して保存できます（音楽ファイル自体と、アプリ内で設定した ogg・wav などのジャケット画像は含みません）。
+            プレイリスト・操作履歴・設定（アルバムの並べ替え・カスタム順を含む）・入力した歌詞・アプリ内の曲情報の上書きを JSON ファイルに書き出して保存できます（音楽ファイル自体と、アプリ内で設定した ogg・wav などのジャケット画像は含みません。再生画面の背景の自分の画像は含みます）。
             ブラウザのデータを消すとプレイリストも消えてしまうので、ときどきバックアップしてください。
           </p>
           <div class="btn-row">
@@ -483,6 +479,14 @@
           <p class="panel-desc">オフにすると、画面の各部分の右上の小さな「□」（押すと呼び方をコピー）を全部隠します。設定はバックアップに含まれます。</p>
         </section>
 
+        <!-- 再生画面の背景（スマホ版 v8.14.0。81-np-bg.js） -->
+        <section class="panel">
+          <span class="ui-label-tag ui-label-tag-onlight" style="top:6px;right:8px" onclick="copyUiLabel('再生画面の背景（tools）', event)" title="クリックで「再生画面の背景（tools）」をコピー">□</span>
+          <h2 class="panel-title">再生画面の背景</h2>
+          <p class="panel-desc">再生画面のいちばん奥に出す絵です。押すとすぐ変わります（再生画面の ⓘ の描き方メニューの「背景」からも選べます）。設定と自分の画像はバックアップに含まれます。</p>
+          <div id="set-np-bg"></div>
+        </section>
+
         <!-- Pin のアルバム（v3.4。26-pinned-albums.js） -->
         <section class="panel">
           <span class="ui-label-tag ui-label-tag-onlight" style="top:6px;right:8px" onclick="copyUiLabel('Pin のアルバム（tools）', event)" title="クリックで「Pin のアルバム（tools）」をコピー">□</span>
@@ -507,6 +511,14 @@
           <div id="set-album-tags"></div>
         </section>
 
+        <!-- アーティスト名のコピー（スマホ版 v8.12.5。79-artist-copy.js） -->
+        <section class="panel">
+          <span class="ui-label-tag ui-label-tag-onlight" style="top:6px;right:8px" onclick="copyUiLabel('アーティスト名のコピー（tools）', event)" title="クリックで「アーティスト名のコピー（tools）」をコピー">□</span>
+          <h2 class="panel-title">アーティスト名のコピー</h2>
+          <p class="panel-desc">アルバムの「ソートキー」と「タグ」に、そのアルバムのアーティスト名（アルバムアーティスト。無ければ全曲共通のアーティスト）を入れます。タグはアーティスト名と同じ名前のタグを使い、無ければ作ります。ファイルは変わりません。設定はバックアップに含まれます。</p>
+          <div id="set-artist-copy"></div>
+        </section>
+
         <!-- ジャンルの候補（v4.5。32-genre-suggest.js） -->
         <section class="panel">
           <span class="ui-label-tag ui-label-tag-onlight" style="top:6px;right:8px" onclick="copyUiLabel('ジャンルの候補（tools）', event)" title="クリックで「ジャンルの候補（tools）」をコピー">□</span>
@@ -529,6 +541,14 @@
           <h2 class="panel-title">Seasons Song の設定</h2>
           <p class="panel-desc">曲名と歌詞の季節の言葉で、曲を Spring／Summer／Fall／Winter に分けます。設定と手で決めた季節はバックアップに含まれます。ファイルは変わりません。</p>
           <div id="set-seasons"></div>
+        </section>
+
+        <!-- Seasons Song の非表示の曲（スマホ版 v8.13.0。80-season-hidden.js） -->
+        <section class="panel">
+          <span class="ui-label-tag ui-label-tag-onlight" style="top:6px;right:8px" onclick="copyUiLabel('Seasons Song の非表示の曲（tools）', event)" title="クリックで「Seasons Song の非表示の曲（tools）」をコピー">□</span>
+          <h2 class="panel-title">Seasons Song の非表示の曲</h2>
+          <p class="panel-desc">Seasons Song の曲一覧で「非表示」にした曲です（Seasons Song の画面だけから外しています。ほかの画面・ファイルはそのまま）。バックアップに含まれます。</p>
+          <div id="set-season-hidden"></div>
         </section>
 
         <!-- 非表示のアルバム（v3.0。24-hidden-albums.js） -->
@@ -680,82 +700,86 @@
 <div id="busy-overlay" class="busy-overlay" hidden><div class="busy-box"><div class="busy-spinner"></div><div id="busy-text">実行中…</div></div></div>
 
 <!-- js は機能ごとのファイル。起動処理（12-init.js）は必ず最後（新しいファイルはその直前に足す） -->
-<script src="js/01-core.js?v=20261009-3"></script>
-<script src="js/02-folder-access.js?v=20261009-3"></script>
-<script src="js/03-tag-reader.js?v=20261009-3"></script>
-<script src="js/04-library.js?v=20261009-3"></script>
-<script src="js/05-library-page.js?v=20261009-3"></script>
-<script src="js/06-player.js?v=20261009-3"></script>
-<script src="js/07-playlists.js?v=20261009-3"></script>
-<script src="js/08-organizer.js?v=20261009-3"></script>
-<script src="js/09-file-ops.js?v=20261009-3"></script>
-<script src="js/10-settings-backup.js?v=20261009-3"></script>
-<script src="js/11-changelog.js?v=20261009-3"></script>
-<script src="js/13-artwork.js?v=20261009-3"></script>
-<script src="js/14-albums.js?v=20261009-3"></script>
-<script src="js/15-lyrics.js?v=20261009-3"></script>
-<script src="js/16-tag-writer.js?v=20261009-3"></script>
-<script src="js/17-tag-edit.js?v=20261009-3"></script>
-<script src="js/18-artwork-edit.js?v=20261009-3"></script>
-<script src="js/19-new-songs.js?v=20261009-3"></script>
-<script src="js/20-heavy-rotation.js?v=20261009-3"></script>
-<script src="js/21-artists.js?v=20261009-3"></script>
-<script src="js/22-load-progress.js?v=20261009-3"></script>
-<script src="js/23-library-index.js?v=20261009-3"></script>
-<script src="js/24-hidden-albums.js?v=20261009-3"></script>
-<script src="js/25-navigation.js?v=20261009-3"></script>
-<script src="js/26-pinned-albums.js?v=20261009-3"></script>
-<script src="js/27-card-actions.js?v=20261009-3"></script>
-<script src="js/28-pinned-artists.js?v=20261009-3"></script>
-<script src="js/29-album-sort.js?v=20261009-3"></script>
-<script src="js/30-album-sortkey.js?v=20261009-3"></script>
-<script src="js/31-album-tags.js?v=20261009-3"></script>
-<script src="js/32-genre-suggest.js?v=20261009-3"></script>
-<script src="js/33-album-genre.js?v=20261009-3"></script>
-<script src="js/34-duplicates.js?v=20261009-3"></script>
-<script src="js/35-album-folder.js?v=20261009-3"></script>
-<script src="js/36-western.js?v=20261009-3"></script>
-<script src="js/37-now-playing.js?v=20261009-3"></script>
-<script src="js/38-album-groups.js?v=20261009-3"></script>
-<script src="js/39-playlist-play.js?v=20261009-3"></script>
-<script src="js/40-coverflow.js?v=20261009-3"></script>
-<script src="js/41-album-bulk-edit.js?v=20261009-3"></script>
-<script src="js/42-sortkey-cover.js?v=20261009-3"></script>
-<script src="js/43-playlist-copy.js?v=20261009-3"></script>
-<script src="js/44-playlist-add-albums.js?v=20261009-3"></script>
-<script src="js/45-album-scroll.js?v=20261009-3"></script>
-<script src="js/46-seasons.js?v=20261009-3"></script>
-<script src="js/47-shuffle-play.js?v=20261009-3"></script>
-<script src="js/48-album-context-menu.js?v=20261009-3"></script>
-<script src="js/49-upbeat.js?v=20261009-3"></script>
-<script src="js/50-np-album.js?v=20261009-3"></script>
-<script src="js/51-album-reset.js?v=20261009-3"></script>
-<script src="js/52-data-store.js?v=20261009-3"></script>
-<script src="js/53-storage-usage.js?v=20261009-3"></script>
-<script src="js/54-spin-cd.js?v=20261009-3"></script>
-<script src="js/55-np-title-fit.js?v=20261009-3"></script>
-<script src="js/56-cassette.js?v=20261009-3"></script>
-<script src="js/57-record.js?v=20261009-3"></script>
-<script src="js/58-md.js?v=20261009-3"></script>
-<script src="js/59-mobile.js?v=20261009-3"></script>
-<script src="js/60-album-bar.js?v=20261009-3"></script>
-<script src="js/61-album-filter-icons.js?v=20261009-3"></script>
-<script src="js/62-lyrics-mini.js?v=20261009-3"></script>
-<script src="js/63-header-brand.js?v=20261009-3"></script>
-<script src="js/64-card-menu.js?v=20261009-3"></script>
-<script src="js/65-album-play-np.js?v=20261009-3"></script>
-<script src="js/66-bottom-nav.js?v=20261009-3"></script>
-<script src="js/67-np-viz-menu.js?v=20261009-3"></script>
-<script src="js/68-np-onescreen.js?v=20261009-3"></script>
-<script src="js/69-album-head-mobile.js?v=20261009-3"></script>
-<script src="js/70-np-viz-trail.js?v=20261009-3"></script>
-<script src="js/71-np-landscape.js?v=20261009-3"></script>
-<script src="js/72-pin-sort-drag.js?v=20261009-3"></script>
-<script src="js/73-np-viz-settings.js?v=20261009-3"></script>
-<script src="js/74-album-set-play.js?v=20261009-3"></script>
-<script src="js/75-np-viz-more.js?v=20261009-3"></script>
-<script src="js/76-romaji.js?v=20261009-3"></script>
-<script src="js/77-album-home.js?v=20261009-3"></script>
-<script src="js/12-init.js?v=20261009-3"></script>
+<script src="js/01-core.js?v=20261010-6"></script>
+<script src="js/02-folder-access.js?v=20261010-6"></script>
+<script src="js/03-tag-reader.js?v=20261010-6"></script>
+<script src="js/04-library.js?v=20261010-6"></script>
+<script src="js/05-library-page.js?v=20261010-6"></script>
+<script src="js/06-player.js?v=20261010-6"></script>
+<script src="js/07-playlists.js?v=20261010-6"></script>
+<script src="js/08-organizer.js?v=20261010-6"></script>
+<script src="js/09-file-ops.js?v=20261010-6"></script>
+<script src="js/10-settings-backup.js?v=20261010-6"></script>
+<script src="js/11-changelog.js?v=20261010-6"></script>
+<script src="js/13-artwork.js?v=20261010-6"></script>
+<script src="js/14-albums.js?v=20261010-6"></script>
+<script src="js/15-lyrics.js?v=20261010-6"></script>
+<script src="js/16-tag-writer.js?v=20261010-6"></script>
+<script src="js/17-tag-edit.js?v=20261010-6"></script>
+<script src="js/18-artwork-edit.js?v=20261010-6"></script>
+<script src="js/19-new-songs.js?v=20261010-6"></script>
+<script src="js/20-heavy-rotation.js?v=20261010-6"></script>
+<script src="js/21-artists.js?v=20261010-6"></script>
+<script src="js/22-load-progress.js?v=20261010-6"></script>
+<script src="js/23-library-index.js?v=20261010-6"></script>
+<script src="js/24-hidden-albums.js?v=20261010-6"></script>
+<script src="js/25-navigation.js?v=20261010-6"></script>
+<script src="js/26-pinned-albums.js?v=20261010-6"></script>
+<script src="js/27-card-actions.js?v=20261010-6"></script>
+<script src="js/28-pinned-artists.js?v=20261010-6"></script>
+<script src="js/29-album-sort.js?v=20261010-6"></script>
+<script src="js/30-album-sortkey.js?v=20261010-6"></script>
+<script src="js/31-album-tags.js?v=20261010-6"></script>
+<script src="js/32-genre-suggest.js?v=20261010-6"></script>
+<script src="js/33-album-genre.js?v=20261010-6"></script>
+<script src="js/34-duplicates.js?v=20261010-6"></script>
+<script src="js/35-album-folder.js?v=20261010-6"></script>
+<script src="js/36-western.js?v=20261010-6"></script>
+<script src="js/37-now-playing.js?v=20261010-6"></script>
+<script src="js/38-album-groups.js?v=20261010-6"></script>
+<script src="js/39-playlist-play.js?v=20261010-6"></script>
+<script src="js/40-coverflow.js?v=20261010-6"></script>
+<script src="js/41-album-bulk-edit.js?v=20261010-6"></script>
+<script src="js/42-sortkey-cover.js?v=20261010-6"></script>
+<script src="js/43-playlist-copy.js?v=20261010-6"></script>
+<script src="js/44-playlist-add-albums.js?v=20261010-6"></script>
+<script src="js/45-album-scroll.js?v=20261010-6"></script>
+<script src="js/46-seasons.js?v=20261010-6"></script>
+<script src="js/47-shuffle-play.js?v=20261010-6"></script>
+<script src="js/48-album-context-menu.js?v=20261010-6"></script>
+<script src="js/49-upbeat.js?v=20261010-6"></script>
+<script src="js/50-np-album.js?v=20261010-6"></script>
+<script src="js/51-album-reset.js?v=20261010-6"></script>
+<script src="js/52-data-store.js?v=20261010-6"></script>
+<script src="js/53-storage-usage.js?v=20261010-6"></script>
+<script src="js/54-spin-cd.js?v=20261010-6"></script>
+<script src="js/55-np-title-fit.js?v=20261010-6"></script>
+<script src="js/56-cassette.js?v=20261010-6"></script>
+<script src="js/57-record.js?v=20261010-6"></script>
+<script src="js/58-md.js?v=20261010-6"></script>
+<script src="js/59-mobile.js?v=20261010-6"></script>
+<script src="js/60-album-bar.js?v=20261010-6"></script>
+<script src="js/61-album-filter-icons.js?v=20261010-6"></script>
+<script src="js/62-lyrics-mini.js?v=20261010-6"></script>
+<script src="js/63-header-brand.js?v=20261010-6"></script>
+<script src="js/64-card-menu.js?v=20261010-6"></script>
+<script src="js/65-album-play-np.js?v=20261010-6"></script>
+<script src="js/66-bottom-nav.js?v=20261010-6"></script>
+<script src="js/67-np-viz-menu.js?v=20261010-6"></script>
+<script src="js/68-np-onescreen.js?v=20261010-6"></script>
+<script src="js/69-album-head-mobile.js?v=20261010-6"></script>
+<script src="js/70-np-viz-trail.js?v=20261010-6"></script>
+<script src="js/71-np-landscape.js?v=20261010-6"></script>
+<script src="js/72-pin-sort-drag.js?v=20261010-6"></script>
+<script src="js/73-np-viz-settings.js?v=20261010-6"></script>
+<script src="js/74-album-set-play.js?v=20261010-6"></script>
+<script src="js/75-np-viz-more.js?v=20261010-6"></script>
+<script src="js/76-romaji.js?v=20261010-6"></script>
+<script src="js/77-album-home.js?v=20261010-6"></script>
+<script src="js/78-np-lyrics-over.js?v=20261010-6"></script>
+<script src="js/79-artist-copy.js?v=20261010-6"></script>
+<script src="js/80-season-hidden.js?v=20261010-6"></script>
+<script src="js/81-np-bg.js?v=20261010-6"></script>
+<script src="js/12-init.js?v=20261010-6"></script>
 </body>
 </html>

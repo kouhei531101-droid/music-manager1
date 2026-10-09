@@ -24,14 +24,15 @@
 var STORE_DB_NAME = 'musicManager_store', STORE_KV = 'kv';
 // 大きな保存場所に置く項目（それ以外は基本の設定として localStorage に残す）
 var DB_HEAVY_KEYS = ['playlists', 'history', 'playStats', 'lyrics', 'tagOverrides', 'albumOrder', 'hiddenAlbums', 'pinnedAlbums', 'pinnedArtists',
-  'artistCovers', 'albumTagOf', 'albumSortKeys', 'westernAlbums', 'westernArtists', 'dupIgnore', 'genreSuggest', 'bpmManual', 'seasonOverride', 'skCovers'];
+  'artistCovers', 'albumTagOf', 'albumSortKeys', 'westernAlbums', 'westernArtists', 'dupIgnore', 'genreSuggest', 'bpmManual', 'seasonOverride', 'skCovers', 'seasonHidden'];
 // 画面に出すときの名前（保存容量の使用状況）
 var DB_HEAVY_LABELS = {
   playlists: 'プレイリスト', history: '操作履歴', playStats: '再生回数の記録', lyrics: '入力した歌詞', tagOverrides: 'アプリ内の曲情報の上書き',
   albumOrder: 'アルバムのカスタム順', hiddenAlbums: '非表示のアルバム', pinnedAlbums: 'Pin したアルバム', pinnedArtists: 'Pin したアーティスト',
   artistCovers: 'アーティストの代表ジャケット', albumTagOf: 'アルバムに付けたタグ', albumSortKeys: 'アルバムのソートキー',
   westernAlbums: '洋楽の指定（アルバム）', westernArtists: '洋楽の指定（アーティスト）', dupIgnore: '重複ではない の印', genreSuggest: 'ジャンルの候補',
-  bpmManual: '手で入れた BPM', seasonOverride: '手で決めた季節', skCovers: 'ソートキーの枠の代表ジャケット'
+  bpmManual: '手で入れた BPM', seasonOverride: '手で決めた季節', skCovers: 'ソートキーの枠の代表ジャケット',
+  seasonHidden: 'Seasons Song で非表示にした曲'   // v8.13.0
 };
 var DB_STORE_SAVE_DELAY = 400;   // 大きな保存場所へ書くまでの待ち時間（ミリ秒）
 

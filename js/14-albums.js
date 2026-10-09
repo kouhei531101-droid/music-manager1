@@ -353,15 +353,17 @@ function renderAlbumsPage() {
   var custom = albumSortMode() === 'custom' && !albView.showHidden && !pinOnly;   // 非表示のアルバム・Pin のみを見ている間は、カスタム順の編集はしない
   _updateAlbumSearchBox(custom);
   var list = getAlbumList(albums);
-  // Pin（v3.4）：先頭の「Pin の区切り」の下に並べ、通常の一覧には重ねて出さない（非表示のアルバムを見ている間は分けない）
-  var sp = albView.showHidden ? { pinned: [], rest: list } : splitPinnedAlbums(list);
+  // Pin（v3.4）：先頭の「Pin の区切り」の下に並べる（非表示のアルバムを見ている間は分けない）。
+  //   v8.12.4：Pin したアルバムも通常の一覧に残す（同じアルバムが Pin の区切りと通常の一覧の両方に出る。
+  //   Pin の区切りのカードは data-pin-album＝albView.pinned の番号、通常の一覧のカードは data-album＝albView.list の番号で、別々に拾う）
+  var sp =albView.showHidden ? { pinned: [], rest: list } : splitPinnedAlbums(list);
   albView.pinned = sp.pinned;
   // Pin の並べ替えモード（v8.7.8）：検索・絞り込みで Pin の一部しか見えていないときは使えない（並べ替えボタンを押せなくし、モードも終わる）
   var pinPartial = !albView.showHidden && sp.pinned.length < pinPresentN;
   albView.pinSortBlocked = pinPartial;
   if (sp.pinned.length < 2 || pinPartial) albView.pinSorting = false;
   var fullList = pinOnly ? sp.pinned : list;
-  list = pinOnly ? [] : sp.rest;
+  list = pinOnly ? [] : list;   // v8.12.4：通常の一覧は Pin も含めた全部（sp.rest ではなく）
   // グループ表示（v5.3。38-album-groups.js）：並べ替えたあとの一覧をグループに分け、グループの順につなげたものを albView.list にする
   var grouped = typeof albumGroupActive === 'function' && albumGroupActive(custom, pinOnly) && list.length;
   albView.groups = grouped ? albumGroupsOf(list) : null;
@@ -397,7 +399,7 @@ function renderAlbumsPage() {
       '<span class="ui-label-tag ui-label-tag-onlight" style="top:-6px;right:0" onclick="copyUiLabel(\'Pin の区切り\', event)" title="クリックで「Pin の区切り」をコピー">□</span></div>' +
       (ps ? '<p class="pin-sort-hint"><strong>Pin の並べ替えモード</strong>　カードをドラッグして好きな位置へ動かします（キーボードはカードを選んで ← →）。並びは自動で保存されます。終わるときは「完了」か Esc。</p>' : '') +
       '<div class="album-grid album-pin-grid' + (ps ? ' is-editing pin-sort-mode' : '') + '"' + (ps ? ' role="list" aria-label="Pin の並べ替えモード"' : '') + '>' + sp.pinned.map(function (a, i) { return _albumCardHtml(a, i, false, sp.pinned.length, true); }).join('') + '</div>' +
-      (list.length ? '<div class="album-section-head">アルバム<span class="album-section-count">' + (fullList.length - sp.pinned.length) + '枚</span></div>' : '');
+      (list.length ? '<div class="album-section-head">アルバム<span class="album-section-count">' + list.length + '枚</span></div>' : '');   // v8.12.4：Pin も含めた枚数
   }
   if (custom) {
     // カスタム順の編集モード
@@ -659,6 +661,8 @@ function backToAlbumList() {
   renderAlbumsPage();
   if (!ret) return;
   var idx = albView.list.findIndex(function (x) { return x.key === ret.key; });
+  // v8.12.4：Pin のアルバムは通常の一覧にもあるので、Pin の区切りのカードから開いたとき（ret.fromPin）は Pin のカードへ戻す
+  if (ret.fromPin && (albView.pinned || []).some(function (x) { return x.key === ret.key; })) idx = -1;
   // グループ表示（v5.3）：そのカードのグループを開き、そこまで描く
   if (albView.groups && idx >= 0 && typeof albumGroupEnsureVisible === 'function') { if (albumGroupEnsureVisible(ret.key)) renderAlbumsPage(); }
   else if (idx >= 0 && idx >= albView.limit && albumSortMode() !== 'custom') {
@@ -672,14 +676,19 @@ function backToAlbumList() {
 }
 // 一覧から消えるアルバムの隣（v6.4）：次のアルバム、最後なら前のアルバム。Pin の区切りの中なら Pin の中で（Pin が1枚だけなら通常の一覧の先頭）。
 //   削除・非表示で一覧が変わる前に呼ぶ（albView.list・albView.pinned は最後に描いた一覧の並び）
+//   v8.12.4：Pin のアルバムは通常の一覧にもあるので、Pin の区切りから開いていたとき（albView.ret.fromPin）だけ Pin の中を先に探す
 function albumListNeighborKey(key) {
-  var lists = [albView.pinned || [], albView.list || []];
+  var fromPin = !!(albView.ret && albView.ret.fromPin);
+  var lists = fromPin ? [albView.pinned || [], albView.list || []] : [albView.list || [], albView.pinned || []];
   for (var j = 0; j < lists.length; j++) {
     var l = lists[j], i = l.findIndex(function (x) { return x.key === key; });
     if (i < 0) continue;
     var n = l[i + 1] || l[i - 1];
     if (n) return n.key;
-    if (j === 0 && albView.list && albView.list[0]) return albView.list[0].key;
+    if (fromPin && j === 0) {   // Pin が1枚だけ：通常の一覧の、消えるアルバム以外の先頭
+      var f = (albView.list || []).find(function (x) { return x.key !== key; });
+      if (f) return f.key;
+    }
     return null;
   }
   return null;
@@ -835,7 +844,7 @@ function initAlbumsPage() {
     if (act0 === 'grp-play' || act0 === 'grp-shuffle') { if (!btn.disabled) playAlbumSetFromBtn(btn, act0 === 'grp-shuffle'); return; }   // ソートキーの枠・グループの見出し（v8.7.8）
     var pcard = ev.target.closest('[data-pin-album]');   // Pin の区切りの中のカード（v3.4）
     if (pcard && albView.pinSorting) return;   // 並べ替え中は開かない
-    if (pcard) { var pa = (albView.pinned || [])[+pcard.getAttribute('data-pin-album')]; if (pa) openAlbum(pa); return; }
+    if (pcard) { var pa = (albView.pinned || [])[+pcard.getAttribute('data-pin-album')]; if (pa) { openAlbum(pa); if (albView.ret) albView.ret.fromPin = true; } return; }   // fromPin：戻るとき Pin のカードへ（v8.12.4）
     var card = ev.target.closest('[data-album]');
     if (card) { var a0 = albView.list[+card.getAttribute('data-album')]; if (a0) openAlbum(a0); return; }
     var a = albView.current;

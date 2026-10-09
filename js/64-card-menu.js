@@ -51,7 +51,9 @@ function cardMenuAct(act, a) {
 // ソートキー・タグの入力を出す目印の要素（カードのジャケット／見出しの写真）
 function _cardMenuAnchor(a) {
   if (albView.current && albView.current.key === a.key) { var h = document.querySelector('#page-albums .album-head-art'); if (h) return h; }
-  var c = document.querySelector('[data-card-key="' + (window.CSS && CSS.escape ? CSS.escape(a.key) : a.key) + '"]');
+  // v8.12.4：Pin のアルバムは Pin の区切りと通常の一覧の2か所にカードがあるので、画面に見えているカードを先に使う
+  var cs = Array.prototype.slice.call(document.querySelectorAll('[data-card-key="' + (window.CSS && CSS.escape ? CSS.escape(a.key) : a.key) + '"]'));
+  var c = cs.find(function (x) { var r = x.getBoundingClientRect(); return r.width && r.bottom > 0 && r.top < window.innerHeight; }) || cs[0];
   var w = c && c.closest('.card-art-wrap');
   return w || c || document.querySelector('#page-albums .page-header') || document.body;
 }

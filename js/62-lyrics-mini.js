@@ -49,6 +49,11 @@ function npOpenLyricsPanel() {
 })();
 document.addEventListener('click', function (ev) {
   if (!isMobileLayout() || !ev.target.closest) return;   // スマホ版 v8.10.1：横向きのスマホも
-  if (ev.target.closest('#np-lyr-panel-btn') || ev.target.closest('#now-playing .np-lyrics .np-lyr.active')) { ev.preventDefault(); npOpenLyricsPanel(); }
+  if (ev.target.closest('#np-lyr-panel-btn')) { ev.preventDefault(); npOpenLyricsPanel(); return; }
+  // スマホ版 v8.12.3：今の行を押したときは、歌詞パネルではなく「歌詞の重ね表示」（78-np-lyrics-over.js）を開く
+  if (ev.target.closest('#now-playing .np-lyrics .np-lyr.active')) {
+    ev.preventDefault();
+    if (typeof npLyrOverOpen === 'function') npLyrOverOpen(); else npOpenLyricsPanel();
+  }
 });
 if (document.readyState !== 'loading') syncLyricsMiniEmpty();

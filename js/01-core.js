@@ -28,9 +28,15 @@ function freshDB() {
                 albumSort: { mode: 'fields', fields: [{ key: 'name', dir: 'asc' }, { key: 'artist', dir: 'asc' }] },
                 shuffle: false, showUiLabels: true,
                 albumPinOnly: false,
+                artistCopySortKey: false,   // ソートキーが空のアルバムにアーティスト名を自動で入れる（スマホ版 v8.12.5。79-artist-copy.js）
+                artistCopyTag: false,       // タグが空のアルバムにアーティスト名のタグを自動で付ける（同上）
                 plAutoOpen: false,    // プレイリスト再生時に play画面を自動で開く（v5.6）
                 npSpinCd: true,       // 再生画面の「回転CD」を出す（v8.3。54-spin-cd.js。無い古いデータ・バックアップはオンとして読む）
                 npVisual: 'cd',       // 再生画面のプレイヤー表示（v8.4。'cd' 回転CD／'cassette' カセットテープ／'none' なし〔スマホ版 v8.9 から 'jacket' ジャケットの並び・'record'・'md'。古い 'none' は 'jacket' として読む〕。無いときは npSpinCd から読む）
+                npBg: 'none',         // 再生画面の背景（スマホ版 v8.14.0。81-np-bg.js。'none'／'auto'／'custom'／テンプレートの id。無い古いデータ・バックアップは 'none'）
+                npBgVeil: 'normal',   // 再生画面の背景の覆いの濃さ（'light'／'normal'／'strong'）
+                npBgStyle: 'photo',   // 再生画面の背景の絵の種類（'photo' 写真／'illust' イラスト。スマホ版 v8.14.1。無い古いデータ・バックアップは 'photo'）
+                npBgFit: 'cover', npBgScale: 100, npBgPosX: 50, npBgPosY: 50, npBgBlur: 0,   // 再生画面の背景の表示の調整（大きさ 'cover'／'contain'／'scale'・拡大率 %・位置 %・ぼかし px。スマホ版 v8.15.0。無ければ今まで通り）
                 albumGroup: 'none',   // album 一覧のグループ表示（none／tag／genre／decade。v5.3。38-album-groups.js）  // album の「Pin のみ」（Pin したアルバムだけを表示。v4.1。26-pinned-albums.js）
                 fastMode: true,       // 高速モード（v2.7）：起動・読み直すでは増えた曲・なくなった曲だけ
                 fullCheckDays: 7,     // 全曲をきちんと確認する間隔（日。0＝自動ではしない）
@@ -54,6 +60,7 @@ function freshDB() {
     seasonWords: null, // Seasons Song の判定に使う言葉 { spring:[…], summer, fall, winter }（null＝初期の一覧。46-seasons.js。v7.4）
     bpmManual: {},     // 手で入れた BPM { 曲の相対パス: BPM }（49-upbeat.js。v7.8）。基準の BPM は settings.upbeatMin（初期 140）
     seasonOverride: {},// 手で決めた季節 { 曲の相対パス: 'spring'|'summer'|'fall'|'winter'|'none' }（v7.4）
+    seasonHidden: {},  // Seasons Song で非表示にした曲 { 曲の相対パス: 非表示にした日時（ISO） }（全季節共通。Seasons Song の画面だけに効く。v8.13.0）
     skCovers: {},     // ソートキーの枠の代表ジャケット { ソートキーの正規化した文字: アルバムの目印 }（42-sortkey-cover.js。v6.0）
     albumSortKeys: {},// アルバムのソートキー { アルバムの目印: 'ソートキー' }（30-album-sortkey.js。v4.3）
     pinnedArtists: [],// Pin したアーティスト [{ key:アーティストの目印（名前）, name, at }]（並び＝一覧の先頭の順。28-pinned-artists.js。v3.9）
@@ -197,6 +204,9 @@ function normalizeDB(data) {
   if (data.bpmManual && typeof data.bpmManual === 'object') Object.keys(data.bpmManual).forEach(function (k) { var v = +data.bpmManual[k]; if (k && v >= 30 && v <= 300) out.bpmManual[k] = Math.round(v * 10) / 10; });
   out.seasonOverride = {};
   if (data.seasonOverride && typeof data.seasonOverride === 'object') Object.keys(data.seasonOverride).forEach(function (k) { var v = data.seasonOverride[k]; if (k && ['spring', 'summer', 'fall', 'winter', 'none'].indexOf(v) >= 0) out.seasonOverride[k] = v; });
+  // Seasons Song で非表示にした曲（v8.13.0 で追加。古いデータ・バックアップには無いので空＝非表示なし）
+  out.seasonHidden = {};
+  if (data.seasonHidden && typeof data.seasonHidden === 'object' && !Array.isArray(data.seasonHidden)) Object.keys(data.seasonHidden).forEach(function (k) { var v = data.seasonHidden[k]; if (k) out.seasonHidden[k] = typeof v === 'string' ? v : ''; });
   // ソートキーの枠の代表ジャケット（v6.0 で追加。古いデータ・バックアップには無いので空＝自動）
   out.skCovers = {};
   // v6.1：表示位置付きの形 { album, x, y, z } も読む（x・y は 0〜100、z は 1〜2。42-sortkey-cover.js より先に読み込まれるので、ここで直接そろえる）

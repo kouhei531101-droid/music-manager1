@@ -10,6 +10,8 @@
    ・設定の効き方：バーの数 → 線・点・列・玉の数、太さ → 線の太さ・列の幅・点の大きさ、光 → にじむ光（光の調整の「光の量」で明るさ）、
      残像の長さ → LEDバーの浮くピークの点・上下バーの棒の先の点の落ち方（70 の _npvPeaks）。粒の数・はじける高さ → LEDバーではじける粒（70 の _npvEmit・_npvSpark。バー・円と同じ）
    ・円の中心に合わせるもの（ブロブ・同心円パルス・揺れるリング）は 37／68 の _npVizCenter（メインのビジュアルの真ん中。無いときは画面の真ん中）
+   ・スマホ版 v8.12.2：曲に合わせて広がる：o.amp は広がりの倍率を掛けた値（高さ・振れ幅・玉の大きさが伸びる）。
+     ブロブ・パルス・リングは o.ampBase（揺れの大きさはそのまま）で、半径に o.grow を掛ける
    ・負荷：配列は使い回し、光は「同じ線を太く・うすく重ねる」か Path2D にまとめて塗る（shadowBlur は使わない）
    ========================================================= */
 
@@ -83,7 +85,7 @@ var NPV_MORE = {};
 /* ---------- 1. 波打つブロブ：音で輪郭がうねる、何重もの細い線の輪 ---------- */
 NPV_MORE.blob = function (o) {
   var g = o.g, c = _vzCenter(o), P = 72, lv = _vzLevels(), n = Math.max(3, Math.round(6 * o.k)), t = o.t, u = _vzUnit(o);
-  var R = Math.max(c.r * 1.12, Math.min(o.W, o.H) * 0.2), pal = o.pal;
+  var R = Math.max(c.r * 1.12, Math.min(o.W, o.H) * 0.2) * o.grow, pal = o.pal; o = Object.assign({}, o, { amp: o.ampBase });
   for (var i = 0; i < n; i++) {
     var f = i / (n - 1), ri = R * (0.62 + 0.5 * f);
     for (var p = 0; p < P; p++) {
@@ -182,8 +184,9 @@ NPV_MORE.dotwave = function (o) {
 /* ---------- 6. 同心円パルス：ドットの同心円が鼓動し、中心が光る ---------- */
 NPV_MORE.pulse = function (o) {
   var g = o.g, c = _vzCenter(o), lv = _vzLevels(), u = _vzUnit(o), n = Math.max(3, Math.round(4 * o.k)), pal = o.pal;
-  // 輪はメインのビジュアルの縁のすぐ外から広がる（内側はジャケット・CD に隠れるため）
-  var R0 = Math.max(c.r * 1.06, Math.min(o.W, o.H) * 0.08), span = Math.min(o.W, o.H) * 0.34, beat = 1 + lv.low * 0.25 * o.amp, r0 = u * 1.7 * o.th;
+  o = Object.assign({}, o, { amp: o.ampBase });
+  // 輪はメインのビジュアルの縁のすぐ外から広がる（内側はジャケット・CD に隠れるため）。v8.12.2：曲に合わせて広がる倍率を掛ける
+  var R0 = Math.max(c.r * 1.06, Math.min(o.W, o.H) * 0.08) * o.grow, span = Math.min(o.W, o.H) * 0.34 * o.grow, beat = 1 + lv.low * 0.25 * o.amp, r0 = u * 1.7 * o.th;
   for (var i = 0; i < n; i++) {
     var f = n > 1 ? i / (n - 1) : 0, rr = (R0 + span * f) * (1 + (beat - 1) * (1 - f * 0.5)), m = Math.round(18 + 16 * (i + 1) * o.k), p = new Path2D(), halo = new Path2D(), rot = o.t * 0.2 * (i % 2 ? 1 : -1);
     var rd = r0 * (1.25 - f * 0.45) * (0.85 + lv.all * 0.6);
@@ -202,15 +205,15 @@ NPV_MORE.pulse = function (o) {
 };
 
 /* ---------- 7. LEDバー：段で光るバー＋上に浮くピークの点 ---------- */
-NPV_MORE.led = function (o) {
-  var g = o.g, W = o.W, H = o.H, n = Math.max(8, Math.min(64, Math.round(W / 46 * o.k))), b = _vzBands(n), gap = W / n, bw = gap * Math.min(0.92, 0.62 * o.th), cells = 18, ch = H * 0.5 / cells, pal = o.pal;
+NPV_MORE.led = function (o) {   // v8.12.2：曲に合わせて広がるときは段の高さ（ch）が伸びる
+  var g = o.g, W = o.W, H = o.H, n = Math.max(8, Math.min(64, Math.round(W / 46 * o.k))), b = _vzBands(n), gap = W / n, bw = gap * Math.min(0.92, 0.62 * o.th), cells = 18, ch = H * 0.5 / cells * (o.grow || 1), pal = o.pal;
   var pk = _npvPeaks(b, n, 'ledPk', 'ledHold', o.dt, false);
   // 光オンのとき：ピークの点から粒がはじける（粒の数・はじける高さが効く。バーと同じ作り）
   if (o.glow) {
     if (!npvm.ledPrev || npvm.ledPrev.length !== n) { npvm.ledPrev = new Float32Array(n); npvm.ledLo = new Float32Array(n); }
     var sz = Math.max(2.6, bw * 0.17);
     _npvEmit(pk, npvm.ledPrev, b, npvm.ledLo, n, o.dt, function (i, power, e) {
-      var x0 = i * gap + gap / 2 + (Math.random() - 0.5) * bw * 0.6, y0 = H - Math.min(cells, pk[i] * cells * o.amp * 1.1 + 1) * ch;
+      var x0 = i * gap + gap / 2 + (Math.random() - 0.5) * bw * 0.6, y0 = H - Math.min(cells, pk[i] * cells * o.ampBase * 1.1 + 1) * ch;
       if (e < 0) { _npvSpark(x0, y0, 0, -1, H * 0.3 * power, sz); return; }
       var bv = _npvBurstV(e, H, H * 0.05, y0 + H * 0.12);
       _npvSpark(x0, y0, 0, -1, bv.v, sz * (1 + e * 0.8), 0.9 * (1 - e * 0.6), bv.life, e);
@@ -218,12 +221,12 @@ NPV_MORE.led = function (o) {
   }
   var lit = [new Path2D(), new Path2D(), new Path2D()], dim = new Path2D(), peaks = new Path2D();
   for (var i = 0; i < n; i++) {
-    var x = i * gap + (gap - bw) / 2, on = Math.round(b[i] * cells * o.amp * 1.1);
+    var x = i * gap + (gap - bw) / 2, on = Math.round(b[i] * cells * o.ampBase * 1.1);
     for (var c = 0; c < cells; c++) {
       var y = H - (c + 1) * ch + ch * 0.18, h = ch * 0.64;
       if (c < on) lit[c < cells * 0.5 ? 0 : c < cells * 0.8 ? 1 : 2].rect(x, y, bw, h); else if (c < on + 3) dim.rect(x, y, bw, h);
     }
-    var py = H - Math.min(cells, pk[i] * cells * o.amp * 1.1 + 1) * ch - ch * 0.4;
+    var py = H - Math.min(cells, pk[i] * cells * o.ampBase * 1.1 + 1) * ch - ch * 0.4;
     peaks.rect(x, py, bw, ch * 0.45);
   }
   g.fillStyle = 'rgba(' + o.col + ',0.12)'; g.fill(dim);
@@ -249,7 +252,8 @@ NPV_MORE.orbs = function (o) {
     p.vx *= 0.995; p.vy *= 0.995;
     p.x += p.vx * o.dt * sp; p.y += p.vy * o.dt * sp;
     if (p.x < -20) p.x = W + 20; if (p.x > W + 20) p.x = -20;
-    if (p.y < H * 0.12) p.vy = Math.abs(p.vy); if (p.y > H * 0.9) p.vy = -Math.abs(p.vy);
+    var gr = Math.min(1.25, o.grow || 1), top = H * (0.51 - 0.39 * gr), bot = H * (0.51 + 0.39 * gr);   // v8.12.2：曲に合わせて広がると漂う範囲も広がる
+    if (p.y < top) p.vy = Math.abs(p.vy); if (p.y > bot) p.vy = -Math.abs(p.vy);
     var v = b[p.band], r = u * (2 + v * 7 * o.amp) * o.th * (0.9 + 0.1 * Math.sin(o.t * 2 + p.ph)), rgb = cs[p.c];
     if (o.glow) { g.fillStyle = 'rgba(' + rgb + ',' + _npvA(o.dark ? 0.16 : 0.12) + ')'; g.beginPath(); g.arc(p.x, p.y, r * 2.8, 0, 6.283); g.fill(); }
     g.fillStyle = 'rgba(' + rgb + ',' + (0.55 + v * 0.45).toFixed(3) + ')'; g.beginPath(); g.arc(p.x, p.y, r, 0, 6.283); g.fill();
@@ -268,7 +272,7 @@ NPV_MORE.neon = function (o) {
 /* ---------- 10. 揺れるリング：ぎざぎざに震える輪 ---------- */
 NPV_MORE.ring = function (o) {
   var c = _vzCenter(o), lv = _vzLevels(), u = _vzUnit(o), P = Math.max(60, Math.min(360, Math.round(180 * o.k))), w = np.wave, wl = w.length, pal = o.pal;
-  var R = Math.max(c.r * 1.25, Math.min(o.W, o.H) * 0.24);
+  var R = Math.max(c.r * 1.25, Math.min(o.W, o.H) * 0.24) * o.grow; o = Object.assign({}, o, { amp: o.ampBase });   // v8.12.2：半径に広がりの倍率
   [[0, pal.red, 1], [97, pal.purple, 0.55]].forEach(function (L) {
     for (var p = 0; p < P; p++) {
       var a = p / P * Math.PI * 2, s = (w[(p * 5 + L[0]) % wl] - 128) / 128;

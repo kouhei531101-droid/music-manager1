@@ -18,6 +18,7 @@
      広いときは、選んでいないとき前回選んだアーティスト（ui.lastArtist）か先頭を自動で選び、「アーティスト一覧に戻る」は隠す
    ・v3.9：アーティストの Pin（28-pinned-artists.js）。アーティスト一覧の先頭に「Pin　〇人」の区切りと Pin したアーティスト、
        その下に「アーティスト　〇人」の区切りと通常の一覧。artistView.list は Pin→通常の順（行の data-artist の番号もこの順）
+   ・v8.12.4：Pin したアーティストも通常の一覧に残す（Pin の区切りと通常の一覧の両方に出る。artistRowIndex() で行を探す）
    ========================================================= */
 var ARTIST_WIDE_MIN = 640;   // 2列にする本文の幅（これより狭いと1列）
 
@@ -114,11 +115,15 @@ function renderArtistsPage() {
   filterBar.hidden = !wide && !!sel;   // 1列でアーティストの内容を見ている間は検索欄を隠す
   var q = artistView.query.trim().toLowerCase(), terms = q ? q.split(/\s+/) : [];
   var list = terms.length ? artists.filter(function (ar) { var h = _artistLabel(ar.name).toLowerCase(); return terms.every(function (w) { return h.indexOf(w) >= 0; }); }) : artists;
-  // Pin（v3.9）：先頭に並べ、通常の一覧には重ねて出さない（検索中は合うものだけ）
+  // Pin（v3.9）：先頭に並べる（検索中は合うものだけ）。
+  //   v8.12.4：Pin したアーティストも通常の一覧に残す（artistView.list＝Pin＋通常の全部。同じ人が2回入るので、
+  //   行は data-artist の番号で拾い、人数は通常の一覧の数で数える。artistView.pinnedN＝Pin の区切りの行数）
   var sp = splitPinnedArtists(list);
-  list = sp.pinned.concat(sp.rest);
+  var restN = list.length;
+  list = sp.pinned.concat(list);
   artistView.list = list;
-  if (terms.length) countEl.textContent = list.length + '人 / 全' + artists.length + '人';
+  artistView.pinnedN = sp.pinned.length;
+  if (terms.length) countEl.textContent = restN + '人 / 全' + artists.length + '人';
   // 左：アーティスト一覧（縦のリスト）
   var oldPanel = body.querySelector('.art-list-panel');
   if (oldPanel) artistView.listScroll = oldPanel.scrollTop;
@@ -133,7 +138,7 @@ function renderArtistsPage() {
         '<span class="ui-label-tag ui-label-tag-onlight" style="top:0;right:22px" onclick="copyUiLabel(\'アーティストの Pin の区切り\', event)" title="クリックで「アーティストの Pin の区切り」をコピー">□</span></div>';
     }
     if (sp.pinned.length && i === sp.pinned.length) {
-      h += '<div class="art-section-head art-rest-head">アーティスト<span class="album-section-count">' + sp.rest.length + '人</span></div>';
+      h += '<div class="art-section-head art-rest-head">アーティスト<span class="album-section-count">' + restN + '人</span></div>';   // v8.12.4：Pin も含めた人数
     }
     var active = sel && ar.name === sel.name;
     var pinned = i < sp.pinned.length;
@@ -243,13 +248,22 @@ function openArtist(name) {
   renderArtistsPage();
   window.scrollTo(0, 0);
 }
+// アーティスト一覧の行の番号（data-artist）を名前で探す（v8.12.4）。Pin したアーティストは Pin の区切りと通常の一覧の2か所にあるので、
+//   inPin＝true なら Pin の区切りの中、false なら通常の一覧の中を先に探す（無ければもう一方）
+function artistRowIndex(name, inPin) {
+  var l = artistView.list || [], n = artistView.pinnedN || 0, i;
+  var from = inPin ? 0 : n, to = inPin ? n : l.length;
+  for (i = from; i < to; i++) if (l[i] && l[i].name === name) return i;
+  for (i = 0; i < l.length; i++) if (l[i] && l[i].name === name) return i;
+  return -1;
+}
 function backToArtistList() {
   var ret = artistView.ret;
   artistView.open = null;
   artistView.ret = null;
   renderArtistsPage();
   if (!ret) return;
-  var idx = artistView.list.findIndex(function (x) { return x.name === ret.name; });
+  var idx = artistRowIndex(ret.name, !!ret.fromPin);   // v8.12.4：開いた側（Pin の区切り／通常の一覧）の行へ
   restoreListPosition(idx >= 0 ? document.querySelector('#art-body [data-artist="' + idx + '"]') : null, ret.scroll);
 }
 // アーティストの画面から開いたアルバムの「戻る」：アーティストの画面の、そのアルバムのカードの位置へ（v2.4）
@@ -355,11 +369,12 @@ function initArtistsPage() {
   var body = document.getElementById('art-body');
   // アーティストの Pin ボタン（v3.9）：行の中にあるので、行を選ぶより先に受け取る
   var pinFromRow = function (el) {
-    var ar = artistView.list[+el.getAttribute('data-art-pin')];
+    var i0 = +el.getAttribute('data-art-pin'), ar = artistView.list[i0];
     if (!ar) return;
+    var inPin = i0 < (artistView.pinnedN || 0);   // 押したのが Pin の区切りの行か（v8.12.4）
     togglePinArtist(ar, { undo: true });
     renderArtistsPage();
-    var nb = document.querySelector('#art-body [data-art-pin="' + artistView.list.indexOf(ar) + '"]');   // 押した行のボタンにフォーカスを戻す（キーボードで続けて操作できるように）
+    var nb = document.querySelector('#art-body [data-art-pin="' + artistRowIndex(ar.name, inPin) + '"]');   // 押した行のボタンにフォーカスを戻す（キーボードで続けて操作できるように）
     if (nb && document.activeElement === document.body) { try { nb.focus({ preventScroll: true }); } catch (e) { /* 無視 */ } }
   };
   body.addEventListener('keydown', function (ev) {
@@ -373,7 +388,11 @@ function initArtistsPage() {
     var pin = ev.target.closest('[data-art-pin]');
     if (pin) { ev.preventDefault(); pinFromRow(pin); return; }
     var card = ev.target.closest('[data-artist]');
-    if (card) { var ar = artistView.list[+card.getAttribute('data-artist')]; if (ar) openArtist(ar.name); return; }
+    if (card) {
+      var ci = +card.getAttribute('data-artist'), ar = artistView.list[ci];
+      if (ar) { openArtist(ar.name); if (artistView.ret) artistView.ret.fromPin = ci < (artistView.pinnedN || 0); }   // fromPin：戻るとき Pin の行へ（v8.12.4）
+      return;
+    }
     var ac = ev.target.closest('[data-artist-album]');
     if (ac && artistView.current) {   // アルバムカード → 既存のアルバムの曲一覧へ
       var a = artistView.current.albums[+ac.getAttribute('data-artist-album')];

@@ -21,6 +21,17 @@
        粒の数 spark：落ちながら出る粒の出る割合・はじける粒の数に掛ける（0 で粒なし。同時に出す上限 NPV_SPARK_MAX＝200 個は変えない）
        はじける高さ height：はじける粒が届く高さ（小さいとき・いちばん強いとき両方）に掛ける（50〜200%。寿命も高さに合わせて伸ばす）
        残像の長さ trail：ピークが下がり始めるまでの時間に掛け、下がる速さを割る（0 で残像なし＝ピークは今の値のまま）
+   ・スマホ版 v8.12.2：「光の飛び方」（73 の vizSparkStyle。円の粒だけ）：
+       'fall' 花火（今までどおり。重力で少し落ちながら瞬く）
+       'ray'  放射の粒：円の中心から外へ、線の向きどおりにまっすぐ（重力なし）飛び、後ろに短い光の尾。外へ行くほど細く・うすく消える
+       'beam' 光の筋：線が強く上がったとき、線の先から外へ長い尾を引く細い光の線（先が明るい流れ星）がまっすぐ飛び出して消える
+     飛ぶ距離 ＝ 少しの距離〜その向きで画面の端＋短い辺の 12% を強さ^1.6 で結び、はじける高さ（height）を掛ける。数は粒の数（spark）、明るさは光の量（glow）
+     粒の入れ物は共通（p.mode：0 花火・1 放射の粒・2 光の筋）。同時に 200 個まで（NPV_SPARK_MAX）
+   ・スマホ版 v8.12.2：「曲に合わせて広がる」（73 の vizGrow・vizGrowAmt）：再生位置の割合 p ＝ currentTime ÷ duration（0〜1）から
+       目標の倍率 ＝ 1 − k ＋ 2k × p（k ＝ 広がり方 ÷ 200。100% で 0.5 → 1.5 倍、200% で 約0.06 → 2 倍。PC版 v8.7.12 と同じ式。下限 0.06）
+     を出し、今の倍率 npvTune.grow を 1フレームごとに 目標へ 1 − e^(−dt÷0.08) ずつ近づける（約0.25秒で追いつく。曲の頭・切り替え・シークでもなめらか。
+     duration が分からないとき・オフのときは 1）。効かせ方：円・ブロブ・パルス・リングは半径、バー・LED・上下バー・上下対称・山は高さ、
+     波形・ネオン・波線・ドット波・色の波は振れ幅、光る粒は玉の大きさ、光の粒（花火・放射・光の筋）は飛ぶ距離（_npvBurstV・放射の距離）に掛ける
    ========================================================= */
 
 var NPV_TRAIL_FALL = 0.55;        // ピークが1秒で下がる量（0〜1。1＝棒の一番上から下まで）
@@ -48,7 +59,16 @@ function _npvPeaks(vals, n, pName, hName, dt, reduced) {
 }
 var _npvBarVals = null, _npvCircVals = null;
 // 光の調整（スマホ版 v8.11.1。_npDraw が毎回 npVizCfg() から入れる。1＝100%）
-var npvTune = { glow: 1, spark: 1, height: 1, trail: 1 };
+var npvTune = { glow: 1, spark: 1, height: 1, trail: 1, style: 'fall', grow: 1 };   // grow：曲に合わせて広がる今の倍率（v8.12.2）
+// 曲に合わせて広がる：目標の倍率（PC版と同じ式）。p は再生位置の割合
+function npvGrowTarget(cfg) {
+  if (!cfg || !cfg.grow) return 1;
+  var a = player && player.audio, d = a ? a.duration : NaN;
+  if (!a || !isFinite(d) || d <= 0) return 1;
+  var p = Math.max(0, Math.min(1, a.currentTime / d));
+  var k = cfg.growAmt / 200;   // PC版 v8.7.12 と同じ：倍率 ＝ 1 − k ＋ 2k × p（100%：0.5 → 1.5倍、200%：約0.06 → 2倍）
+  return Math.max(0.06, 1 - k + 2 * k * p);
+}   // style：光の飛び方（v8.12.2。円の粒だけ）
 function _npvA(a) { return Math.max(0, Math.min(1, a * npvTune.glow)).toFixed(3); }   // 光の量を掛けたうすさ（0〜1）
 
 var _npDrawV1 = window._npDraw;   // 37 の今までの描き方（比べるときのために残す。使っていない）
@@ -67,14 +87,17 @@ window._npDraw = function () {
   if (!cfg.modes.length) { _npvSparksClear(); return; }
   npvTune.glow = (cfg.glowAmt == null ? 100 : cfg.glowAmt) / 100; npvTune.spark = (cfg.sparkAmt == null ? 100 : cfg.sparkAmt) / 100;
   npvTune.height = (cfg.sparkHeight == null ? 100 : cfg.sparkHeight) / 100; npvTune.trail = (cfg.trailAmt == null ? 100 : cfg.trailAmt) / 100;
+  npvTune.style = cfg.sparkStyle === 'ray' || cfg.sparkStyle === 'beam' ? cfg.sparkStyle : 'fall';
+  npvTune.grow += (npvGrowTarget(cfg) - npvTune.grow) * (1 - Math.exp(-dt / 0.08));   // v8.12.2：なめらかに目標へ（約0.25秒で追いつく。PC版と同じ）
+  var gf = npvTune.grow, ampG = amp * gf;
   var plain = reduced || !cfg.glow, sparkle = !plain && (cfg.modes.indexOf('bars') >= 0 || cfg.modes.indexOf('circle') >= 0 || cfg.modes.indexOf('led') >= 0);   // v8.12：LEDバーも粒を出す
   if (!sparkle) _npvSparksClear();   // v8.9.6：波形だけ・動きを減らす設定（v8.11：光がオフ）では粒を消す
   npv.frame = (npv.frame || 0) + 1;
-  var more = { g: g, W: W, H: H, col: col, amp: amp, dt: dt, glow: !plain, cfg: cfg, cv: cv, dark: _npvDark(), reduced: reduced, stamp: npv.frame };
+  var more = { g: g, W: W, H: H, col: col, amp: ampG, ampBase: amp, grow: gf, dt: dt, glow: !plain, cfg: cfg, cv: cv, dark: _npvDark(), reduced: reduced, stamp: npv.frame };
   cfg.modes.forEach(function (m) {
     if (m === 'circle') _npvDrawCircle(g, W, H, col, amp, dt, plain, cv, cfg);
-    else if (m === 'bars') _npvDrawBars(g, W, H, col, amp, dt, plain, cfg);
-    else if (m === 'wave') _npvDrawWave(g, W, H, col, amp, dt, reduced, !plain);
+    else if (m === 'bars') _npvDrawBars(g, W, H, col, ampG, dt, plain, cfg);   // v8.12.2：高さ・振れ幅は広がりの倍率を掛けた ampG
+    else if (m === 'wave') _npvDrawWave(g, W, H, col, ampG, dt, reduced, !plain);
     else if (typeof npvDrawMore === 'function') npvDrawMore(m, more);   // スマホ版 v8.12：ふやした12種類（75-np-viz-more.js）
   });
   if (sparkle) _npvSparksDraw(g, H, col, _npvDark(), dt);
@@ -108,7 +131,8 @@ function _npvSparkPool() {
 }
 // 粒を1つ出す（空きが無ければ出さない）。x,y：出る位置、dx,dy：主に飛ぶ向き（単位ベクトル）、sp：速さ（キャンバスの点/秒）
 // v8.9.7：spread（広がりの角度）・life（寿命の秒）・e（強さ。記録用）を足した（省くと今までどおり）
-function _npvSpark(x, y, dx, dy, sp, size, spread, life, e) {
+// v8.12.2：mode（0 花火・1 放射の粒・2 光の筋。省くと 0）
+function _npvSpark(x, y, dx, dy, sp, size, spread, life, e, mode) {
   var pool = _npvSparkPool();
   if (npvSp.n >= NPV_SPARK_MAX) return;
   for (var i = 0; i < pool.length; i++) {
@@ -119,7 +143,7 @@ function _npvSpark(x, y, dx, dy, sp, size, spread, life, e) {
     p.on = true; p.x = x; p.y = y;
     p.vx = (dx * c - dy * s) * v; p.vy = (dx * s + dy * c) * v;
     p.max = burst ? life * (0.9 + Math.random() * 0.2) : 0.4 + Math.random() * 0.5; p.life = p.max; p.e = e == null ? -1 : e; p.minY = y;
-    p.size = size * (0.6 + Math.random() * 0.8); p.gold = Math.random() < 0.45; p.ph = Math.random() * 6.28;
+    p.size = size * (0.6 + Math.random() * 0.8); p.gold = Math.random() < 0.45; p.ph = Math.random() * 6.28; p.mode = mode || 0;
     npvSp.n++;
     return;
   }
@@ -138,10 +162,23 @@ function _npvSparksDraw(g, H, col, dark, dt) {
     if (!p.on) continue;
     p.life -= dt;
     if (p.life <= 0) { p.on = false; npvSp.n--; if (window.__npvLog) window.__npvLog.push([p.e, p.minY]); continue; }
-    p.vy += grav * dt; p.vx *= 0.985; p.x += p.vx * dt; p.y += p.vy * dt; if (p.y < p.minY) p.minY = p.y;
-    var k = p.life / p.max, tw = 0.55 + 0.45 * Math.sin(t * 22 + p.ph), r = p.size * (0.5 + 0.5 * k);
+    if (p.mode) { p.x += p.vx * dt; p.y += p.vy * dt; }   // 放射の粒・光の筋：重力なしでまっすぐ（v8.12.2）
+    else { p.vy += grav * dt; p.vx *= 0.985; p.x += p.vx * dt; p.y += p.vy * dt; }
+    if (p.y < p.minY) p.minY = p.y;
+    var k = p.life / p.max, tw = p.mode ? 1 : 0.55 + 0.45 * Math.sin(t * 22 + p.ph), r = p.size * (0.5 + 0.5 * k);
     var lv = Math.min(LV - 1, Math.floor(k * tw * LV)), idx = (p.gold ? LV : 0) + lv;
-    var bk = B[idx] || (B[idx] = { halo: new Path2D(), core: new Path2D() });
+    var bk = B[idx] || (B[idx] = { halo: new Path2D(), core: new Path2D(), tail: null, front: null });
+    if (p.mode === 2) {   // 光の筋：長い尾（うすい）＋先の半分（明るい）＋先の小さな点
+      var tl = 0.32, fx = p.x - p.vx * tl, fy = p.y - p.vy * tl, mx = p.x - p.vx * tl * 0.35, my = p.y - p.vy * tl * 0.35;
+      (bk.tail || (bk.tail = new Path2D())).moveTo(fx, fy); bk.tail.lineTo(p.x, p.y);
+      (bk.front || (bk.front = new Path2D())).moveTo(mx, my); bk.front.lineTo(p.x, p.y);
+      bk.core.moveTo(p.x + r * 0.8, p.y); bk.core.arc(p.x, p.y, r * 0.8, 0, 6.283);
+      continue;
+    }
+    if (p.mode === 1) {   // 放射の粒：短い光の尾
+      var tl1 = 0.1;
+      (bk.tail || (bk.tail = new Path2D())).moveTo(p.x - p.vx * tl1, p.y - p.vy * tl1); bk.tail.lineTo(p.x, p.y);
+    }
     bk.halo.moveTo(p.x + r * 2.6, p.y); bk.halo.arc(p.x, p.y, r * 2.6, 0, 6.283);   // にじみ
     bk.core.moveTo(p.x + r, p.y); bk.core.arc(p.x, p.y, r, 0, 6.283);               // 芯
   }
@@ -150,6 +187,12 @@ function _npvSparksDraw(g, H, col, dark, dt) {
     var b = B[j];
     if (!b) continue;
     var c = j >= LV ? gold : col, a = ((j % LV) + 0.5) / LV;
+    if (b.tail || b.front) {   // 放射の粒・光の筋の尾（v8.12.2）：外へ行くほど（寿命が減るほど）細く・うすく。光の量で明るさ
+      var tw0 = Math.max(1.2, H / 420) * (0.35 + 0.65 * a);
+      g.lineCap = 'round';
+      if (b.tail) { g.lineWidth = tw0 * (b.front ? 1.3 : 1); g.strokeStyle = 'rgba(' + c + ',' + _npvA(a * (b.front ? (dark ? 0.7 : 0.55) : (dark ? 0.55 : 0.45))) + ')'; g.stroke(b.tail); }
+      if (b.front) { g.lineWidth = tw0 * 2; g.strokeStyle = dark ? 'rgba(255,250,235,' + _npvA(a * 0.85) + ')' : 'rgba(' + c + ',' + _npvA(a * 0.9) + ')'; g.stroke(b.front); }
+    }
     g.fillStyle = 'rgba(' + c + ',' + (a * (dark ? 0.35 : 0.25)).toFixed(3) + ')'; g.fill(b.halo);
     g.fillStyle = dark ? 'rgba(255,250,235,' + (a * 0.9).toFixed(3) + ')' : 'rgba(' + c + ',' + (a * 0.95).toFixed(3) + ')'; g.fill(b.core);
   }
@@ -184,7 +227,7 @@ function _npvEmit(pk, prev, vals, lo, n, dt, at, key) {
 function _npvAmp(v) { return Math.pow(10, 2 * (v - 1)); }
 // はじける粒の初速と寿命：dist（強さ 1 で届かせたい距離）まで e^カーブで結んだ高さへ届く速さ
 function _npvBurstV(e, H, minDist, dist) {
-  var k = npvTune.height;   // スマホ版 v8.11.1：はじける高さ（0.5〜2）
+  var k = npvTune.height * npvTune.grow;   // スマホ版 v8.11.1：はじける高さ（0.5〜2）。v8.12.2：曲に合わせて広がる倍率も
   var h = (minDist + Math.max(0, dist - minDist) * Math.pow(e, NPV_HEIGHT_CURVE)) * k, g = H * NPV_SPARK_GRAV;
   var v0 = Math.sqrt(2 * g * h);
   return { v: v0, life: Math.min(2.4 * Math.sqrt(Math.max(1, k)), Math.max(0.5, v0 / g * 1.15 + 0.2)) };
@@ -207,6 +250,7 @@ function _npvDrawBars(g, W, H, col, amp, dt, reduced, cfg) {
     _npvBarVals[j] = s / (a1 - a0) / 255;
   }
   var pk = _npvPeaks(_npvBarVals, nb, 'peak', 'hold', dt, reduced), full = H * 0.55 * amp, capH = Math.max(3, H / 220);
+  npv.lastFull = full;
   if (!reduced) _npvEmit(pk, _npvPrevBar, _npvBarVals, _npvLoBar, nb, dt, function (i, power, e) {
     var x0 = i * gap + gap / 2 + (Math.random() - 0.5) * bw * 0.6, y0 = H - pk[i] * full - capH, sz = Math.max(2.6, bw * 0.17);
     if (e < 0) { _npvSpark(x0, y0, 0, -1, H * 0.3 * power, sz); return; }
@@ -263,7 +307,8 @@ function NPV_CIRC_SPARK_LW(W, H) { return Math.max(3, Math.min(W, H) / 95); }   
 function _npvDrawCircle(g, W, H, col, amp, dt, reduced, cv, cfg) {
   var dark = _npvDark(), vc = _npVizCenter(cv);
   var bc = (typeof NVZ_BARS !== 'undefined' && cfg && NVZ_BARS[cfg.bars]) || null, tc = (typeof NVZ_THICK !== 'undefined' && cfg && NVZ_THICK[cfg.thick]) || { line: 1 };
-  var cx = vc ? vc.x : W / 2, cy = vc ? vc.y : H / 2, r0 = Math.max(Math.min(W, H) * 0.22, vc ? vc.r : 0), bars = bc ? bc.circ : NPV_CIRC_BARS, fl = np.freq.length;
+  var cx = vc ? vc.x : W / 2, cy = vc ? vc.y : H / 2, r0 = Math.max(Math.min(W, H) * 0.22, vc ? vc.r : 0) * npvTune.grow, bars = bc ? bc.circ : NPV_CIRC_BARS, fl = np.freq.length;   // v8.12.2：半径に広がりの倍率
+  npv.lastR0 = r0;
   var keep = Math.min(1, 56 / bars);   // 粒の数が本数によらず v8.9.7（56本）と同じくらいになるように間引く
   if (!_npvCircVals || _npvCircVals.length !== bars) { _npvCircVals = new Float32Array(bars); _npvPrevCirc = new Float32Array(bars); _npvLoCirc = new Float32Array(bars); }
   for (var k = 0; k < bars; k++) _npvCircVals[k] = np.freq[Math.floor(Math.pow(k / bars, 1.6) * fl * 0.7)] / 255;
@@ -273,9 +318,21 @@ function _npvDrawCircle(g, W, H, col, amp, dt, reduced, cv, cfg) {
     if (Math.random() > keep) return;   // 本数が増えた分を間引く（v8.10 の NPV_CIRC_SPARK_KEEP〔56/96〕を本数に合わせて）
     var ang = i / bars * Math.PI * 2 - Math.PI / 2, c = Math.cos(ang), s = Math.sin(ang), d = r0 + r0 * 0.9 * pk[i] * amp + 2, sz = Math.max(1.6, slw * 0.32);
     var x0 = cx + c * d, y0 = cy + s * d;
-    if (e < 0) { _npvSpark(x0, y0, c, s, r0 * 0.9 * power, sz); return; }
+    var st = npvTune.style;
+    if (e < 0) { if (st === 'beam') return; if (st === 'ray' && Math.random() < 0.5) return;   // 放射の落ちていく間の粒は少なめ（PC版と同じく負荷対策）
+      _npvSpark(x0, y0, c, s, r0 * 0.9 * power, sz, st === 'ray' ? 0.12 : null, null, null, st === 'ray' ? 1 : 0); return; }   // 光の筋は落ちながら出る粒を出さない
     // 最大は、その向きで画面の端まで＋短い辺の 12%（画面の外まで飛ぶ）
     var tx = c > 0.001 ? (W - x0) / c : c < -0.001 ? -x0 / c : 1e9, ty = s > 0.001 ? (H - y0) / s : s < -0.001 ? -y0 / s : 1e9;
+    if (st === 'ray' || st === 'beam') {   // v8.12.2：放射の粒・光の筋（重力なし。距離＝少し〜画面の端＋12% を強さ^1.6 で結び、はじける高さを掛ける）
+      var minD = r0 * (st === 'beam' ? 0.9 : 0.3), maxD = Math.min(tx, ty) + Math.min(W, H) * 0.12, dist = (minD + Math.max(0, maxD - minD) * Math.pow(e, NPV_HEIGHT_CURVE)) * npvTune.height * npvTune.grow;
+      if (st === 'beam') {
+        if (Math.random() > 0.5) return;   // 筋は1回のはじけの本数を半分ほどに（PC版と同じ。そのぶん少し太く明るく）
+        var lifeB = 0.35 + 0.35 * e; _npvSpark(x0, y0, c, s, dist / lifeB, sz * 0.9, 0.04, lifeB, e, 2);
+      } else {
+        var lifeR = 0.5 + 0.5 * e; _npvSpark(x0, y0, c, s, dist / lifeR, sz * (1 + e * 0.5), 0.1, lifeR, e, 1);
+      }
+      return;
+    }
     var bv = _npvBurstV(e, H, r0 * 0.3, Math.min(tx, ty) + Math.min(W, H) * 0.12);
     _npvSpark(x0, y0, c, s, bv.v, sz * (1 + e * 0.8), 0.9 * (1 - e * 0.6), bv.life, e);
   }, 'riseCirc');
@@ -339,6 +396,7 @@ function _npvDrawWave(g, W, H, col, amp, dt, reduced, glow) {
     sm[p] += (t - sm[p]) * k;
   }
   var mid = H * 0.55, A = H * 0.35 * amp, dx = W / (P - 1);
+  npv.lastWaveA = A;
   g.lineWidth = Math.max(2, W / 500); g.lineJoin = 'round'; g.lineCap = 'round';
   g.strokeStyle = 'rgba(' + col + ',0.85)';
   g.beginPath();

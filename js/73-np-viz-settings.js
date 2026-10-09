@@ -33,6 +33,10 @@ var NVZ_TUNE = [
   { key: 'vizSparkHeight', prop: 'sparkHeight', label: 'はじける高さ', min: 50, max: 200, help: '強く鳴ったときに粒が届く高さ' },
   { key: 'vizTrailAmt', prop: 'trailAmt', label: '残像の長さ', min: 0, max: 200, help: 'ピークが落ちる速さ・尾の残り方（0 で残像なし）' }
 ];
+// 光の飛び方（スマホ版 v8.12.2。PC版と同じ）：db.settings.vizSparkStyle。円の粒だけに効く。無い・知らない値は 'fall'
+// 曲に合わせて広がる（スマホ版 v8.12.2。PC版と同じ）：db.settings.vizGrow（true/false。既定 false）・vizGrowAmt（広がり方 0〜200%。既定 100）
+var NVZ_GROW_T = { key: 'vizGrowAmt', prop: 'growAmt', label: '広がり方', min: 0, max: 200, help: '曲の始めと終わりの大きさの差' };
+var NVZ_SPARK_STYLE = { fall: { label: '花火' }, ray: { label: '放射の粒' }, beam: { label: '光の筋' } };
 function _nvzTuneVal(t, v) { v = Math.round(+v); return isFinite(v) ? Math.max(t.min, Math.min(t.max, v)) : 100; }
 
 /* ---------- 設定 ---------- */
@@ -51,6 +55,8 @@ function npVizCfg() {
   if (modes.length > NVZ_MAX) modes = modes.slice(0, NVZ_MAX);   // v8.12：5つ以上は重ねる順の先頭4つだけ
   var cfg = { modes: modes, bars: NVZ_BARS[s.vizBars] ? s.vizBars : 'normal', thick: NVZ_THICK[s.vizThick] ? s.vizThick : 'normal', glow: s.vizGlow !== false };
   NVZ_TUNE.forEach(function (t) { cfg[t.prop] = s[t.key] == null ? 100 : _nvzTuneVal(t, s[t.key]); });   // 光の調整（v8.11.1）
+  cfg.sparkStyle = NVZ_SPARK_STYLE[s.vizSparkStyle] ? s.vizSparkStyle : 'fall';   // 光の飛び方（v8.12.2）
+  cfg.grow = s.vizGrow === true; cfg.growAmt = s.vizGrowAmt == null ? 100 : _nvzTuneVal(NVZ_GROW_T, s.vizGrowAmt);   // 曲に合わせて広がる（v8.12.2）
   return cfg;
 }
 function npVizModes() { return npVizCfg().modes; }
@@ -63,6 +69,9 @@ function setNpViz(patch) {
   if (patch.thick && NVZ_THICK[patch.thick]) s.vizThick = patch.thick;
   if (typeof patch.glow === 'boolean') s.vizGlow = patch.glow;
   NVZ_TUNE.forEach(function (t) { if (patch[t.prop] != null) s[t.key] = _nvzTuneVal(t, patch[t.prop]); });   // 光の調整（v8.11.1）
+  if (typeof patch.grow === 'boolean') s.vizGrow = patch.grow;   // 曲に合わせて広がる（v8.12.2）
+  if (patch.growAmt != null) s.vizGrowAmt = _nvzTuneVal(NVZ_GROW_T, patch.growAmt);
+  if (patch.sparkStyle) s.vizSparkStyle = NVZ_SPARK_STYLE[patch.sparkStyle] ? patch.sparkStyle : 'fall';   // 光の飛び方（v8.12.2）
   saveDB();
   ui.vizMode = ['bars', 'wave', 'circle'].filter(function (k) { return s.vizModes.indexOf(k) >= 0; })[0] || 'bars'; saveUi();   // 前の版との互換（前の版が知っている3種類だけ）
   if (!npVizCfg().glow && typeof _npvSparksClear === 'function') _npvSparksClear();
@@ -72,7 +81,7 @@ function setNpViz(patch) {
 // 光の調整のスライダーを動かしている間（スマホ版 v8.11.1）：値だけを変えて保存し、メニューは書き直さない（指の下のスライダーが入れ替わらないように）。
 // 保存（saveDB）は指を離したとき（save = true）だけ
 function setNpVizTune(prop, value, save) {
-  var t = NVZ_TUNE.filter(function (x) { return x.prop === prop; })[0];
+  var t = NVZ_TUNE.concat([NVZ_GROW_T]).filter(function (x) { return x.prop === prop; })[0];   // v8.12.2：広がり方のスライダーも
   if (!t) return;
   _nvzMigrate();
   db.settings[t.key] = _nvzTuneVal(t, value);

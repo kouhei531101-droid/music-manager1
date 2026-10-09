@@ -11,6 +11,8 @@
      季節ごとの点数だけを控え（IndexedDB musicManager_seasons。曲の大きさ・更新日時・言葉の一覧の目印付き）に残す。歌詞の本文は残さない
    ・手で決める：曲の行の「季節」の選択（自動／Spring／Summer／Fall／Winter／外す）。db.seasonOverride { 曲の相対パス: 'spring'…|'none' }、
      自動の判定より優先。バックアップに含む。ファイル整理で動かしたら付け替える（09-file-ops.js の applyPathMapping から）
+   ・非表示の曲（スマホ版 v8.13.0）：db.seasonHidden。非表示にする・戻す・tools の一覧は 80-season-hidden.js。
+     seasonGroups() で各季節から外し（g.hid に別に集める）、sea.showHidden がオンのときだけ一覧に薄く出す
    ========================================================= */
 
 var SEASONS = [
@@ -26,7 +28,10 @@ var SEASON_WORDS_DEFAULT = {
   winter: ['冬', '雪', '粉雪', 'クリスマス', '聖夜', '白い息', 'サンタ', '雪だるま', '雪の華', '大晦日', '-雪辱', 'winter', 'snow', 'christmas', 'xmas', 'santa', 'snowflake', '~december', '~cold']
 };
 var SEA_PAGE = 200, SEA_CONCURRENCY = 3;
-var sea = { lyr: {}, loaded: false, scanning: false, stop: false, done: 0, total: 0, rev: 0, cache: null, view: [], limit: SEA_PAGE };
+var sea = { lyr: {}, loaded: false, scanning: false, stop: false, done: 0, total: 0, rev: 0, cache: null, view: [], limit: SEA_PAGE,
+  playList: [],       // 連続再生・シャッフル再生に使う曲（非表示の曲を除く。v8.13.0）
+  showHidden: false,  // 非表示の曲の表示切り替え（この画面を開いている間だけ。保存しない。v8.13.0）
+  hidRev: 0 };        // 非表示の曲が変わった回数（控えの目印。v8.13.0）
 
 ICONS.seasons = _svg('<path d="M12 3c2 3 2 6 0 9-2-3-2-6 0-9z"/><path d="M12 12c3-1 6 0 8 2-3 1-6 0-8-2z"/><path d="M12 12c-3-1-6 0-8 2 3 1 6 0 8-2z"/><path d="M12 12v9"/>');
 var SEASON_ICONS = {
@@ -119,11 +124,19 @@ function _seaLyricsScoreOf(t) {
 // 全曲を季節に分ける（控え。曲情報・言葉・手の指定・歌詞の点数が変わったら作り直す）
 function seasonGroups() {
   var hid = typeof hiddenTrackPaths === 'function' ? hiddenTrackPaths() : new Set();   // 非表示のアルバムの曲は除く（v7.9）
-  var key = (library.metaRev || 0) + '|' + library.tracks.length + '|' + _seaCompile().rev + '|' + sea.rev + '|' + JSON.stringify(db.seasonOverride || {}).length + '|' + Object.keys(db.lyrics || {}).length + '|' + hid.size + ':' + (typeof hiddenAlbumsSig === 'function' ? hiddenAlbumsSig().length : 0);
+  var key = (library.metaRev || 0) + '|' + library.tracks.length + '|' + _seaCompile().rev + '|' + sea.rev + '|' + JSON.stringify(db.seasonOverride || {}).length + '|' + Object.keys(db.lyrics || {}).length + '|' + hid.size + ':' + (typeof hiddenAlbumsSig === 'function' ? hiddenAlbumsSig().length : 0) +
+    '|' + (typeof seasonHiddenSig === 'function' ? seasonHiddenSig() : '');   // 非表示の曲（v8.13.0）
   if (sea.cache && sea.cache.key === key) return sea.cache;
-  var g = { key: key, spring: [], summer: [], fall: [], winter: [], info: new Map() };
-  library.tracks.forEach(function (t) { if (hid.has(t.path)) return; var r = seasonOf(t); g.info.set(t.path, r); if (r.id) g[r.id].push(t); });
-  SEASONS.forEach(function (s) { g[s.id].sort(function (a, b) { return compareAlbumText(albumTextKey(a.title), albumTextKey(b.title)); }); });
+  // g.hid：非表示にした曲（季節ごと。v8.13.0。一覧・件数・再生には入れず、「非表示の曲を表示」のときだけ出す）
+  var g = { key: key, spring: [], summer: [], fall: [], winter: [], hid: { spring: [], summer: [], fall: [], winter: [] }, info: new Map() };
+  var sh = typeof seasonHiddenMap === 'function' ? seasonHiddenMap() : {};
+  library.tracks.forEach(function (t) {
+    if (hid.has(t.path)) return;
+    var r = seasonOf(t); g.info.set(t.path, r);
+    if (r.id) (Object.prototype.hasOwnProperty.call(sh, t.path) ? g.hid[r.id] : g[r.id]).push(t);
+  });
+  var byTitle = function (a, b) { return compareAlbumText(albumTextKey(a.title), albumTextKey(b.title)); };
+  SEASONS.forEach(function (s) { g[s.id].sort(byTitle); g.hid[s.id].sort(byTitle); });
   sea.cache = g;
   return g;
 }
@@ -138,9 +151,10 @@ function setSeasonOverride(path, v) {
 }
 // ファイル整理で動かしたとき（09-file-ops.js の applyPathMapping から）
 function seasonApplyPathMapping(map) {
-  var ov = db.seasonOverride || {}, ch = false;
+  var ov = db.seasonOverride || {}, ch = false, sh = db.seasonHidden || {};
   Object.keys(map).forEach(function (f) {
     if (ov[f]) { ov[map[f]] = ov[f]; delete ov[f]; ch = true; }
+    if (Object.prototype.hasOwnProperty.call(sh, f)) { sh[map[f]] = sh[f]; delete sh[f]; sea.hidRev++; }   // 非表示の曲（v8.13.0）
     if (sea.lyr[f]) { sea.lyr[map[f]] = sea.lyr[f]; delete sea.lyr[f]; }
   });
   sea.cache = null; sea.rev++;
@@ -248,7 +262,7 @@ function _seaTab() { return SEASONS.some(function (s) { return s.id === ui.seaso
 function _seaTabsUi() {
   var g = seasonGroups(), cur = _seaTab();
   document.getElementById('sea-tabs').innerHTML = SEASONS.map(function (s) {
-    return '<button class="sea-tab' + (s.id === cur ? ' active' : '') + '" data-sea-tab="' + s.id + '" style="--sea-c:' + s.color + '" aria-pressed="' + (s.id === cur) + '">' + SEASON_ICONS[s.id] + '<span>' + s.name + '</span><span class="sea-tab-n">' + g[s.id].length + '</span></button>';
+    return '<button class="sea-tab' + (s.id === cur ? ' active' : '') + '" data-sea-tab="' + s.id + '" style="--sea-c:' + s.color + '" aria-pressed="' + (s.id === cur) + '">' + SEASON_ICONS[s.id] + '<span class="sea-tab-name">' + s.name + '</span><span class="sea-tab-n">' + g[s.id].length + '</span></button>';
   }).join('');
 }
 function renderSeasonsPage() {
@@ -261,14 +275,29 @@ function renderSeasonsPage() {
   count.textContent = (g.spring.length + g.summer.length + g.fall.length + g.winter.length) + '曲';
   _seaTabsUi();
   _seaProgressUi();
-  var q = (document.getElementById('sea-search').value || '').trim().toLowerCase();
-  sea.view = q ? g[cur].filter(function (t) { return t.search.indexOf(q) >= 0; }) : g[cur];
-  if (!sea.view.length) { body.innerHTML = '<div class="empty-msg">' + (q ? '検索に当てはまる曲がありません。' : s.name + '（' + s.ja + '）の曲はまだありません。曲名・歌詞に季節の言葉がある曲がここに出ます（tools の「Seasons Song の設定」で言葉を足せます）。') + '</div>'; return; }
+  // v8.12.7：検索欄を外したので、選んだ季節の曲をそのまま全部出す
+  // v8.13.0：非表示の曲は除く（「非表示の曲を表示」がオンのときだけ、曲名順に混ぜて薄く出す）。連続再生・シャッフル再生はいつも除いた曲だけ
+  var hidCur = g.hid[cur], nHid = hidCur.length;
+  if (sea.showHidden && !nHid) sea.showHidden = false;
+  sea.playList = g[cur];
+  sea.view = sea.showHidden ? g[cur].concat(hidCur).sort(function (a, b) { return compareAlbumText(albumTextKey(a.title), albumTextKey(b.title)); }) : g[cur];
+  // 非表示の曲の表示切り替え（季節の見出しの中。非表示の曲がこの季節に無いときは出さない）
+  var hidToggle = nHid ? '<button class="sea-hidden-toggle' + (sea.showHidden ? ' active' : '') + '" data-sea-act="toggle-hidden" aria-pressed="' + sea.showHidden + '" title="' + (sea.showHidden ? '非表示の曲を隠す（ふつうの一覧に戻る）' : '非表示にした曲も薄く出す（ここから表示に戻せます）') + '">' +
+    (sea.showHidden ? ICONS.eye : ICONS.eyeOff) + '<span>非表示の曲を表示（' + nHid + '）</span></button>' : '';
+  if (!sea.view.length) {
+    body.innerHTML = (hidToggle ? '<div class="sea-head" style="--sea-c:' + s.color + '">' + SEASON_ICONS[cur] + '<span class="sea-head-name">' + s.name + '</span><span class="sea-head-n">0曲</span>' + hidToggle + '</div>' : '') +
+      '<div class="empty-msg">' + (s.name + '（' + s.ja + '）の曲はまだありません。曲名・歌詞に季節の言葉がある曲がここに出ます（tools の「Seasons Song の設定」で言葉を足せます）。') + '</div>';
+    return;
+  }
   var shown = sea.view.slice(0, sea.limit);
-  body.innerHTML = '<div class="sea-head" style="--sea-c:' + s.color + '">' + SEASON_ICONS[cur] + '<span class="sea-head-name">' + s.name + '</span><span class="sea-head-n">' + sea.view.length + '曲</span>' +
-      '<button class="btn-save sea-play-all" data-sea-act="play-all">' + ICONS.play + '連続再生</button>' + shuffleBtnHtml('data-sea-act="shuffle"', 'この季節の曲をばらばらの順で再生') + '</div>' +
+  var noPlay = !sea.playList.length ? ' disabled' : '';
+  body.innerHTML = '<div class="sea-head" style="--sea-c:' + s.color + '">' + SEASON_ICONS[cur] + '<span class="sea-head-name">' + s.name + '</span><span class="sea-head-n">' + sea.playList.length + '曲</span>' +
+      hidToggle +
+      '<button class="btn-save sea-play-all" data-sea-act="play-all"' + noPlay + '>' + ICONS.play + '連続再生</button>' + shuffleBtnHtml('data-sea-act="shuffle"', 'この季節の曲をばらばらの順で再生', !sea.playList.length) + '</div>' +
     songTableHtml(shown, { extra: { head: '季節', cell: function (t) { return _seaCellHtml(t, g.info.get(t.path)); } } }) +
     (sea.view.length > shown.length ? loadMoreHtml('sea-more', sea.view.length - shown.length, '曲') : '');
+  // 非表示の曲の行は薄く（「非表示の曲を表示」のときだけ出る）
+  if (sea.showHidden) body.querySelectorAll('.song-row').forEach(function (row) { var t = shown[+row.getAttribute('data-i')]; if (t && isSeasonHidden(t.path)) row.classList.add('sea-row-hidden'); });
   artObserve(body);
   watchLoadMore('sea', document.getElementById('sea-more'), function () { sea.limit += SEA_PAGE; var y = window.scrollY; renderSeasonsPage(); window.scrollTo(0, y); });
 }
@@ -278,13 +307,20 @@ function _seaCellHtml(t, r) {
   return '<select class="sea-select" data-sea-path="' + escapeHtml(t.path) + '" title="' + escapeHtml(r.src === 'manual' ? '手で決めた季節（自動：' + an + '）' : '自動：' + (auto.why || '')) + '" aria-label="季節を選ぶ">' +
     '<option value=""' + (!ov ? ' selected' : '') + '>自動（' + an + '）</option>' +
     SEASONS.map(function (s) { return '<option value="' + s.id + '"' + (ov === s.id ? ' selected' : '') + '>' + s.name + '</option>'; }).join('') +
-    '<option value="none"' + (ov === 'none' ? ' selected' : '') + '>外す</option></select>';
+    '<option value="none"' + (ov === 'none' ? ' selected' : '') + '>外す</option></select>' +
+    _seaHideBtnHtml(t);
+}
+// 季節の非表示ボタン（v8.13.0。季節の選択の下。非表示の曲は「戻す」）
+function _seaHideBtnHtml(t) {
+  var p = escapeHtml(t.path);
+  return isSeasonHidden(t.path)
+    ? '<button class="sea-hide-btn is-hidden-state" data-sea-unhide="' + p + '" title="Seasons Song の一覧に戻す" aria-label="表示に戻す">' + ICONS.eye + '<span>戻す</span></button>'
+    : '<button class="sea-hide-btn" data-sea-hide="' + p + '" title="Seasons Song の一覧から非表示にする（ほかの画面・ファイルはそのまま。あとで戻せます）" aria-label="非表示にする">' + ICONS.eyeOff + '<span>非表示</span></button>';
 }
 function initSeasonsPage() {
   var tabs = document.getElementById('sea-tabs'), body = document.getElementById('sea-body');
   if (!tabs) return;
   tabs.addEventListener('click', function (ev) { var b = ev.target.closest('[data-sea-tab]'); if (!b) return; ui.seasonTab = b.getAttribute('data-sea-tab'); saveUi(); sea.limit = SEA_PAGE; renderSeasonsPage(); window.scrollTo(0, 0); });
-  document.getElementById('sea-search').addEventListener('input', debounce(function () { sea.limit = SEA_PAGE; renderSeasonsPage(); }, 180));
   document.getElementById('sea-progress').addEventListener('click', function (ev) {
     if (ev.target.closest('#sea-stop')) { sea.stop = true; return; }
     if (ev.target.closest('#sea-start')) seasonScanLyrics();
@@ -292,8 +328,13 @@ function initSeasonsPage() {
   bindSongTable(body, function () { return sea.view; }, function () { var s = SEASONS.filter(function (x) { return x.id === _seaTab(); })[0]; return 'Seasons Song ' + s.name; });
   body.addEventListener('click', function (ev) {
     if (ev.target.closest('[data-act="more"]')) { sea.limit += SEA_PAGE; renderSeasonsPage(); return; }
-    if (ev.target.closest('[data-sea-act="shuffle"]') && sea.view.length) { var s2 = SEASONS.filter(function (x) { return x.id === _seaTab(); })[0]; shufflePlay(function () { playQueue(sea.view.map(function (t) { return t.path; }), 0, 'Seasons Song ' + s2.name); }); return; }   // v7.5
-    if (ev.target.closest('[data-sea-act="play-all"]') && sea.view.length) { var s = SEASONS.filter(function (x) { return x.id === _seaTab(); })[0]; playQueue(sea.view.map(function (t) { return t.path; }), 0, 'Seasons Song ' + s.name); }
+    // 非表示にする・戻す・非表示の曲の表示切り替え（v8.13.0。80-season-hidden.js）
+    var hb = ev.target.closest('[data-sea-hide]'); if (hb) { seasonHideSong(hb.getAttribute('data-sea-hide')); return; }
+    var ub = ev.target.closest('[data-sea-unhide]'); if (ub) { seasonUnhideFromUi(ub.getAttribute('data-sea-unhide')); return; }
+    if (ev.target.closest('[data-sea-act="toggle-hidden"]')) { toggleSeasonHiddenView(); return; }
+    // 連続再生・シャッフル再生は非表示の曲を除いた sea.playList（v8.13.0）
+    if (ev.target.closest('[data-sea-act="shuffle"]') && sea.playList.length) { var s2 = SEASONS.filter(function (x) { return x.id === _seaTab(); })[0]; shufflePlay(function () { playQueue(sea.playList.map(function (t) { return t.path; }), 0, 'Seasons Song ' + s2.name); }); return; }   // v7.5
+    if (ev.target.closest('[data-sea-act="play-all"]') && sea.playList.length) { var s = SEASONS.filter(function (x) { return x.id === _seaTab(); })[0]; playQueue(sea.playList.map(function (t) { return t.path; }), 0, 'Seasons Song ' + s.name); }
   });
   body.addEventListener('change', function (ev) {
     var sel = ev.target.closest('[data-sea-path]'); if (!sel) return;
@@ -349,4 +390,5 @@ function renderSetSeasons() {
     if (!(await showConfirm({ title: '手で決めた季節をすべて解除', message: nOv + '曲の手で決めた季節を解除して、自動の判定に戻します。', okText: '解除する', danger: true }))) return;
     db.seasonOverride = {}; saveDB(); sea.cache = null; sea.rev++; renderSetSeasons(); renderSidebarCounts();
   });
+  if (typeof renderSetSeasonHidden === 'function') renderSetSeasonHidden();   // tools の「Seasons Song の非表示の曲」（v8.13.0。80-season-hidden.js）
 }

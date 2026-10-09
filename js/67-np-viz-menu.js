@@ -58,6 +58,8 @@ function npVizMenuSetup() {
     else if (b.hasAttribute('data-nvz-bars')) { setNpViz({ bars: b.getAttribute('data-nvz-bars') }); sel = '[data-nvz-bars="' + b.getAttribute('data-nvz-bars') + '"]'; }
     else if (b.hasAttribute('data-nvz-thick')) { setNpViz({ thick: b.getAttribute('data-nvz-thick') }); sel = '[data-nvz-thick="' + b.getAttribute('data-nvz-thick') + '"]'; }
     else if (b.hasAttribute('data-nvz-glow')) { setNpViz({ glow: b.getAttribute('data-nvz-glow') === 'on' }); sel = '[data-nvz-glow="' + b.getAttribute('data-nvz-glow') + '"]'; }
+    else if (b.hasAttribute('data-nvz-grow')) { setNpViz({ grow: b.getAttribute('data-nvz-grow') === 'on' }); sel = '[data-nvz-grow="' + b.getAttribute('data-nvz-grow') + '"]'; }   // v8.12.2：曲に合わせて広がる
+    else if (b.hasAttribute('data-nvz-sstyle')) { setNpViz({ sparkStyle: b.getAttribute('data-nvz-sstyle') }); sel = '[data-nvz-sstyle="' + b.getAttribute('data-nvz-sstyle') + '"]'; }   // v8.12.2：光の飛び方
     else if (b.hasAttribute('data-nvz-tune-reset')) { resetNpVizTune(); sel = '[data-nvz-tune-reset]'; }   // v8.11.1：光の調整を全部 100%
     if (sel) { var f = menu.querySelector(sel); if (f) { try { f.focus({ preventScroll: true }); } catch (e) { /* 無視 */ } } }
   });
@@ -138,6 +140,11 @@ function npVizMenuRender() {
     '<div class="np-viz-row' + off + '"><span class="np-viz-row-label">バーの数</span>' + _npVizSeg('bars', cfg.bars, NVZ_BARS) + '</div>' +
     '<div class="np-viz-row' + off + '"><span class="np-viz-row-label">太さ</span>' + _npVizSeg('thick', cfg.thick, NVZ_THICK) + '</div>' +
     '<div class="np-viz-row' + off + '"><span class="np-viz-row-label">光</span>' + _npVizSeg('glow', cfg.glow ? 'on' : 'off', { on: { label: 'オン' }, off: { label: 'オフ' } }) + '</div>' +
+    // 曲に合わせて広がる（v8.12.2）：オン／オフ、オンのときは「広がり方」のスライダー（光の調整と同じ作り。動かしている間は書き直さない）
+    (cfg.grow !== undefined ? '<div class="np-viz-row np-viz-grow-row' + off + '"><span class="np-viz-row-label">曲に合わせて広がる</span>' + _npVizSeg('grow', cfg.grow ? 'on' : 'off', { on: { label: 'オン' }, off: { label: 'オフ' } }) + '</div>' +
+      (cfg.grow ? '<label class="np-viz-tune-row np-viz-grow-amt' + off + '" title="広がり方：曲の始めと終わりの大きさの差（100% で 0.5倍 → 1.5倍、200% で ほぼ0 → 2倍）"><span class="np-viz-tune-name">広がり方</span>' +
+        '<input type="range" class="np-viz-tune-range" min="0" max="200" step="5" value="' + cfg.growAmt + '" data-nvz-tune="growAmt" aria-label="広がり方（曲の始めと終わりの大きさの差）">' +
+        '<output class="np-viz-tune-val" data-nvz-tune-val="growAmt">' + cfg.growAmt + '%</output></label>' : '') : '') +
     // 光の調整（v8.11.1）：光がオンのときだけ
     (cfg.glow && typeof NVZ_TUNE !== 'undefined' ? '<div class="np-viz-tune' + off + '"><div class="np-viz-mtitle np-viz-tune-title">光の調整' +
       '<span class="ui-label-tag ui-label-tag-onlight" style="position:static;margin-left:6px" onclick="copyUiLabel(\'光の調整\', event)" title="クリックで「光の調整」をコピー">□</span>' +
@@ -147,7 +154,12 @@ function npVizMenuRender() {
         return '<label class="np-viz-tune-row" title="' + t.label + '：' + t.help + '"><span class="np-viz-tune-name">' + t.label + '</span>' +
           '<input type="range" class="np-viz-tune-range" min="' + t.min + '" max="' + t.max + '" step="5" value="' + v + '" data-nvz-tune="' + t.prop + '" aria-label="' + t.label + '（' + t.help + '）">' +
           '<output class="np-viz-tune-val" data-nvz-tune-val="' + t.prop + '">' + v + '%</output></label>';
-      }).join('') + '</div>' : '') +
+      }).join('') +
+      // 光の飛び方（v8.12.2）：花火／放射の粒／光の筋。円だけに効く（円を選んでいないときはうすく、注記）
+      (typeof NVZ_SPARK_STYLE !== 'undefined' ? '<div class="np-viz-row np-viz-sstyle-row' + (cfg.modes.indexOf('circle') < 0 ? ' is-off' : '') + '"><span class="np-viz-row-label">飛び方</span>' +
+        _npVizSeg('sstyle', cfg.sparkStyle, NVZ_SPARK_STYLE) + '</div>' +
+        (cfg.modes.indexOf('circle') < 0 ? '<p class="np-viz-note np-viz-sstyle-note">今は円を選んでいません（光の飛び方は「円」の粒に効きます）</p>' : '') : '') +
+      '</div>' : '') +
     '<p class="np-viz-note">円の線：' + NVZ_BARS[cfg.bars].circ + '本。光：残像・光る先端・はじける粒' + (typeof np !== 'undefined' && np.reduced ? '（動きを減らす設定のため、残像と粒は出しません）' : '') + '</p>' +
     '<span class="ui-label-tag ui-label-tag-onlight" style="top:4px;right:6px" onclick="copyUiLabel(\'描き方メニュー\', event)" title="クリックで「描き方メニュー」をコピー">□</span>';
   if (menu._npvHtml === html) return;

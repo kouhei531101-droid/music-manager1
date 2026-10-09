@@ -15,12 +15,20 @@ function renderSettingsPage() {
   if (typeof renderSetPinnedAlbums === 'function') renderSetPinnedAlbums();   // Pin のアルバム（v3.4）
   if (typeof renderSetPinnedArtists === 'function') renderSetPinnedArtists();   // Pin のアーティスト（v3.9）
   if (typeof renderSetAlbumTags === 'function') renderSetAlbumTags();   // タグの設定（v4.4）
+  if (typeof renderSetArtistCopy === 'function') renderSetArtistCopy();   // アーティスト名のコピー（スマホ版 v8.12.5）
   if (typeof renderSetGenreSuggest === 'function') renderSetGenreSuggest();   // ジャンルの候補（v4.5）
   if (typeof renderSetWestern === 'function') renderSetWestern();   // Western music の設定（v5.0）
   if (typeof renderSetSeasons === 'function') renderSetSeasons();   // Seasons Song の設定（v7.4）
+  if (typeof renderSetNpBg === 'function') renderSetNpBg();   // 再生画面の背景（スマホ版 v8.14.0。81-np-bg.js）
   renderSetBackupMeta();
   renderSetStorage();
   if (typeof renderTagBackupInfo === 'function') renderTagBackupInfo();   // タグ編集前の控え（17-tag-edit.js）
+}
+
+// 復元前の比較表の「アーティスト名の自動コピー」の文字（スマホ版 v8.12.5）。例「ソートキー ON・タグ OFF」
+function _artistCopyOnOffText(s) {
+  s = s || {};
+  return 'ソートキー ' + (s.artistCopySortKey ? 'ON' : 'OFF') + '・タグ ' + (s.artistCopyTag ? 'ON' : 'OFF');
 }
 
 /* ---------- 音楽フォルダ設定 ---------- */
@@ -109,6 +117,8 @@ async function exportBackup() {
   }
   db.settings.lastBackupAt = nowIso();
   saveDB();
+  // 再生画面の背景の「自分の画像」（スマホ版 v8.14.0。81-np-bg.js。IndexedDB にあるので JSON に入れる。無ければ入れない）
+  var npBgImage = typeof npBgBackupData === 'function' ? await npBgBackupData() : null;
   var payload = {
     app: 'music-manager',
     format: 1,
@@ -117,6 +127,7 @@ async function exportBackup() {
     musicFolderName: fsa.folderName || db.settings.musicFolderName || '',
     data: db
   };
+  if (npBgImage) payload.npBgImage = npBgImage;
   var blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
   var a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
@@ -173,8 +184,14 @@ async function onRestoreFileChosen(input) {
       '<tr><td>アルバムのソートキー</td><td>' + Object.keys(db.albumSortKeys || {}).length + '枚分</td><td>' + Object.keys(next.albumSortKeys || {}).length + '枚分</td></tr>' +
       '<tr><td>upbeat music（手で入れた BPM・基準）</td><td>' + Object.keys(db.bpmManual || {}).length + '曲・' + (db.settings.upbeatMin || 140) + '以上</td><td>' + Object.keys(next.bpmManual || {}).length + '曲・' + ((next.settings && next.settings.upbeatMin) || 140) + '以上</td></tr>' +
       '<tr><td>Seasons Song（手で決めた季節）</td><td>' + Object.keys(db.seasonOverride || {}).length + '曲' + (db.seasonWords ? '・言葉を変更' : '') + '</td><td>' + Object.keys(next.seasonOverride || {}).length + '曲' + (next.seasonWords ? '・言葉を変更' : '') + '</td></tr>' +
+      '<tr><td>Seasons Song（非表示にした曲）</td><td>' + Object.keys(db.seasonHidden || {}).length + '曲</td><td>' + Object.keys(next.seasonHidden || {}).length + '曲</td></tr>' +   // v8.13.0
       '<tr><td>ソートキーの枠の代表ジャケット</td><td>' + Object.keys(db.skCovers || {}).length + '件</td><td>' + Object.keys(next.skCovers || {}).length + '件</td></tr>' +
       '<tr><td>Pin したアーティスト</td><td>' + (db.pinnedArtists || []).length + '人</td><td>' + next.pinnedArtists.length + '人</td></tr>' +
+      // アーティスト名の自動コピー（スマホ版 v8.12.5。79-artist-copy.js）：ソートキー／タグ の ON/OFF
+      '<tr><td>アーティスト名の自動コピー</td><td>' + _artistCopyOnOffText(db.settings) + '</td><td>' + _artistCopyOnOffText(next.settings) + '</td></tr>' +
+      // 再生画面の背景（スマホ版 v8.14.0。81-np-bg.js）：背景の種類・覆いの濃さ・自分の画像。古いバックアップに無ければ「なし」、画像が無ければ今の画像はそのまま
+      (typeof npBgSummary === 'function' ? '<tr><td>再生画面の背景</td><td>' + npBgSummary(db.settings) + (npBgHasImage() ? '・自分の画像あり' : '') + '</td><td>' + npBgSummary(next.settings) +
+        (npBgBackupHasImage(obj) ? '・自分の画像あり' : (npBgHasImage() ? '（画像は入っていないので今の画像のまま）' : '')) + '</td></tr>' : '') +
       '<tr><td>書き出した日時</td><td>—</td><td>' + (obj.exportedAt ? formatDateTime(obj.exportedAt) : '不明') + '</td></tr>' +
       '<tr><td>音楽フォルダ</td><td>' + escapeHtml(fsa.folderName || '—') + '</td><td>' + escapeHtml(obj.musicFolderName || '不明') + '</td></tr>' +
       '</table>' +
@@ -225,6 +242,7 @@ async function onRestoreFileChosen(input) {
     fillDisplayFields(t);
   });
   if (typeof migrateAlbumKeys === 'function') migrateAlbumKeys();   // 古いバックアップのカスタム順などの目印を今のまとめ方に（v2.9）
+  if (typeof npBgAfterRestore === 'function') await npBgAfterRestore(obj);   // 再生画面の背景（自分の画像を入れ替えて表示を合わせる。スマホ版 v8.14.0）
   renderAll();
   showToast('バックアップから復元しました（プレイリスト ' + db.playlists.length + '件）');
 }

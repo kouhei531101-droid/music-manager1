@@ -1,0 +1,90 @@
+[
+    {
+        "id":  "forest",
+        "file":  "forest.jpg",
+        "title":  "Spruce forest at Holma.jpg",
+        "author":  "W.carter",
+        "license":  "CC0",
+        "source":  "https://commons.wikimedia.org/wiki/File:Spruce_forest_at_Holma.jpg"
+    },
+    {
+        "id":  "meadow",
+        "file":  "meadow.jpg",
+        "title":  "Schönwald im Schwarzwald, Escheckstraße -- 2025 -- 0147.jpg",
+        "author":  "Dietmar Rabich",
+        "license":  "CC BY-SA 4.0",
+        "source":  "https://commons.wikimedia.org/wiki/File:Sch%C3%B6nwald_im_Schwarzwald,_Escheckstra%C3%9Fe_--_2025_--_0147.jpg"
+    },
+    {
+        "id":  "mountain",
+        "file":  "mountain.jpg",
+        "title":  "Zagedan Lakes, Mountain cirque, Caucasus Mountains.jpg",
+        "author":  "Vyacheslav Argenberg",
+        "license":  "CC BY 4.0",
+        "source":  "https://commons.wikimedia.org/wiki/File:Zagedan_Lakes,_Mountain_cirque,_Caucasus_Mountains.jpg"
+    },
+    {
+        "id":  "river",
+        "file":  "river.jpg",
+        "title":  "Spiti River Kaza Himachal Jun18 D72 7232.jpg",
+        "author":  "Timothy A. Gonsalves",
+        "license":  "CC BY-SA 4.0",
+        "source":  "https://commons.wikimedia.org/wiki/File:Spiti_River_Kaza_Himachal_Jun18_D72_7232.jpg"
+    },
+    {
+        "id":  "sea",
+        "file":  "sea.jpg",
+        "title":  "Baltic Sea view from Schmiedeberg hill in Rerik, 2025-06-23.jpg",
+        "author":  "Radomianin",
+        "license":  "CC BY-SA 4.0",
+        "source":  "https://commons.wikimedia.org/wiki/File:Baltic_Sea_view_from_Schmiedeberg_hill_in_Rerik,_2025-06-23.jpg"
+    },
+    {
+        "id":  "space",
+        "file":  "space.jpg",
+        "title":  "018 Human looking at the stars during Perseids with the Milky Way in the background Photo by Giles Laurent.jpg",
+        "author":  "Giles Laurent",
+        "license":  "CC BY-SA 4.0",
+        "source":  "https://commons.wikimedia.org/wiki/File:018_Human_looking_at_the_stars_during_Perseids_with_the_Milky_Way_in_the_background_Photo_by_Giles_Laurent.jpg"
+    },
+    {
+        "id":  "geometric",
+        "file":  "geometric.jpg",
+        "title":  "Sunlight on the curved honeycomb glass façade of the hotel Andaz mixed with interior lighting at sunset in Singapore.jpg",
+        "author":  "Basile Morin",
+        "license":  "CC BY-SA 4.0",
+        "source":  "https://commons.wikimedia.org/wiki/File:Sunlight_on_the_curved_honeycomb_glass_fa%C3%A7ade_of_the_hotel_Andaz_mixed_with_interior_lighting_at_sunset_in_Singapore.jpg"
+    },
+    {
+        "id":  "sunset",
+        "file":  "sunset.jpg",
+        "title":  "Rapanui Rock during sunset, Sumner, Christchurch, New Zealand.jpg",
+        "author":  "Michal Klajban",
+        "license":  "CC BY-SA 4.0",
+        "source":  "https://commons.wikimedia.org/wiki/File:Rapanui_Rock_during_sunset,_Sumner,_Christchurch,_New_Zealand.jpg"
+    },
+    {
+        "id":  "sakura",
+        "file":  "sakura.jpg",
+        "title":  "Cherry blossoms (Somei Yoshino), Nagai Botanical Garden, April 2026 -1488.jpg",
+        "author":  "Laitche",
+        "license":  "CC BY-SA 4.0",
+        "source":  "https://commons.wikimedia.org/wiki/File:Cherry_blossoms_(Somei_Yoshino),_Nagai_Botanical_Garden,_April_2026_-1488.jpg"
+    },
+    {
+        "id":  "autumn",
+        "file":  "autumn.jpg",
+        "title":  "Fagus sylvatica with autumn leaf color in Biosphärenreservat Rhön - Still.jpg",
+        "author":  "Markusmachtphotos",
+        "license":  "CC BY-SA 4.0",
+        "source":  "https://commons.wikimedia.org/wiki/File:Fagus_sylvatica_with_autumn_leaf_color_in_Biosph%C3%A4renreservat_Rh%C3%B6n_-_Still.jpg"
+    },
+    {
+        "id":  "snow",
+        "file":  "snow.jpg",
+        "title":  "Winter in Tatry Mountains - Poland.jpg",
+        "author":  "Radek Kucharski",
+        "license":  "CC BY 4.0",
+        "source":  "https://commons.wikimedia.org/wiki/File:Winter_in_Tatry_Mountains_-_Poland.jpg"
+    }
+]

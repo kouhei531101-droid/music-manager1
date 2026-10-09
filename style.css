@@ -1975,16 +1975,21 @@ button.album-sk-label:focus-visible, .album-sk-cover-btn:focus-visible { outline
 @media (prefers-reduced-motion: reduce) { .alb-scroll-btn.is-loading svg { animation: none; } }
 
 /* ---------- Seasons Song（v7.4。46-seasons.js） ---------- */
-.sea-tabs { display: flex; flex-wrap: wrap; gap: 6px; }
-.sea-tab { display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 999px; font-size: 13px; font-weight: 600;
-  border: 1.5px solid color-mix(in srgb, var(--sea-c) 55%, transparent); background: var(--surface); color: var(--text); cursor: pointer; }
-.sea-tab svg { color: var(--sea-c); width: 16px; height: 16px; }
-.sea-tab:hover { background: color-mix(in srgb, var(--sea-c) 10%, var(--surface)); }
-.sea-tab.active { background: var(--sea-c); border-color: var(--sea-c); color: #fff; }
+/* 季節のタブ（v8.12.7：大きなボタン。4つを横に等分。狭い画面は 2×2。選んだタブは季節の色で塗り、少し浮かせる） */
+.sea-tabs { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; flex: 1 1 100%; max-width: 720px; }
+.sea-tab { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; min-height: 84px; padding: 10px 6px;
+  border-radius: 14px; font-size: 17px; font-weight: 700; line-height: 1.15;
+  border: 2px solid color-mix(in srgb, var(--sea-c) 55%, transparent); background: color-mix(in srgb, var(--sea-c) 7%, var(--surface)); color: var(--text); cursor: pointer;
+  transition: background 0.15s, transform 0.15s, box-shadow 0.15s; -webkit-tap-highlight-color: transparent; }
+.sea-tab svg { color: var(--sea-c); width: 28px; height: 28px; }
+.sea-tab-name { white-space: nowrap; }
+.sea-tab:hover { background: color-mix(in srgb, var(--sea-c) 14%, var(--surface)); }
+.sea-tab:active { transform: scale(0.97); }
+.sea-tab.active { background: var(--sea-c); border-color: var(--sea-c); color: #fff; box-shadow: 0 4px 12px color-mix(in srgb, var(--sea-c) 45%, transparent); transform: translateY(-1px); }
 .sea-tab.active svg { color: #fff; }
-.sea-tab-n { font-size: 11px; font-weight: 500; padding: 0 6px; border-radius: 999px; background: color-mix(in srgb, var(--sea-c) 16%, transparent); }
-.sea-tab.active .sea-tab-n { background: rgba(255, 255, 255, 0.25); }
-.sea-search-box { flex: 1 1 200px; max-width: 300px; }
+.sea-tab-n { font-size: 12px; font-weight: 600; padding: 1px 8px; border-radius: 999px; background: color-mix(in srgb, var(--sea-c) 16%, transparent); }
+.sea-tab.active .sea-tab-n { background: rgba(255, 255, 255, 0.28); }
+.sea-search-box { flex: 1 1 200px; max-width: 300px; }   /* upbeat music の検索欄が使う（Seasons Song の検索欄は v8.12.7 で外した） */
 .sea-progress { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; flex: 1 1 100%; font-size: 12.5px; color: var(--text-sub); }
 .sea-progress:empty { display: none; }
 .sea-bar { flex: 0 1 200px; height: 6px; border-radius: 3px; background: var(--primary-pale); overflow: hidden; }
@@ -2000,10 +2005,17 @@ button.album-sk-label:focus-visible, .album-sk-cover-btn:focus-visible { outline
 .wes-chip.sea-chip-weak { border-style: dashed; }
 .wes-chip.sea-chip-ex { opacity: 0.75; text-decoration: line-through; text-decoration-thickness: 1px; }
 @media (max-width: 760px), (orientation: landscape) and (max-height: 500px) and (max-width: 1000px) {
-  .sea-tab { padding: 5px 9px; font-size: 12px; }
+  .sea-tabs { gap: 8px; max-width: none; }
+  .sea-tab { min-height: 76px; padding: 8px 4px; font-size: 15px; border-radius: 12px; }
+  .sea-tab svg { width: 26px; height: 26px; }
   .sea-search-box { max-width: none; }
   #page-seasons .song-table .col-extra { width: 84px; }
   .sea-select { font-size: 11px; padding: 2px; }
+}
+/* とても狭い画面（360px 未満）は 2×2 に並べる（v8.12.7） */
+@media (max-width: 359px) {
+  .sea-tabs { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .sea-tab { flex-direction: row; min-height: 56px; gap: 6px; }
 }
 
 /* ---------- シャッフル再生ボタン（v7.5。47-shuffle-play.js） ---------- */
@@ -3203,3 +3215,199 @@ body.alb-fab-on #main { padding-bottom: calc(var(--player-h) + var(--lyr-bottom)
 .np-viz-count { margin-left: auto; padding: 1px 8px; border-radius: 999px; background: var(--surface-2); border: 1px solid var(--border2); font-size: 11px; font-weight: 700; color: var(--text-sub); font-variant-numeric: tabular-nums; }
 .np-viz-count.is-full { background: var(--primary-mid); border-color: var(--primary-mid); color: #fff; }
 .np-viz-chip:disabled { opacity: 0.38; cursor: default; }
+
+/* スマホ版 v8.12.2：光の調整の「飛び方」（花火／放射の粒／光の筋。円だけに効く。67-np-viz-menu.js）：指で押しやすい高さ */
+.np-viz-sstyle-row { margin-top: 6px; }
+.np-viz-sstyle-row .np-viz-seg-btn { min-height: 36px; font-size: 12px; padding: 4px 2px; }
+.np-viz-sstyle-note { margin-top: 2px; }
+/* スマホ版 v8.12.2：「曲に合わせて広がる」の行（名前が長いので名前の幅を広げる） */
+.np-viz-grow-row .np-viz-row-label { width: 7.4em; line-height: 1.3; }
+
+/* ---------- スマホ版 v8.12.3：再生画面の「歌詞の重ね表示」（78-np-lyrics-over.js）----------
+   ・スマホ幅（横向きのスマホも）の再生画面で「歌詞」ボタンを押すと、歌詞をプレイヤーの上に重ねて出す（#np-lyr-over）
+   ・下のプレイヤー（上部のボタン列・ジャケット・曲名・再生操作・ビジュアライザー）は、彩度と明るさを落として少しグレーに。
+     重ね表示の背景は半透明の覆い（本文エリアの背景の色を 70%）で、文字を読みやすくする
+   ・見出し（曲名・「歌詞を閉じる」ボタン）→ 歌詞の本文（縦にスクロール）→「歌詞パネルを開く（入力・検索）」ボタン
+   ・閉じると .np-lyr-over-open が外れ、元の見た目に戻る */
+#now-playing.np-lyr-over-open > :not(.np-lyr-over) { filter: grayscale(0.65) brightness(0.82); pointer-events: none; }
+.np-lyr-over { position: absolute; inset: 0; z-index: 10; display: flex; flex-direction: column;
+  padding: env(safe-area-inset-top, 0px) env(safe-area-inset-right, 0px) env(safe-area-inset-bottom, 0px) env(safe-area-inset-left, 0px);
+  background: rgba(128, 128, 136, 0.55); background: color-mix(in srgb, var(--bg) 70%, transparent); color: var(--text); }
+.np-lyr-over[hidden] { display: none; }
+.np-lo-head { flex: none; display: flex; align-items: center; gap: 8px; padding: 10px 12px 8px 14px; border-bottom: 1px solid var(--border2); }
+.np-lo-title { flex: 1 1 auto; min-width: 0; font-size: 15px; font-weight: 700; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.np-lo-close { flex: none; display: inline-flex; align-items: center; gap: 4px; min-height: 40px; padding: 0 14px 0 10px; border: 1px solid var(--border2); border-radius: 999px;
+  background: var(--surface); color: var(--ink); font-size: 14px; font-weight: 700; cursor: pointer; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18); }
+.np-lo-close svg { width: 18px; height: 18px; }
+.np-lo-body { flex: 1 1 0; min-height: 0; overflow-y: auto; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; padding: 0 18px; text-align: center; outline: none; }
+.np-lo-lines { padding: 30vh 0; }
+.np-lo-line { margin: 0; padding: 7px 4px; font-size: 18px; line-height: 1.45; color: var(--text-sub); opacity: 0.8; overflow-wrap: anywhere; cursor: pointer; border-radius: 8px;
+  transition: color 0.2s, opacity 0.2s; }
+.np-lo-line.active { font-size: 22px; font-weight: 700; color: var(--ink); opacity: 1; }
+.np-lo-line.np-lo-blank { opacity: 0.5; }
+.np-lo-plain { padding: 20px 0 40px; font-size: 18px; line-height: 1.8; color: var(--ink); white-space: pre-wrap; overflow-wrap: anywhere; }
+.np-lo-msg { margin: 0; padding: 32px 8px; font-size: 15px; line-height: 1.7; color: var(--text-sub); }
+.np-lo-foot { flex: none; display: flex; justify-content: center; padding: 8px 12px 12px; border-top: 1px solid var(--border2); }
+.np-lo-panel-btn { display: inline-flex; align-items: center; gap: 6px; max-width: 100%; min-height: 34px; padding: 2px 14px; border: 1px solid var(--border2); border-radius: 999px;
+  background: var(--surface); color: var(--text-sub); font-size: 13px; cursor: pointer; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.np-lo-panel-btn svg { flex: none; width: 15px; height: 15px; }
+.np-lo-panel-btn:disabled { opacity: 0.5; cursor: default; }
+@media (prefers-reduced-motion: reduce) { .np-lo-line { transition: none; } }
+
+/* ---------- スマホ版 v8.12.5：アーティスト名のコピー（tools。79-artist-copy.js）---------- */
+.ac-sub-title { font-size: 13px; font-weight: 700; margin: 12px 0 2px; opacity: .85; }
+.ac-sub-title:first-child { margin-top: 0; }
+.ac-bulk-opts { display: flex; flex-wrap: wrap; gap: 4px 16px; }
+.ac-bulk-opts .tagedit-write { font-weight: 600; }
+
+/* ---------- スマホ版 v8.13.0：Seasons Song の非表示の曲（80-season-hidden.js・46-seasons.js）---------- */
+/* 季節の非表示ボタン（曲の表の「季節」の列。季節の選択の下） */
+.sea-hide-btn { display: inline-flex; align-items: center; justify-content: center; gap: 4px; margin-top: 6px; min-height: 32px; padding: 4px 10px;
+  font: inherit; font-size: 12px; color: var(--text-sub); background: var(--surface); border: 1px solid var(--border2); border-radius: 999px; cursor: pointer; white-space: nowrap; }
+.sea-hide-btn svg { width: 14px; height: 14px; flex: none; }
+.sea-hide-btn:hover { color: var(--text); border-color: var(--text-sub); }
+.sea-hide-btn.is-hidden-state { color: var(--primary); border-color: var(--primary); }
+/* 非表示の曲の表示切り替え（季節の見出しの中） */
+.sea-hidden-toggle { display: inline-flex; align-items: center; gap: 5px; min-height: 34px; padding: 4px 12px; font: inherit; font-size: 12.5px; white-space: nowrap;
+  color: var(--text-sub); background: var(--surface); border: 1px solid var(--border2); border-radius: 999px; cursor: pointer; }
+.sea-hidden-toggle svg { width: 15px; height: 15px; flex: none; }
+.sea-hidden-toggle.active { color: #fff; background: var(--sea-c); border-color: var(--sea-c); }
+/* 非表示の曲の行（「非表示の曲を表示」のときだけ出る）：薄く */
+.song-row.sea-row-hidden > td:not(.col-extra) { opacity: 0.45; }
+.song-row.sea-row-hidden .lib-title::after { content: '非表示'; margin-left: 6px; padding: 0 6px; font-size: 10.5px; font-weight: 600; border: 1px solid currentColor; border-radius: 999px; vertical-align: 1px; }
+@media (max-width: 760px), (orientation: landscape) and (max-height: 500px) and (max-width: 1000px) {
+  .sea-hide-btn { padding: 4px 8px; min-height: 34px; width: 100%; max-width: 84px; }
+  .sea-hidden-toggle { font-size: 12px; padding: 4px 10px; }
+}
+
+/* ---------- スマホ版 v8.14.0：再生画面の背景（81-np-bg.js）----------
+   ・#np-bg は #now-playing のいちばん奥（z-index 0。ビジュアライザーのキャンバス・上部のボタン列・本文はその上）
+   ・中身：背景の絵 .np-bg-art（テンプレートの SVG か、自分の画像 .np-bg-img）→ 背景の覆い .np-bg-veil
+   ・背景の覆い：本文エリアの背景の色（ライトは白っぽく、ブラックは暗く）を重ねて、文字・ボタン・ジャケットを読みやすくする。
+     濃さは #now-playing の data-np-bg-veil（light／normal／strong）。上（ボタン列）と下（再生操作）は少し濃く
+   ・背景があるとき（.np-has-bg）は曲名・アーティスト・時間に、背景の色の薄い縁取りの影 */
+.np-bg { position: absolute; inset: 0; z-index: 0; overflow: hidden; pointer-events: none; }
+.np-bg-art { position: absolute; inset: 0; opacity: 1; transition: opacity 0.6s ease; }
+.np-bg-art.is-in { opacity: 0; }
+.np-bg-art .np-bg-svg { display: block; width: 100%; height: 100%; }
+.np-bg-img { background-position: center; background-size: cover; background-repeat: no-repeat; }
+.np-bg-veil { position: absolute; inset: 0; display: none; }
+.np-has-bg .np-bg-veil { display: block; }
+.np-bg-veil::before { content: ''; position: absolute; inset: 0; background: var(--bg); opacity: var(--npbg-a, 0.6); }
+.np-bg-veil::after { content: ''; position: absolute; inset: 0;
+  background: linear-gradient(180deg, color-mix(in srgb, var(--bg) 40%, transparent) 0%, transparent 22%, transparent 58%, color-mix(in srgb, var(--bg) 50%, transparent) 100%); }
+#now-playing { --npbg-a: 0.6; }
+#now-playing[data-np-bg-veil="light"] { --npbg-a: 0.42; }
+#now-playing[data-np-bg-veil="strong"] { --npbg-a: 0.78; }
+:root[data-theme="dark"] #now-playing { --npbg-a: 0.52; }
+:root[data-theme="dark"] #now-playing[data-np-bg-veil="light"] { --npbg-a: 0.36; }
+:root[data-theme="dark"] #now-playing[data-np-bg-veil="strong"] { --npbg-a: 0.7; }
+#now-playing.np-has-bg .np-title, #now-playing.np-has-bg .np-sub, #now-playing.np-has-bg .np-label, #now-playing.np-has-bg .np-lyrics,
+#now-playing.np-has-bg .np-time, #now-playing.np-has-bg .np-flow-caption {
+  text-shadow: 0 0 6px var(--bg), 0 1px 2px var(--bg); }
+#now-playing.np-has-bg .np-btn:not(.np-play) { background: color-mix(in srgb, var(--surface) 55%, transparent); }
+#now-playing.np-has-bg .np-btn:not(.np-play):hover { background: var(--primary-pale); }
+@media (prefers-reduced-motion: reduce) { .np-bg-art { transition: none; } }
+
+/* 背景の選択肢（tools の「再生画面の背景（tools）」と「背景の選択」ダイアログ。サムネイルを押すとすぐ変わる） */
+.npbg-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(72px, 100px)); justify-content: start; gap: 10px 8px; margin: 4px 0 10px; }
+.npbg-opt { position: relative; display: flex; flex-direction: column; align-items: stretch; gap: 4px; min-width: 0; padding: 4px; border: 1px solid var(--border2); border-radius: 12px;
+  background: var(--surface); color: var(--text-sub); font: inherit; font-size: 12px; cursor: pointer; }
+.npbg-opt:hover { border-color: var(--primary); }
+.npbg-opt.is-cur { border-color: var(--primary-mid); box-shadow: 0 0 0 2px var(--primary-mid); color: var(--ink); font-weight: 700; }
+.npbg-opt.is-cur::after { content: '✓'; position: absolute; top: 6px; right: 6px; width: 20px; height: 20px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+  background: var(--primary-mid); color: #fff; font-size: 12px; font-weight: 700; box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3); }
+.npbg-thumb { position: relative; display: block; width: 100%; aspect-ratio: 3 / 4; border-radius: 8px; overflow: hidden; background: var(--surface-2); }
+.npbg-thumb .np-bg-svg { display: block; width: 100%; height: 100%; }
+.npbg-thumb-none, .npbg-thumb-add { display: flex; align-items: center; justify-content: center; background: var(--bg); color: var(--text-faint, var(--text-sub)); border: 1px dashed var(--border2); box-sizing: border-box; }
+.npbg-thumb-auto { display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; gap: 1px; background: var(--border2); }
+.npbg-thumb-auto > span:not(.npbg-auto-mark) { position: relative; overflow: hidden; min-width: 0; min-height: 0; }
+.npbg-thumb-auto .np-bg-svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+.npbg-auto-mark { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); padding: 1px 6px; border-radius: 999px; background: rgba(0, 0, 0, 0.55); color: #fff;
+  font-size: 10px; font-weight: 700; letter-spacing: 0.06em; }
+.npbg-thumb-img { background-position: center; background-size: cover; }
+.npbg-name { display: block; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.3; }
+.npbg-row { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 8px; margin: 8px 0; }
+.npbg-row-label { flex: none; min-width: 6em; font-size: 12.5px; font-weight: 700; color: var(--text-sub); }
+.npbg-seg { flex: 0 1 260px; }
+.npbg-img-info { font-size: 12px; color: var(--text-faint, var(--text-sub)); }
+.npbg-note { margin: 6px 0 0; font-size: 12px; line-height: 1.6; color: var(--text-sub); }
+#dialog-body .npbg-grid { grid-template-columns: repeat(auto-fill, minmax(66px, 1fr)); }
+@media (max-width: 760px) { .npbg-grid { grid-template-columns: repeat(auto-fill, minmax(72px, 1fr)); } }
+
+/* 描き方メニューの先頭の「背景」の行（押すと「背景の選択」ダイアログ） */
+.npbg-mrow { display: flex; align-items: center; gap: 8px; margin: 0 2px 10px; padding-bottom: 8px; border-bottom: 1px solid var(--border2); }
+.npbg-mrow-label { flex: none; width: 4.6em; font-size: 12px; color: var(--text-sub); font-weight: 700; }
+.npbg-mrow-btn { flex: 1; min-width: 0; display: flex; align-items: center; gap: 8px; min-height: 40px; padding: 3px 10px 3px 3px; border: 1px solid var(--border2); border-radius: 999px;
+  background: var(--surface-2); color: var(--text); font: inherit; font-size: 12.5px; cursor: pointer; text-align: left; }
+.npbg-mrow-btn:hover, .npbg-mrow-btn:focus-visible { border-color: var(--primary); outline: none; }
+.npbg-mrow-thumb { position: relative; flex: none; width: 34px; height: 34px; border-radius: 50%; overflow: hidden; display: inline-flex; align-items: center; justify-content: center;
+  background: var(--bg); color: var(--text-sub); }
+.npbg-mrow-thumb .np-bg-svg, .npbg-mrow-thumb .npbg-thumb-img { position: absolute; inset: 0; width: 100%; height: 100%; }
+.npbg-mrow-thumb svg:not(.np-bg-svg) { width: 20px; height: 20px; }
+.npbg-mrow-name { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.npbg-mrow-go { flex: none; font-size: 12px; color: var(--ink-mid); font-weight: 700; }
+
+/* ---------- スマホ版 v8.14.1：再生画面の背景の写真（81-np-bg.js）----------
+   ・写真は .np-bg-img（background-size: cover）。サムネイルは .npbg-thumb-photo（その場で縮めた画像。読むまでは面の色）
+   ・撮影者の表示 #np-bg-credit：再生画面の右下の小さな文字（押すと元の写真のページ）。写真を出している間（.np-has-photo）は本文の下を少しあける */
+.npbg-thumb-photo { background-color: var(--surface-2); background-position: center; background-size: cover; background-repeat: no-repeat; }
+.npbg-thumb-auto > .npbg-auto-cell { display: block; }
+.npbg-mrow-thumb .npbg-thumb-photo { display: block; }
+.np-bg-credit { position: absolute; right: calc(8px + env(safe-area-inset-right, 0px)); bottom: calc(3px + env(safe-area-inset-bottom, 0px)); z-index: 2;
+  max-width: 70%; padding: 1px 6px; border-radius: 6px; font-size: 10px; line-height: 1.4; color: var(--text-sub); text-decoration: none;
+  background: color-mix(in srgb, var(--bg) 55%, transparent); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; opacity: 0.85; }
+.np-bg-credit:hover { text-decoration: underline; opacity: 1; }
+.np-bg-credit[hidden] { display: none; }
+#now-playing.np-has-photo .np-main { padding-bottom: calc(18px + env(safe-area-inset-bottom, 0px)); }
+/* 写真の撮影者・ライセンス（tools） */
+.npbg-credits { margin-top: 12px; padding: 8px 10px; border: 1px solid var(--border2); border-radius: 10px; background: var(--surface-2); }
+.npbg-credits summary { cursor: pointer; font-size: 13px; font-weight: 700; color: var(--text); }
+.npbg-credit-list { margin: 6px 0 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 6px; }
+.npbg-credit-list li { display: flex; flex-direction: column; gap: 1px; font-size: 12px; line-height: 1.45; overflow-wrap: anywhere; }
+.npbg-credit-name { font-weight: 700; color: var(--ink); }
+.npbg-credit-list a { color: var(--ink-mid); }
+.npbg-credit-sub { color: var(--text-sub); }
+
+/* ---------- スマホ版 v8.14.2：背景ボタン（#np-bg-btn。81-np-bg.js）----------
+   ・再生画面の上の列、描き方ボタン（ⓘ）の右の丸いボタン（風景のアイコン）。押すと「背景の選択」ダイアログ。大きさ・形は描き方ボタンと同じ（.np-viz-btn）
+   ・ボタンが1つ増えたので、470px 以下ではプレイヤー表示ボタンをアイコンだけにする（名前は title。400px 以下は今までどおり歌詞・曲リストもアイコンだけ）。
+     丸いボタン（描き方・背景・閉じる）は縮めない */
+.np-bg-btn svg { width: 20px; height: 20px; }
+.np-top .np-viz-btn, .np-top .np-close { flex: none; }
+@media (max-width: 470px) {
+  .np-top .np-vis-toggle { font-size: 0; gap: 0; }
+  .np-top .np-vis-toggle svg { width: 16px; height: 16px; }
+}
+
+/* ---------- スマホ版 v8.15.0：背景のジャケット・表示の調整（81-np-bg.js）----------
+   ・再生画面の背景は、どれも .np-bg-art ＞ .np-bg-pic（background-image）。#now-playing の変数で大きさ・位置・ぼかしを付ける
+     --npbg-x / --npbg-y（位置）、--npbg-s（拡大率）、--npbg-blur（ぼかし）、data-np-bg-fit（cover／contain／scale）
+   ・ぼかしのときは縁が透けないよう、ぼかしの2倍だけ外へ広げる */
+.np-bg-pic { position: absolute; inset: calc(var(--npbg-blur, 0px) * -2); background-repeat: no-repeat; background-size: cover;
+  background-position: var(--npbg-x, 50%) var(--npbg-y, 50%); transform-origin: var(--npbg-x, 50%) var(--npbg-y, 50%); filter: blur(var(--npbg-blur, 0px)); }
+#now-playing[data-np-bg-fit="contain"] .np-bg-pic { background-size: contain; }
+#now-playing[data-np-bg-fit="scale"] .np-bg-pic { transform: scale(var(--npbg-s, 1)); }
+/* ジャケット・代表ジャケットのサムネイル */
+.npbg-thumb-jk { display: flex; align-items: center; justify-content: center; background-color: var(--surface-2); background-position: center; background-size: cover; color: var(--text-sub); }
+.npbg-thumb-jk.has-img { color: transparent; }
+/* 表示の調整 */
+.npbg-look { margin: 10px 0 6px; padding: 8px 10px 4px; border: 1px solid var(--border2); border-radius: 10px; background: var(--surface-2); }
+.npbg-look-title { display: flex; align-items: center; gap: 4px; font-size: 13px; font-weight: 700; color: var(--text); }
+.npbg-look-sub { font-size: 11.5px; font-weight: 400; color: var(--text-sub); }
+.npbg-look-reset { margin-left: auto; min-height: 32px; padding: 2px 12px; border: 1px solid var(--border2); border-radius: 999px; background: var(--surface); color: var(--text-sub); font: inherit; font-size: 12px; cursor: pointer; }
+.npbg-look .npbg-seg { flex: 1 1 240px; }
+.npbg-look .np-viz-seg-btn { min-height: 36px; }
+.npbg-range { display: flex; align-items: center; gap: 8px; margin: 6px 0; font-size: 12.5px; }
+.npbg-range-name { flex: none; min-width: 3.4em; font-weight: 700; color: var(--text-sub); }
+.npbg-range input[type="range"] { flex: 1; min-width: 0; height: 32px; accent-color: var(--primary-mid); }
+.npbg-range-val { flex: none; min-width: 3.4em; text-align: right; font-variant-numeric: tabular-nums; color: var(--text); }
+.npbg-pos-row { align-items: flex-start; }
+.npbg-pos9 { flex: none; display: grid; grid-template-columns: repeat(3, 32px); grid-template-rows: repeat(3, 32px); gap: 3px; padding: 3px; border-radius: 8px; background: var(--surface); border: 1px solid var(--border2); }
+.npbg-pos-btn { display: flex; align-items: center; justify-content: center; padding: 0; border: none; border-radius: 6px; background: transparent; cursor: pointer; }
+.npbg-pos-btn span { width: 10px; height: 10px; border-radius: 50%; background: var(--border2); }
+.npbg-pos-btn:hover span { background: var(--primary); }
+.npbg-pos-btn.is-cur { background: var(--primary-pale); }
+.npbg-pos-btn.is-cur span { width: 14px; height: 14px; background: var(--primary-mid); }
+.npbg-pos-sliders { flex: 1 1 160px; min-width: 0; }
+@media (max-width: 760px) { .npbg-pos9 { grid-template-columns: repeat(3, 40px); grid-template-rows: repeat(3, 40px); } }
