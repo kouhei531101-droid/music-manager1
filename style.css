@@ -3492,3 +3492,16 @@ body.alb-fab-on #main { padding-bottom: calc(var(--player-h) + var(--lyr-bottom)
 .ani-word-x svg { width: 14px; height: 14px; }
 .ani-word-add { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0; }
 .ani-word-add .form-input { flex: 1 1 160px; min-width: 0; }
+
+/* ---------- スマホ版 v8.22.0：流れる表示（87-marquee.js）----------
+   ・入りきらない曲名・アーティストとアルバムの行・再生バーの曲名だけ .mq-on。中身（.mq-inner）を transform で左へ流す
+   ・流している間は左ぞろえ・「…」なし。両端を少しぼかす。曲名を押して止めているとき（.mq-paused）はぼかしを右端だけに */
+.mq-track, .mq-inner { display: inline; }
+.mq-on { text-overflow: clip !important; text-align: left !important;
+  -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 12px, #000 calc(100% - 18px), transparent 100%);
+  mask-image: linear-gradient(90deg, transparent 0, #000 12px, #000 calc(100% - 18px), transparent 100%); }
+.mq-on > .mq-track { display: inline-block; white-space: nowrap; padding-left: 12px; will-change: transform; }
+.mq-on > .mq-track > .mq-inner, .mq-on > .mq-track > .mq-dup { display: inline-block; white-space: nowrap; }
+.mq-gap { display: inline-block; width: 2.5em; }   /* スマホ版 v8.22.1：文字の後ろのすき間（87-marquee.js の MQ_GAP_EM と同じ） */
+#np-title.mq-on { cursor: pointer; }
+@media (prefers-reduced-motion: reduce) { .mq-on > .mq-track { will-change: auto; } }
