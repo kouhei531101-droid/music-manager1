@@ -99,6 +99,15 @@ function _cmpAlbumField(f, a, b) {
   if (x.empty !== y.empty) return x.empty ? 1 : -1;     // 空欄は向きに関係なく最後
   return compareAlbumText(x, y) * dir;
 }
+// album の並べ替えの設定どおりに並べた新しい配列を返す（スマホ版 v8.23.0。album・artist・Western music・Anime Songs で共通）
+//   自分で並べる：標準の並びにしてからカスタム順（db.albumOrder）、項目で並べる：albumComparatorFor。prepared：_prepareAlbumSortKeys 済み
+function sortAlbumsBySetting(list, prepared) {
+  var arr = (list || []).slice();
+  if (!prepared) _prepareAlbumSortKeys(arr);
+  var spec = albumSortSpec();
+  if (spec.mode === 'custom') return _applyCustomOrder(arr.sort(compareAlbumsStandard));
+  return arr.sort(albumComparatorFor(spec.fields));
+}
 function albumComparatorFor(fields) {
   return function (a, b) {
     for (var i = 0; i < fields.length; i++) { var r = _cmpAlbumField(fields[i], a, b); if (r) return r; }

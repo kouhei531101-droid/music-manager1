@@ -238,9 +238,7 @@ function getWesternAlbums() {
     var h = (a.name + ' ' + a.artist + ' ' + a.artists.join(' ') + (a.sortKey ? ' ' + a.sortKey : '') + (a.tagName ? ' ' + a.tagName : '') + (a.genre ? ' ' + a.genre : '')).toLowerCase();
     return terms.every(function (w) { return h.indexOf(w) >= 0; });
   });
-  var spec = albumSortSpec();
-  if (spec.mode === 'custom') list = _applyCustomOrder(list.slice().sort(compareAlbumsStandard));   // 自分で並べた順（album のカスタム順）
-  else list = list.slice().sort(albumComparatorFor(spec.fields));
+  list = sortAlbumsBySetting(list, true);   // album と同じ並び（カスタム順も。スマホ版 v8.23.0 から共通の関数）
   return { all: all, list: list };
 }
 function _westernCardHtml(a, i) {

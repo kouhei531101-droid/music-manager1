@@ -42,22 +42,26 @@ function buildArtists() {
   var albums = buildAlbums();
   _prepareAlbumSortKeys(albums);
   albums.sort(compareAlbumsStandard);
+  // スマホ版 v8.23.0：アーティストの画面のアルバムは、album の並べ替えの設定（カスタム順も）と同じ順に並べる。
+  //   代表ジャケットの初期（選んでいないとき）は今まで通り標準の並びの最初のアルバム（並べ替えを変えても代表ジャケットは変わらない）
+  var ordered = sortAlbumsBySetting(albums, true);
   var list = [];
   map.forEach(function (ar) {
     // 自分のアルバム（半分より多くの曲がこのアーティスト）を先に、コンピレーションなど曲ごとにアーティストが違うアルバムは「参加アルバム」として後に（v2.9）
-    var own = [], guest = [];
-    albums.forEach(function (a) {
-      if (!ar.albumKeys.has(a.key)) return;
-      if (!a.multiArtist) { own.push(a); return; }
+    var isOwn = function (a) {
+      if (!a.multiArtist) return true;
       var mine = a.tracks.filter(function (t) { return artistNameOf(t) === ar.name; }).length;
-      (mine * 2 > a.tracks.length ? own : guest).push(a);
-    });
+      return mine * 2 > a.tracks.length;
+    };
+    var own = [], guest = [], stdOwn = null, stdAny = null;
+    albums.forEach(function (a) { if (!ar.albumKeys.has(a.key)) return; if (!stdAny) stdAny = a; if (!stdOwn && isOwn(a)) stdOwn = a; });
+    ordered.forEach(function (a) { if (ar.albumKeys.has(a.key)) (isOwn(a) ? own : guest).push(a); });
     ar.albums = own.concat(guest);
     ar.ownCount = own.length;
     var sel = db.artistCovers[ar.name];
     ar.custom = !!(sel && sel.custom);
     var chosen = sel && sel.album ? ar.albums.filter(function (a) { return a.key === sel.album; })[0] : null;
-    ar.coverAlbum = chosen || ar.albums[0] || null;
+    ar.coverAlbum = chosen || stdOwn || stdAny || null;   // 初期は標準の並びの最初（自分のアルバム → 参加アルバム）
     ar.cover = ar.coverAlbum ? ar.coverAlbum.cover : ar.tracks[0];
     ar._sk = albumTextKey(ar.name);
     list.push(ar);

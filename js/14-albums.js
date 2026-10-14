@@ -295,10 +295,8 @@ function getAlbumList(albums) {
       });
     });
   }
-  if (mode === 'custom') return _applyCustomOrder(arr.sort(compareAlbumsStandard));
-  // 項目で並べる（v4.0）：チェックした項目を優先の順に。全部同じなら標準の並び
-  arr.sort(albumComparatorFor(albumSortSpec().fields));
-  return arr;
+  // 自分で並べる（カスタム順）／項目で並べる（v4.0）：29-album-sort.js の sortAlbumsBySetting（artist・Western music・Anime Songs と共通。スマホ版 v8.23.0）
+  return sortAlbumsBySetting(arr, true);
 }
 
 /* ---------- 描画 ---------- */
