@@ -186,6 +186,9 @@ async function onRestoreFileChosen(input) {
       '<tr><td>Seasons Song（手で決めた季節）</td><td>' + Object.keys(db.seasonOverride || {}).length + '曲' + (db.seasonWords ? '・言葉を変更' : '') + '</td><td>' + Object.keys(next.seasonOverride || {}).length + '曲' + (next.seasonWords ? '・言葉を変更' : '') + '</td></tr>' +
       '<tr><td>Seasons Song（非表示にした曲）</td><td>' + Object.keys(db.seasonHidden || {}).length + '曲</td><td>' + Object.keys(next.seasonHidden || {}).length + '曲</td></tr>' +   // v8.13.0
       '<tr><td>ソートキーの枠の代表ジャケット</td><td>' + Object.keys(db.skCovers || {}).length + '件</td><td>' + Object.keys(next.skCovers || {}).length + '件</td></tr>' +
+      '<tr><td>Anime Songs の設定</td><td>' + (Array.isArray(db.animeWords) ? '言葉 ' + db.animeWords.length + '個' : '言葉は初期') + '・指定 ' + Object.keys(db.animeOverride || {}).length + '件・曲の指定 ' + Object.keys(db.animeSongOverride || {}).length + '件</td><td>' + (Array.isArray(next.animeWords) ? '言葉 ' + next.animeWords.length + '個' : '言葉は初期') + '・指定 ' + Object.keys(next.animeOverride || {}).length + '件・曲の指定 ' + Object.keys(next.animeSongOverride || {}).length + '件</td></tr>' +   // スマホ版 v8.19.0
+      '<tr><td>Pin した曲</td><td>' + (db.pinnedSongs || []).length + '曲</td><td>' + (next.pinnedSongs || []).length + '曲</td></tr>' +   // スマホ版 v8.18.0
+      '<tr><td>予約（次に再生）</td><td>' + (db.upNext || []).length + '曲</td><td>' + (next.upNext || []).length + '曲</td></tr>' +   // スマホ版 v8.16.0
       '<tr><td>Pin したアーティスト</td><td>' + (db.pinnedArtists || []).length + '人</td><td>' + next.pinnedArtists.length + '人</td></tr>' +
       // アーティスト名の自動コピー（スマホ版 v8.12.5。79-artist-copy.js）：ソートキー／タグ の ON/OFF
       '<tr><td>アーティスト名の自動コピー</td><td>' + _artistCopyOnOffText(db.settings) + '</td><td>' + _artistCopyOnOffText(next.settings) + '</td></tr>' +

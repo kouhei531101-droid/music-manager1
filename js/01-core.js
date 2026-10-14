@@ -52,6 +52,9 @@ function freshDB() {
     albumTagOf: {},   // アルバムに付けたタグ { アルバムの目印: タグの id }（v4.4）
     westernMethod: 'sortkey', // 洋楽の自動の判定の方法（'sortkey' ソートキーで判定〔v6.5 の初期。v6.4 までの 'tags' タグで判定もこれとして読む〕／'chars' 文字の種類／'both' 両方）
     westernWords: null,    // 判定に使う言葉（null＝初期：洋楽・Western music。v5.2）
+    animeWords: null,      // Anime Songs の判定に使う言葉（null＝初期。スマホ版 v8.19.0。85-anime-songs.js。PC版と同じ名前）
+    animeOverride: {},     // Anime Songs のアルバムごとの指定 { アルバムの目印: true（入れる）／false（外す） }（同上）
+    animeSongOverride: {}, // Anime Songs の曲ごとの指定 { 曲の相対パス: 'in'（入れる）／'out'（外す） }（スマホ版 v8.20.0。PC版と同じ）
     westernGenres: null,   // 邦楽のジャンル（null＝初期の一覧。36-western.js。v5.0）
     westernAlbums: {},     // アルバムごとの洋楽の指定 { アルバムの目印: true／false }
     westernArtists: {},    // アーティストごとの洋楽の指定 { アーティスト名: true／false }
@@ -60,6 +63,8 @@ function freshDB() {
     seasonWords: null, // Seasons Song の判定に使う言葉 { spring:[…], summer, fall, winter }（null＝初期の一覧。46-seasons.js。v7.4）
     bpmManual: {},     // 手で入れた BPM { 曲の相対パス: BPM }（49-upbeat.js。v7.8）。基準の BPM は settings.upbeatMin（初期 140）
     seasonOverride: {},// 手で決めた季節 { 曲の相対パス: 'spring'|'summer'|'fall'|'winter'|'none' }（v7.4）
+    pinnedSongs: [],   // Pin した曲：曲の相対パスの配列（並び＝songs の Pin の区切りの順。PC版と同じ形。スマホ版 v8.18.0。84-pinned-songs.js）
+    upNext: [],        // 次に再生（予約）：[{ path: 曲の相対パス, kind: 'next'|'last' }]（上から順に流す。PC版と同じ形。スマホ版 v8.16.0。82-up-next.js）
     seasonHidden: {},  // Seasons Song で非表示にした曲 { 曲の相対パス: 非表示にした日時（ISO） }（全季節共通。Seasons Song の画面だけに効く。v8.13.0）
     skCovers: {},     // ソートキーの枠の代表ジャケット { ソートキーの正規化した文字: アルバムの目印 }（42-sortkey-cover.js。v6.0）
     albumSortKeys: {},// アルバムのソートキー { アルバムの目印: 'ソートキー' }（30-album-sortkey.js。v4.3）
@@ -173,6 +178,12 @@ function normalizeDB(data) {
   out.westernMethod = data.westernMethod === 'chars' || data.westernMethod === 'both' ? data.westernMethod : 'sortkey';   // v6.5：'tags'（v6.4 まで）→ 'sortkey'
   out.westernWords = Array.isArray(data.westernWords) ? data.westernWords.filter(function (g) { return typeof g === 'string' && g.trim(); }).map(function (g) { return g.trim().slice(0, 40); }) : null;
   if (out.westernWords && !out.westernWords.length) out.westernWords = null;
+  // Anime Songs（スマホ版 v8.19.0 で追加。古いデータ・バックアップには無いので、初期の言葉・指定なし）。言葉を全部外したときは空の配列のまま
+  out.animeWords = Array.isArray(data.animeWords) ? data.animeWords.filter(function (g) { return typeof g === 'string' && g.trim(); }).map(function (g) { return g.trim().slice(0, 40); }) : null;
+  out.animeOverride = {};
+  if (data.animeOverride && typeof data.animeOverride === 'object' && !Array.isArray(data.animeOverride)) Object.keys(data.animeOverride).forEach(function (k) { if (k && typeof data.animeOverride[k] === 'boolean') out.animeOverride[k] = data.animeOverride[k]; });
+  out.animeSongOverride = {};   // 曲ごとの指定（v8.20.0。古いデータは空）
+  if (data.animeSongOverride && typeof data.animeSongOverride === 'object' && !Array.isArray(data.animeSongOverride)) Object.keys(data.animeSongOverride).forEach(function (k) { var v = data.animeSongOverride[k]; if (k && (v === 'in' || v === 'out')) out.animeSongOverride[k] = v; });
   out.westernGenres = Array.isArray(data.westernGenres) ? data.westernGenres.filter(function (g) { return typeof g === 'string' && g.trim(); }).map(function (g) { return g.trim().slice(0, 40); }) : null;
   ['westernAlbums', 'westernArtists'].forEach(function (k) {
     out[k] = {};
@@ -204,6 +215,17 @@ function normalizeDB(data) {
   if (data.bpmManual && typeof data.bpmManual === 'object') Object.keys(data.bpmManual).forEach(function (k) { var v = +data.bpmManual[k]; if (k && v >= 30 && v <= 300) out.bpmManual[k] = Math.round(v * 10) / 10; });
   out.seasonOverride = {};
   if (data.seasonOverride && typeof data.seasonOverride === 'object') Object.keys(data.seasonOverride).forEach(function (k) { var v = data.seasonOverride[k]; if (k && ['spring', 'summer', 'fall', 'winter', 'none'].indexOf(v) >= 0) out.seasonOverride[k] = v; });
+  // Pin した曲（スマホ版 v8.18.0 で追加。古いデータ・バックアップには無いので空。同じ曲は1つだけ）
+  out.pinnedSongs = Array.isArray(data.pinnedSongs) ? (function () {
+    var seen = new Set();
+    return data.pinnedSongs.filter(function (p) { if (typeof p !== 'string' || !p || seen.has(p)) return false; seen.add(p); return true; });
+  })() : [];
+  // 次に再生（予約）（スマホ版 v8.16.0 で追加。古いデータ・バックアップには無いので空）
+  //   形は [{ path, kind:'next'|'last' }]。曲の相対パスの文字だけの形も読む（kind は 'last'）
+  out.upNext = Array.isArray(data.upNext) ? data.upNext.map(function (x) {
+    if (typeof x === 'string') return x ? { path: x, kind: 'last' } : null;
+    return x && typeof x.path === 'string' && x.path ? { path: x.path, kind: x.kind === 'next' ? 'next' : 'last' } : null;
+  }).filter(Boolean) : [];
   // Seasons Song で非表示にした曲（v8.13.0 で追加。古いデータ・バックアップには無いので空＝非表示なし）
   out.seasonHidden = {};
   if (data.seasonHidden && typeof data.seasonHidden === 'object' && !Array.isArray(data.seasonHidden)) Object.keys(data.seasonHidden).forEach(function (k) { var v = data.seasonHidden[k]; if (k) out.seasonHidden[k] = typeof v === 'string' ? v : ''; });

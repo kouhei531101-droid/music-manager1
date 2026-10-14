@@ -97,7 +97,7 @@ function resetLibraryScroll() {
 // 曲リストの1行
 function _libRowHtml(t, i) {
   var sel = libView.selected.has(t.path);
-  return '<tr class="lib-row' + (t.path === player.currentPath ? ' is-playing' : '') + (sel ? ' is-selected' : '') + '" data-i="' + i + '">' +
+  return '<tr class="lib-row' + (t.path === player.currentPath ? ' is-playing' : '') + (sel ? ' is-selected' : '') + '" data-i="' + i + '" data-path="' + escapeHtml(t.path) + '">' +
     '<td class="col-check"><input type="checkbox" data-act="check" data-i="' + i + '"' + (sel ? ' checked' : '') + '></td>' +
     '<td class="col-play"><button class="btn-icon btn-play-row" data-act="play" data-i="' + i + '" title="この曲から再生">' + ICONS.play + '</button></td>' +
     '<td class="col-art">' + artThumbHtml(t) + '</td>' +

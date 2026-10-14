@@ -199,6 +199,7 @@ async function openAlbumTagEditor(a) {
       '<div class="form-group te-tag-group"><label>タグ（アプリ内だけ。1つ）</label>' + albumTagChoiceHtml((albumTagOf(a.key) || {}).id || '', 'te-tag') +
         '<span class="ui-label-tag ui-label-tag-onlight" style="top:0;right:0" onclick="copyUiLabel(\'タグ欄\', event)" title="クリックで「タグ欄」をコピー">□</span></div>' +
       (typeof westernFieldHtml === 'function' ? westernFieldHtml(a) : '') +   // 洋楽の指定欄（v5.0）
+      (typeof animeFieldHtml === 'function' ? animeFieldHtml(a) : '') +   // Anime Songs の指定欄（スマホ版 v8.19.0）
       _genreDatalistHtml() +
     '</div>' +
     // 曲名の一覧
@@ -246,8 +247,9 @@ async function openAlbumTagEditor(a) {
       var skNew = b.querySelector('#te-sortkey').value.replace(/\s+/g, ' ').trim(), skChanged = skNew !== getAlbumSortKey(a.key);
       var tgEl = b.querySelector('input[name="te-tag"]:checked'), tgNew = tgEl ? tgEl.value : '', tgChanged = tgNew !== ((albumTagOf(a.key) || {}).id || '');
       var wNew = typeof readWesternField === 'function' ? readWesternField(b) : null, wCur = typeof (db.westernAlbums || {})[a.key] === 'boolean' ? db.westernAlbums[a.key] : null, wChanged = wNew !== wCur;
-      if (!plan.length && !skChanged && !tgChanged && !wChanged) { b.querySelector('#te-error').textContent = '変更がありません。'; return false; }
-      result = { plan: plan, write: !!(b.querySelector('#te-write') || {}).checked, sortKey: skChanged ? skNew : null, tag: tgChanged ? tgNew : null, western: wChanged ? { v: wNew } : null };
+      var aNew = typeof readAnimeField === 'function' ? readAnimeField(b) : undefined, aCur = typeof (db.animeOverride || {})[a.key] === 'boolean' ? db.animeOverride[a.key] : null, aChanged = aNew !== undefined && aNew !== aCur;   // Anime Songs（スマホ版 v8.19.0）
+      if (!plan.length && !skChanged && !tgChanged && !wChanged && !aChanged) { b.querySelector('#te-error').textContent = '変更がありません。'; return false; }
+      result = { plan: plan, write: !!(b.querySelector('#te-write') || {}).checked, sortKey: skChanged ? skNew : null, tag: tgChanged ? tgNew : null, western: wChanged ? { v: wNew } : null, anime: aChanged ? { v: aNew } : null };
       return true;
     }
   });
@@ -265,7 +267,8 @@ async function openAlbumTagEditor(a) {
   if (result.sortKey !== null) setAlbumSortKey(a.key, result.sortKey);
   if (result.tag !== null) setAlbumTag(a.key, result.tag);   // タグ（v4.4）
   if (result.western) setWesternAlbum(a.key, result.western.v);   // 洋楽の指定（v5.0）
-  if (!result.plan.length) { renderAll(); showToast('アルバムの設定（ソートキー・タグ・洋楽の指定）を変更しました。'); return; }
+  if (result.anime && typeof setAnimeAlbum === 'function') setAnimeAlbum(a.key, result.anime.v);   // Anime Songs の指定（スマホ版 v8.19.0）
+  if (!result.plan.length) { renderAll(); showToast('アルバムの設定（ソートキー・タグ・洋楽の指定・Anime Songs の指定）を変更しました。'); return; }
   if (nW) { ui.tagWriteToFile = result.write; saveUi(); }
   await runTagEdit(result.plan, result.write);
 }

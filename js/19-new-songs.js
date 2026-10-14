@@ -29,7 +29,7 @@ function songTableHtml(list, opts) {
     (opts.extra ? '<th class="col-extra">' + opts.extra.head + '</th>' : '') +
     '<th class="col-dur">length</th><th class="col-add"></th><th class="col-edit"></th></tr></thead><tbody>';   // スマホ版 v8.9.2：見出しを title／length に（アルバムの曲リストとそろえる）
   list.forEach(function (t, i) {
-    h += '<tr class="lib-row song-row' + (t.path === player.currentPath ? ' is-playing' : '') + '" data-i="' + i + '">' +
+    h += '<tr class="lib-row song-row' + (t.path === player.currentPath ? ' is-playing' : '') + '" data-i="' + i + '" data-path="' + escapeHtml(t.path) + '">' +
       '<td class="col-play"><button class="btn-icon btn-play-row" data-act="play" data-i="' + i + '" title="この曲から再生">' + ICONS.play + '</button></td>' +
       '<td class="col-art">' + artThumbHtml(t) + '</td>' +
       '<td class="col-title"><div class="lib-title' + (t.titleGuessed ? ' guessed' : '') + '" title="' + escapeHtml(t.path) + '">' + escapeHtml(t.title) + '</div>' +

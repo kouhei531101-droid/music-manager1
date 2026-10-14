@@ -572,7 +572,7 @@ function renderAlbumDetail(a, body) {
     var showArtist = t.artist && t.artist !== a.artist;
     // new songs のアルバム表示から開いたときは、その期間に追加した曲に「NEW」の印（v4.2）
     var isNew = albView.ret && albView.ret.page === 'newsongs' && t.firstSeen && t.firstSeen >= albView.ret.newSince;
-    h += '<tr class="lib-row album-row' + (t.path === player.currentPath ? ' is-playing' : '') + '" data-i="' + i + '" title="押すと、ここからアルバムの曲順で再生">' +
+    h += '<tr class="lib-row album-row' + (t.path === player.currentPath ? ' is-playing' : '') + '" data-i="' + i + '" data-path="' + escapeHtml(t.path) + '" title="押すと、ここからアルバムの曲順で再生">' +
       '<td class="col-no">' + no + '</td>' +
       '<td class="col-play"><button class="btn-icon btn-play-row" data-act="play" data-i="' + i + '" title="この曲から再生">' + ICONS.play + '</button></td>' +
       '<td class="col-title"><div class="lib-title-row"><div class="lib-title' + (t.titleGuessed ? ' guessed' : '') + '">' + escapeHtml(t.title) + '</div>' +

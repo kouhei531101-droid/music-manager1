@@ -5,8 +5,10 @@
    実際の書き込み（控え・一時ファイル・置き換え）は 17-tag-edit.js。
 
    対応形式：
-   ・mp3 … ID3v2。今の版（2.2 / 2.3 / 2.4）のまま該当フレームだけ差し替える。タグが無ければ v2.3 を作る。
-           ID3v1（ファイル末尾）はそのまま残す。
+   ・mp3 … ID3v2。今の版（2.2 / 2.3）のまま該当フレームだけ差し替える。タグが無ければ v2.3 を作る。
+           スマホ版 v8.21.1：v2.4 のタグは v2.3 に直して書く（UTF-8 の文字を UTF-16〔BOM 付き〕に。TDRC→TYER。古い Android のメディアスキャナなどが
+           v2.4 の UTF-8 を読めず、日本語が「???」になるため）。日本語などを含む文字は v2.3 の UTF-16（BOM 付き・encoding 1）で書く。
+           末尾の ID3v1（Latin-1。日本語は「???」になりがち）は取り除く。ID3v2 に無い曲名・アーティスト・アルバムが ID3v1 にだけあれば、ID3v2 に写してから取り除く
    ・m4a（m4b・mp4）… moov > udta > meta > ilst の ©nam / ©ART / ©alb / aART。
            moov の大きさが変わり、moov が mdat より前にあるときは、直後の free 箱で吸収するか、
            stco / co64（音声データの位置の表）を同じだけずらす。分割形式（moof / mvex）は書かない。
@@ -23,7 +25,11 @@
    ========================================================= */
 
 var TAG_FIELDS = ['title', 'artist', 'album', 'albumArtist', 'genre', 'year'];   // genre・year は v3.2
-var TAG_FIELD_LABELS = { title: '曲名', artist: 'アーティスト', album: 'アルバム', albumArtist: 'アルバムアーティスト', genre: 'ジャンル', year: '発売年' };
+// スマホ版 v8.17.0：「ファイルに書き込む」（83-tag-file-write.js）で足した項目。曲情報の編集ダイアログの欄（TAG_FIELDS）には出さない
+//   track：トラック番号（「3」または「3/12」）、〜Sort：読み（ソート用）、lyrics：歌詞（時間なし）
+var TAG_FIELDS_EXTRA = ['track', 'titleSort', 'artistSort', 'albumSort', 'albumArtistSort', 'lyrics'];
+var TAG_FIELD_LABELS = { title: '曲名', artist: 'アーティスト', album: 'アルバム', albumArtist: 'アルバムアーティスト', genre: 'ジャンル', year: '発売年',
+  track: 'トラック番号', titleSort: '曲名の読み', artistSort: 'アーティストの読み', albumSort: 'アルバムの読み', albumArtistSort: 'アルバムアーティストの読み', lyrics: '歌詞' };
 // 同じ項目の枠が複数あるとき：先頭が書き込む枠、あとは同じ意味の枠（書くときに1つにまとめる）
 function _itemIds(map, alias, f) {
   var w = map[f], list = [w];
@@ -43,7 +49,7 @@ function _replaceItemsIds(list, ids, value, makeNew) {
 }
 var TAG_WRITE_KINDS = { mp3: 'mp3', m4a: 'mp4', m4b: 'mp4', mp4: 'mp4', flac: 'flac' };
 function tagWriteKind(ext) { return TAG_WRITE_KINDS[ext] || ''; }
-function _textFields(changes) { return TAG_FIELDS.filter(function (f) { return f in changes; }); }
+function _textFields(changes) { return TAG_FIELDS.concat(TAG_FIELDS_EXTRA).filter(function (f) { return f in changes; }); }
 
 function _tagErr(msg) { var e = new Error(msg); e.name = 'TagWriteError'; return e; }
 
@@ -76,9 +82,12 @@ async function sha256Hex(bytes) {
    mp3（ID3v2）
    ========================================================= */
 var _ID3_WRITE_IDS = {
-  2: { title: 'TT2', artist: 'TP1', album: 'TAL', albumArtist: 'TP2', genre: 'TCO', year: 'TYE' },
-  3: { title: 'TIT2', artist: 'TPE1', album: 'TALB', albumArtist: 'TPE2', genre: 'TCON', year: 'TYER' },
-  4: { title: 'TIT2', artist: 'TPE1', album: 'TALB', albumArtist: 'TPE2', genre: 'TCON', year: 'TDRC' }
+  2: { title: 'TT2', artist: 'TP1', album: 'TAL', albumArtist: 'TP2', genre: 'TCO', year: 'TYE',
+       track: 'TRK', titleSort: 'TST', artistSort: 'TSP', albumSort: 'TSA', albumArtistSort: 'TS2', lyrics: 'ULT' },
+  3: { title: 'TIT2', artist: 'TPE1', album: 'TALB', albumArtist: 'TPE2', genre: 'TCON', year: 'TYER',
+       track: 'TRCK', titleSort: 'TSOT', artistSort: 'TSOP', albumSort: 'TSOA', albumArtistSort: 'TSO2', lyrics: 'USLT' },
+  4: { title: 'TIT2', artist: 'TPE1', album: 'TALB', albumArtist: 'TPE2', genre: 'TCON', year: 'TDRC',
+       track: 'TRCK', titleSort: 'TSOT', artistSort: 'TSOP', albumSort: 'TSOA', albumArtistSort: 'TSO2', lyrics: 'USLT' }
 };
 var _ID3_ALIAS_IDS = { 2: {}, 3: { year: ['TDRC'] }, 4: { year: ['TYER'] } };   // 同じ意味の枠（v3.2）
 function _id3Ids(ver, f) { return _itemIds(_ID3_WRITE_IDS[ver], _ID3_ALIAS_IDS[ver], f); }
@@ -133,6 +142,14 @@ function _id3TextFrame(ver, id, text) {
   if (ver === 2) hdr = _cat([_asciiBytes(id), new Uint8Array([(n >> 16) & 255, (n >> 8) & 255, n & 255])]);
   else hdr = _cat([_asciiBytes(id), ver === 3 ? _be32(n) : _ss32(n), new Uint8Array([0, 0])]);
   return _cat([hdr, body]);
+}
+// 歌詞のフレーム USLT（v2.2 は ULT）：文字の形式・言語「jpn」・説明は空・本文（スマホ版 v8.17.0）
+function _id3UsltFrame(ver, text) {
+  var body;
+  if (ver === 4) body = _cat([new Uint8Array([3]), _asciiBytes('jpn'), new Uint8Array([0]), _utf8enc.encode(text)]);
+  else if (/^[\x20-\x7e\n]*$/.test(text)) body = _cat([new Uint8Array([0]), _asciiBytes('jpn'), new Uint8Array([0]), _asciiBytes(text)]);
+  else body = _cat([new Uint8Array([1]), _asciiBytes('jpn'), _utf16leBom(''), new Uint8Array([0, 0]), _utf16leBom(text)]);
+  return _cat([_id3FrameHeader(ver, ver === 2 ? 'ULT' : 'USLT', body.length), body]);
 }
 // フレームの頭（v2.2：名前3文字＋大きさ3バイト、v2.3：名前＋大きさ＋フラグ、v2.4：大きさは syncsafe）
 function _id3FrameHeader(ver, id, n) {
@@ -190,14 +207,69 @@ function _replaceItems(list, type, value, makeNew) {
   }
   return out;
 }
+// 末尾の ID3v1 の大きさ（TAG：128 バイト、その前の拡張 TAG+：227 バイト。無ければ 0）（スマホ版 v8.21.1）
+function _id3v1Len(b) {
+  if (b.length < 128 || _ascii(b, b.length - 128, 3) !== 'TAG') return 0;
+  if (b.length >= 355 && _ascii(b, b.length - 355, 4) === 'TAG+') return 355;
+  return 128;
+}
+// v2.3 の文字（英数字だけなら Latin-1〔0〕、ほかは UTF-16 BOM 付き〔1〕）。term：終わりの印を付ける
+function _id3Enc23(text, term) {
+  if (/^[\x20-\x7e\n]*$/.test(text)) return { enc: 0, bytes: term ? _cat([_asciiBytes(text), new Uint8Array([0])]) : _asciiBytes(text) };
+  return { enc: 1, bytes: term ? _cat([_utf16leBom(text), new Uint8Array([0, 0])]) : _utf16leBom(text) };
+}
+// v2.4 のフレームを v2.3 の形に直す（文字の形・見出し・TDRC→TYER）。直せないフレームがあれば TagWriteError（何も書かない）
+function _id3Frames24to23(frames) {
+  var out = [];
+  frames.forEach(function (fr) {
+    var id = fr.id, body = _id3FrameBody(4, fr.raw);
+    if (!body) throw _tagErr('圧縮・暗号化された ID3v2.4 のフレーム（' + id + '）があるため、v2.3 に直せません');
+    var enc = body[0], nb = null;
+    var str = function (b, e) { return _id3Str(b, e); };
+    var end = function (p, e) { var z = _id3StrEnd(body, p, e); return z < 0 ? body.length : z; };
+    var tl = function (e) { return e === 1 || e === 2 ? 2 : 1; };
+    if (id === 'TDRC') { var y = str(body.subarray(1), enc).slice(0, 4); if (!/^\d{4}$/.test(y)) return; id = 'TYER'; var ey = _id3Enc23(y); nb = _cat([new Uint8Array([ey.enc]), ey.bytes]); }
+    else if (id.charAt(0) === 'T' && id !== 'TXXX') {   // 文字のフレーム（v2.4 の区切り \0 は「/」に）
+      var tx = str(body.subarray(1), enc).replace(/\u0000/g, '/'); var et = _id3Enc23(tx); nb = _cat([new Uint8Array([et.enc]), et.bytes]);
+    } else if (id === 'TXXX' || id === 'USLT' || id === 'COMM' || id === 'APIC') {
+      if (enc === 0 || enc === 1) nb = body;   // v2.3 でも使える文字の形はそのまま
+      else {
+        var p0 = 1, pre = new Uint8Array(0);
+        if (id === 'USLT' || id === 'COMM') { pre = body.subarray(1, 4); p0 = 4; }
+        if (id === 'APIC') { var mz = body.indexOf(0, 1); if (mz < 0) throw _tagErr('ID3v2.4 の画像フレームが正しくありません'); pre = body.subarray(1, mz + 2); p0 = mz + 2; }   // MIME＋終わり＋画像の種類
+        var de = end(p0, enc), desc = str(body.subarray(p0, de), enc), rest = body.subarray(Math.min(body.length, de + tl(enc)));
+        var newEnc = /^[\x20-\x7e\n]*$/.test(desc) && (id === 'APIC' || /^[\x20-\x7e\n]*$/.test(str(rest, enc))) ? 0 : 1;
+        var ed = newEnc === 0 ? _cat([_asciiBytes(desc), new Uint8Array([0])]) : _cat([_utf16leBom(desc), new Uint8Array([0, 0])]);
+        var val = id === 'APIC' ? rest : (newEnc === 0 ? _asciiBytes(str(rest, enc)) : _utf16leBom(str(rest, enc)));
+        nb = _cat([new Uint8Array([newEnc]), pre, ed, val]);
+      }
+    } else if ((id === 'SYLT' || id === 'GEOB' || id === 'USER' || id === 'OWNE' || id === 'COMR' || id === 'WXXX' || id === 'IPLS') && enc > 1) {
+      throw _tagErr('ID3v2.4 の文字の形（UTF-8 など）の ' + id + ' フレームがあるため、v2.3 に直せません');
+    } else nb = body;   // そのほか（画像以外の中身・PRIV など）はそのまま
+    out.push({ id: id, raw: _cat([_id3FrameHeader(3, id, nb.length), nb]) });
+  });
+  return out;
+}
 function buildMp3Tagged(orig, changes) {
   var tag = id3ParseStrict(orig);
   var ver = tag ? tag.ver : 3;
-  var ids = _ID3_WRITE_IDS[ver];
   var frames = tag ? tag.frames.slice() : [];
-  TAG_FIELDS.forEach(function (f) {
-    if (!(f in changes)) return;
-    frames = _replaceItemsIds(frames, _id3Ids(ver, f), changes[f], function () { return _id3TextFrame(ver, ids[f], changes[f]); });
+  if (ver === 4) { frames = _id3Frames24to23(frames); ver = 3; }   // v2.4 → v2.3（スマホ版 v8.21.1）
+  var ids = _ID3_WRITE_IDS[ver];
+  // 末尾の ID3v1 を取り除く前に、ID3v2 に無い曲名・アーティスト・アルバムを写す（読み取りの結果が変わらないように）
+  var v1len = _id3v1Len(orig);
+  if (v1len && typeof _parseId3v1 === 'function') {
+    var v1 = { title: '', artist: '', album: '' };
+    _parseId3v1(orig.subarray(orig.length - 128), v1);
+    ['title', 'artist', 'album'].forEach(function (f) {
+      if (f in changes || !v1[f]) return;
+      var fids = _id3Ids(ver, f);
+      if (frames.some(function (fr) { return fids.indexOf(fr.id) >= 0; })) return;
+      frames.push({ id: ids[f], raw: _id3TextFrame(ver, ids[f], v1[f]) });
+    });
+  }
+  _textFields(changes).forEach(function (f) {
+    frames = _replaceItemsIds(frames, _id3Ids(ver, f), changes[f], function () { return f === 'lyrics' ? _id3UsltFrame(ver, changes[f]) : _id3TextFrame(ver, ids[f], changes[f]); });
   });
   if ('picture' in changes) {   // ジャケット画像
     var first = -1;
@@ -212,24 +284,29 @@ function buildMp3Tagged(orig, changes) {
   var oldSize = tag ? tag.size : 0;
   var newSize = body.length <= oldSize ? oldSize : body.length + 2048;   // 入るなら今の大きさのまま（余白で調整）
   if (newSize > 0x0FFFFFFF) throw _tagErr('タグが大きすぎます');
-  // 非同期化・拡張ヘッダー・フッターの印は外す（中身は付けずに書くため）。v2.2 は印なし
-  var flags = tag ? (ver === 2 ? 0 : (tag.flags & 0x20)) : 0;
-  var header = _cat([_asciiBytes('ID3'), new Uint8Array([ver, tag ? tag.rev : 0, flags]), _ss32(newSize)]);
-  return _cat([header, body, new Uint8Array(newSize - body.length), orig.subarray(tag ? tag.total : 0)]);
+  // 非同期化・拡張ヘッダー・フッターの印は外す（中身は付けずに書くため）。v2.2 は印なし。v2.4 から直したときは印なし
+  var flags = tag && tag.ver === ver ? (ver === 2 ? 0 : (tag.flags & 0x20)) : 0;
+  var header = _cat([_asciiBytes('ID3'), new Uint8Array([ver, tag && tag.ver === ver ? tag.rev : 0, flags]), _ss32(newSize)]);
+  return _cat([header, body, new Uint8Array(newSize - body.length), orig.subarray(tag ? tag.total : 0, orig.length - v1len)]);   // 末尾の ID3v1 は付けない
 }
 // 確かめる：タグの版が同じ・変えていないフレームがそのまま・変えたフレームが1つ（空なら0）・音声部分
 function _verifyMp3(oldB, newB, changes) {
   var o = id3ParseStrict(oldB), n = id3ParseStrict(newB);
   if (!n) throw _tagErr('書き込んだタグが読めません');
-  if (o && n.ver !== o.ver) throw _tagErr('タグの版が変わってしまいました');
+  var conv = !!(o && o.ver === 4 && n.ver === 3);   // v2.4 → v2.3 に直した（スマホ版 v8.21.1）
+  if (o && n.ver !== o.ver && !conv) throw _tagErr('タグの版が変わってしまいました');
+  if (_id3v1Len(newB)) throw _tagErr('ID3v1 が残っています');
   var tf = _textFields(changes);
   var edited = [];
-  tf.forEach(function (f) { edited = edited.concat(_id3Ids(n.ver, f)); });
-  var keepO = (o ? o.frames : []).filter(function (fr) { return edited.indexOf(fr.id) < 0 && !_id3PicAffected(o.ver, fr, changes); });
-  var keepN = n.frames.filter(function (fr) { return edited.indexOf(fr.id) < 0 && !_id3PicAffected(n.ver, fr, changes); });
+  tf.forEach(function (f) { edited = edited.concat(_id3Ids(n.ver, f)); if (conv) edited = edited.concat(_id3Ids(4, f)); });
+  if (_id3v1Len(oldB)) ['title', 'artist', 'album'].forEach(function (f) { edited = edited.concat(_id3Ids(n.ver, f)); });   // ID3v1 から写したかもしれない欄
+  // v2.4 から直したときは、発売年の枠（TDRC／TYER）は比べず、ほかのフレームの種類と並びが同じかだけを見る（中身は文字の形を直したので違う）
+  var skipY = function (id) { return conv && (id === 'TDRC' || id === 'TYER'); };
+  var keepO = (o ? o.frames : []).filter(function (fr) { return edited.indexOf(fr.id) < 0 && !skipY(fr.id) && !_id3PicAffected(o.ver, fr, changes); });
+  var keepN = n.frames.filter(function (fr) { return edited.indexOf(fr.id) < 0 && !skipY(fr.id) && !_id3PicAffected(n.ver, fr, changes); });
   if (keepO.length !== keepN.length) throw _tagErr('変えていないタグの数が変わってしまいました');
   for (var i = 0; i < keepO.length; i++) {
-    if (keepO[i].id !== keepN[i].id || !_bytesEqual(keepO[i].raw, keepN[i].raw)) throw _tagErr('変えていないタグ（' + keepO[i].id + '）が変わってしまいました');
+    if (keepO[i].id !== keepN[i].id || (!conv && !_bytesEqual(keepO[i].raw, keepN[i].raw))) throw _tagErr('変えていないタグ（' + keepO[i].id + '）が変わってしまいました');
   }
   tf.forEach(function (f) {
     var fids = _id3Ids(n.ver, f);
@@ -242,13 +319,14 @@ function _verifyMp3(oldB, newB, changes) {
       throw _tagErr('ジャケット画像が正しく書けていません');
     }
   }
-  return { oldParts: [oldB.subarray(o ? o.total : 0)], newParts: [newB.subarray(n.total)] };
+  return { oldParts: [oldB.subarray(o ? o.total : 0, oldB.length - _id3v1Len(oldB))], newParts: [newB.subarray(n.total)] };   // 音声データ（末尾の ID3v1 は除く）
 }
 
 /* =========================================================
    m4a（MP4）
    ========================================================= */
-var _MP4_WRITE_TYPES = { title: '©nam', artist: '©ART', album: '©alb', albumArtist: 'aART', genre: '©gen', year: '©day' };
+var _MP4_WRITE_TYPES = { title: '©nam', artist: '©ART', album: '©alb', albumArtist: 'aART', genre: '©gen', year: '©day',
+  track: 'trkn', titleSort: 'sonm', artistSort: 'soar', albumSort: 'soal', albumArtistSort: 'soaa', lyrics: '©lyr' };
 var _MP4_ALIAS_TYPES = { genre: ['gnre'] };   // 番号のジャンル（v3.2：©gen に置き換える）
 function _mp4Types(f) { return _itemIds(_MP4_WRITE_TYPES, _MP4_ALIAS_TYPES, f); }
 // iTunes 形式の hdlr（meta を新しく作るとき用）
@@ -270,7 +348,15 @@ function _mp4BoxesStrict(b, start, end, what) {
 }
 function _box(type, payload) { return _cat([_be32(8 + payload.length), _asciiBytes(type), payload]); }
 function _mp4TextItem(type, text) {
+  if (type === 'trkn') return _mp4TrknItem(text);
   return _box(type, _box('data', _cat([new Uint8Array([0, 0, 0, 1, 0, 0, 0, 0]), _utf8enc.encode(text)])));
+}
+// トラック番号 trkn（中身は数：0,0, 番号2バイト, 全体の数2バイト, 0,0。スマホ版 v8.17.0）
+function _mp4TrknItem(text) {
+  var m = String(text).match(/^\s*(\d+)\s*(?:\/\s*(\d+))?/);
+  if (!m) throw _tagErr('トラック番号は数で入れてください');
+  var n = Math.min(65535, +m[1]), total = m[2] ? Math.min(65535, +m[2]) : 0;
+  return _box('trkn', _box('data', new Uint8Array([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, n >> 8, n & 255, total >> 8, total & 255, 0, 0])));
 }
 var _MP4_CONTAINERS = ['trak', 'mdia', 'minf', 'stbl'];
 // stco / co64（音声データの位置の表）を探して、fn(値, 書き戻し) を呼ぶ
@@ -329,8 +415,7 @@ function buildMp4Tagged(orig, changes) {
   var s = _mp4Top(orig), m = _mp4Meta(orig, s.kids);
   var raw = function (x) { return orig.subarray(x.start, x.end); };
   var items = m.items.slice();
-  TAG_FIELDS.forEach(function (f) {
-    if (!(f in changes)) return;
+  _textFields(changes).forEach(function (f) {
     var type = _MP4_WRITE_TYPES[f];
     items = _replaceItemsIds(items, _mp4Types(f), changes[f], function () { return _mp4TextItem(type, changes[f]); });
   });
@@ -434,8 +519,10 @@ function _verifyMp4(oldB, newB, changes) {
 /* =========================================================
    flac（VORBIS_COMMENT）
    ========================================================= */
-var _VC_KEYS = { title: ['TITLE'], artist: ['ARTIST'], album: ['ALBUM'], albumArtist: ['ALBUMARTIST', 'ALBUM ARTIST', 'ALBUM_ARTIST'], genre: ['GENRE'], year: ['DATE', 'YEAR'] };
-var _VC_WRITE_KEY = { title: 'TITLE', artist: 'ARTIST', album: 'ALBUM', albumArtist: 'ALBUMARTIST', genre: 'GENRE', year: 'DATE' };
+var _VC_KEYS = { title: ['TITLE'], artist: ['ARTIST'], album: ['ALBUM'], albumArtist: ['ALBUMARTIST', 'ALBUM ARTIST', 'ALBUM_ARTIST'], genre: ['GENRE'], year: ['DATE', 'YEAR'],
+  track: ['TRACKNUMBER', 'TRACK'], titleSort: ['TITLESORT'], artistSort: ['ARTISTSORT'], albumSort: ['ALBUMSORT'], albumArtistSort: ['ALBUMARTISTSORT'], lyrics: ['LYRICS', 'UNSYNCEDLYRICS'] };
+var _VC_WRITE_KEY = { title: 'TITLE', artist: 'ARTIST', album: 'ALBUM', albumArtist: 'ALBUMARTIST', genre: 'GENRE', year: 'DATE',
+  track: 'TRACKNUMBER', titleSort: 'TITLESORT', artistSort: 'ARTISTSORT', albumSort: 'ALBUMSORT', albumArtistSort: 'ALBUMARTISTSORT', lyrics: 'LYRICS' };
 function _flacParseStrict(b) {
   var p = 0;
   if (_ascii(b, 0, 3) === 'ID3') p = 10 + _syncsafe(b, 6) + ((b[3] === 4 && (b[5] & 0x10)) ? 10 : 0);   // 先頭の ID3 はそのまま残す
@@ -601,10 +688,12 @@ async function verifyTaggedFile(kind, oldB, newB, name, changes) {
   var of = new File([oldB], name), nf = new File([newB], name);
   var ot = await readTrackTags(of), nt = await readTrackTags(nf);
   _textFields(changes).forEach(function (f) {
+    if (TAG_FIELDS.indexOf(f) < 0) return;   // 読み・歌詞は下で。トラック番号も下で
     // 読み取りでは発売年は数、ジャンルは「(17)」などを名前に直すので、同じ形にして比べる（v3.2）
     var want = f === 'year' ? String(_yearOf(changes[f]) || '') : f === 'genre' ? _genreName(changes[f]) : changes[f];
     if (changes[f] !== '' && String(nt[f] || '') !== want) throw _tagErr(TAG_FIELD_LABELS[f] + 'が正しく読めません（書き込みを確かめられません）');
   });
+  if ('track' in changes && changes.track !== '' && (nt.track || 0) !== (parseInt(changes.track, 10) || 0)) throw _tagErr('トラック番号が正しく読めません（書き込みを確かめられません）');
   ['title', 'artist', 'album', 'albumArtist', 'track', 'disc', 'genre', 'year'].forEach(function (f) {
     if (f in changes) return;
     if (f === 'artist' && 'albumArtist' in changes) return;   // アーティストが空の曲は、読み取りでアルバムアーティストを使うため
@@ -616,6 +705,8 @@ async function verifyTaggedFile(kind, oldB, newB, name, changes) {
     if (changes.picture === null ? !!np : (!np || !_bytesEqual(np.bytes, changes.picture.bytes))) throw _tagErr('ジャケット画像が期待どおりに読めません');
   } else if (!!op !== !!np || (op && !_bytesEqual(op.bytes, np.bytes))) throw _tagErr('ジャケット画像が変わってしまいました');
   var ol = await readTrackLyrics(of), nl = await readTrackLyrics(nf);
-  if (!!ol !== !!nl || (ol && ol.text !== nl.text)) throw _tagErr('歌詞が変わってしまいました');
+  if ('lyrics' in changes) {   // 歌詞を書いたとき（時間付きの歌詞 SYLT があれば、そちらが先に読まれるので比べない）
+    if (changes.lyrics !== '' && !(nl && nl.kind === 'SYLT') && (!nl || nl.text !== changes.lyrics.replace(/\r\n?/g, '\n').trim())) throw _tagErr('歌詞が正しく読めません（書き込みを確かめられません）');
+  } else if (!!ol !== !!nl || (ol && ol.text !== nl.text)) throw _tagErr('歌詞が変わってしまいました');
   return true;
 }

@@ -253,7 +253,7 @@ function renderPlaylistsPage() {
       var isMissing = !t && library.scanned;
       var title = trackDisplayTitle(path);
       var subHtml = t ? artistAlbumLinksHtml(t) : escapeHtml(isInTrash(path) ? '削除フォルダ内にあります' : (library.scanned ? '見つかりません：' + path : ''));   // リンク（v3.1）
-      h += '<li class="pl-track' + (isMissing ? ' missing' : '') + (path === player.currentPath ? ' is-playing' : '') + '" draggable="true" data-i="' + i + '">' +
+      h += '<li class="pl-track' + (isMissing ? ' missing' : '') + (path === player.currentPath ? ' is-playing' : '') + '" draggable="true" data-i="' + i + '" data-path="' + escapeHtml(path) + '">' +
         '<span class="pl-grip" title="ドラッグで並べ替え">' + ICONS.grip + '</span>' +
         '<span class="pl-no">' + (i + 1) + '</span>' +
         '<button class="btn-icon btn-play-row" data-act="play" data-i="' + i + '" title="この曲から再生"' + (isMissing ? ' disabled' : '') + '>' + ICONS.play + '</button>' +

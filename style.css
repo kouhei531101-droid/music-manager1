@@ -3411,3 +3411,84 @@ body.alb-fab-on #main { padding-bottom: calc(var(--player-h) + var(--lyr-bottom)
 .npbg-pos-btn.is-cur span { width: 14px; height: 14px; background: var(--primary-mid); }
 .npbg-pos-sliders { flex: 1 1 160px; min-width: 0; }
 @media (max-width: 760px) { .npbg-pos9 { grid-template-columns: repeat(3, 40px); grid-template-rows: repeat(3, 40px); } }
+
+/* ---------- スマホ版 v8.16.0：次に再生（予約）（82-up-next.js）----------
+   ・曲のメニュー（.acm.upm）はアルバムの右クリックメニュー（.acm）と同じ見た目
+   ・再生画面の「予約の札」（#np-upnext-chip）：上の列の下・左に、予約があるときだけ出す小さな札。押すと「次に再生（予約）」
+   ・「次に再生（予約）」ダイアログの一覧（.upn-list）：番号・曲名とアーティスト・上へ／下へ／外す（指で押しやすい 40px） */
+.np-upnext-chip { position: absolute; z-index: 3; left: calc(12px + env(safe-area-inset-left, 0px)); top: calc(62px + env(safe-area-inset-top, 0px));
+  display: inline-flex; align-items: center; gap: 5px; min-height: 34px; padding: 4px 12px 4px 9px; border-radius: 999px;
+  border: 1px solid var(--primary); background: color-mix(in srgb, var(--surface) 88%, transparent); color: var(--ink); font: inherit; font-size: 12.5px; font-weight: 700;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18); cursor: pointer; }
+.np-upnext-chip svg { width: 16px; height: 16px; flex: none; }
+.np-upnext-chip[hidden] { display: none; }
+.upn-hint, .upn-empty, .upn-now { margin: 0 0 8px; font-size: 12.5px; line-height: 1.6; color: var(--text-sub); }
+.upn-now strong { color: var(--ink); }
+.upn-list { margin: 0; padding: 0; list-style: none; max-height: min(55vh, 420px); overflow-y: auto; border: 1px solid var(--border2); border-radius: 10px; }
+.upn-row { display: flex; align-items: center; gap: 4px; padding: 4px 6px 4px 8px; border-bottom: 1px solid var(--border); }
+.upn-row:last-child { border-bottom: none; }
+.upn-row.missing .upn-text { opacity: 0.55; }
+.upn-no { flex: none; width: 1.8em; font-size: 12px; color: var(--text-faint, var(--text-sub)); text-align: right; font-variant-numeric: tabular-nums; }
+.upn-text { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.upn-title { font-size: 14px; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.upn-sub { font-size: 11.5px; color: var(--text-sub); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.upn-row .btn-icon { flex: none; width: 40px; height: 40px; }
+.upn-row .btn-icon:disabled { opacity: 0.3; }
+
+/* ---------- スマホ版 v8.17.0：ファイルに書き込む（83-tag-file-write.js）---------- */
+.tfw-target { margin: 0 0 8px; font-size: 13.5px; line-height: 1.6; }
+.tfw-items { display: flex; flex-direction: column; gap: 2px; margin: 4px 0 8px; padding: 6px 10px; border: 1px solid var(--border2); border-radius: 10px; background: var(--surface-2); }
+.tfw-item { min-height: 36px; align-items: center; }
+.tfw-note { margin: 6px 0; font-size: 12px; line-height: 1.6; color: var(--text-sub); }
+.tfw-warn { display: flex; gap: 6px; align-items: flex-start; margin: 6px 0; padding: 8px 10px; border-radius: 8px; font-size: 12.5px; line-height: 1.6; background: var(--red-pale); color: var(--text); }
+.tfw-warn svg { flex: none; width: 16px; height: 16px; margin-top: 2px; color: var(--red); }
+.tfw-sum { margin: 0 0 8px; font-size: 14px; }
+.tfw-list ul, .tfw-files ul { margin: 4px 0; padding: 0; list-style: none; max-height: 34vh; overflow-y: auto; }
+.tfw-list li, .tfw-files li { display: flex; flex-wrap: wrap; align-items: center; gap: 2px 8px; padding: 5px 2px; border-bottom: 1px solid var(--border); font-size: 13px; }
+.tfw-sub { flex-basis: 100%; font-size: 11.5px; color: var(--text-sub); overflow-wrap: anywhere; }
+.tfw-fails-title { margin-top: 8px; font-size: 12.5px; font-weight: 700; }
+.tfw-fname { flex: 1; min-width: 0; overflow-wrap: anywhere; }
+.tfw-open-row { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; margin: 10px 0 4px; padding-top: 8px; border-top: 1px dashed var(--border2); }
+.tfw-open-hint { font-size: 11.5px; color: var(--text-sub); }
+
+/* ---------- スマホ版 v8.18.0：曲の Pin（84-pinned-songs.js）----------
+   ・曲の Pin ボタン（.song-pin-btn）：曲名の右の丸いボタン。Pin 中はオレンジ（アーティストの Pin ボタンと同じ色）
+   ・Pin の区切り（曲）（.song-pin-sec）：songs の表の前。見出し（Pin N曲・再生・シャッフル・並べ替え）→ Pin の曲の表 →「曲 N曲」の見出し */
+.song-pin-btn { flex: none; width: 30px; height: 30px; margin-left: 2px; padding: 0; border-radius: 50%; border: 1px solid var(--border2); background: var(--surface);
+  color: var(--text-sub); display: inline-flex; align-items: center; justify-content: center; cursor: pointer; }
+.song-pin-btn svg { width: 14px; height: 14px; }
+.song-pin-btn:not(.is-pinned) { opacity: 0.55; }
+.song-pin-btn:hover, .song-pin-btn:focus-visible { opacity: 1; border-color: var(--accent); }
+.song-pin-btn.is-pinned { background: var(--accent); border-color: var(--accent); color: #fff; opacity: 1; }
+.song-pin-sec { margin: 0 0 6px; }
+.song-pin-head { flex-wrap: wrap; }
+.song-pin-btns { margin-left: auto; display: inline-flex; gap: 6px; }
+.song-pin-btns .btn-inline-small { min-height: 34px; }
+.song-pin-btns .btn-inline-small.active { background: var(--primary-mid); color: #fff; border-color: var(--primary-mid); }
+.lib-pin-table { margin-bottom: 4px; }
+.song-pin-sec.is-editing .lib-pin-table { outline: 2px dashed var(--primary); outline-offset: 2px; border-radius: 6px; }
+.song-pin-move { white-space: nowrap; width: auto !important; }
+.song-pin-move .btn-icon { width: 40px; height: 40px; }
+.song-pin-move .btn-icon:disabled { opacity: 0.3; }
+@media (max-width: 760px) { .song-pin-btn { width: 32px; height: 32px; } }
+/* Pin の表の列の幅は、通常の表の見出しの行を写した見えない見出し（.lib-pin-thead）でそろえる */
+.lib-pin-thead th { height: 0; padding-top: 0 !important; padding-bottom: 0 !important; border: 0 !important; font-size: 0; line-height: 0; overflow: hidden; }
+.lib-pin-thead th * { display: none; }
+.song-pin-sec.is-editing .lib-pin-thead th.col-edit { width: 90px; }
+/* 並べ替えモードの間は、曲名を広く見せるため Pin・曲名の編集・＋ のボタンを隠す */
+.song-pin-sec.is-editing .lib-pin-table .song-pin-btn, .song-pin-sec.is-editing .lib-pin-table .title-edit, .song-pin-sec.is-editing .lib-pin-table td.col-add > * { display: none; }
+.song-pin-sec.is-editing .lib-pin-thead th.col-add { width: 0; }
+
+/* ---------- スマホ版 v8.19.0：Anime Songs（85-anime-songs.js）---------- */
+.ani-play-btns { display: inline-flex; gap: 6px; }
+.ani-play-btns .btn-inline-small { min-height: 34px; }
+.ani-play-btns svg { width: 15px; height: 15px; }
+.ani-set-title { margin: 10px 0 4px; font-size: 13px; font-weight: 700; }
+.ani-set-title:first-child { margin-top: 0; }
+.ani-words { display: flex; flex-wrap: wrap; gap: 6px; }
+.ani-word { display: inline-flex; align-items: center; gap: 2px; padding: 2px 2px 2px 10px; border-radius: 999px; background: var(--primary-pale); color: var(--ink); font-size: 13px; }
+.ani-word-x { width: 30px; height: 30px; padding: 0; border: none; border-radius: 50%; background: transparent; color: var(--text-sub); display: inline-flex; align-items: center; justify-content: center; cursor: pointer; }
+.ani-word-x:hover { background: var(--red-pale); color: var(--red); }
+.ani-word-x svg { width: 14px; height: 14px; }
+.ani-word-add { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0; }
+.ani-word-add .form-input { flex: 1 1 160px; min-width: 0; }

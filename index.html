@@ -13,7 +13,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,700&family=Cinzel:wght@400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=20261010-6">
+<link rel="stylesheet" href="style.css?v=20261014-6">
 <!-- 画面の色（v3.7）：最初の描画の前にブラックモードを当てる（白→黒のちらつきを防ぐ）。保存場所は musicManager_ui の theme -->
 <script>
 (function () {
@@ -63,6 +63,9 @@
       </a>
       <a href="#" class="nav-item" data-page="western" title="Western music（洋楽）">
         <span class="nav-icon" data-icon="globe"></span><span class="nav-label">Western music</span><span class="nav-badge" id="nav-count-western"></span>
+      </a>
+      <a href="#" class="nav-item" data-page="anime" title="Anime Songs（アニメの曲のアルバム）">
+        <span class="nav-icon" data-icon="anime"></span><span class="nav-label">Anime Songs</span><span class="nav-badge" id="nav-count-anime"></span>
       </a>
       <a href="#" class="nav-item" data-page="seasons" title="Seasons Song（季節の曲）">
         <span class="nav-icon" data-icon="seasons"></span><span class="nav-label">Seasons Song</span><span class="nav-badge" id="nav-count-seasons"></span>
@@ -367,6 +370,28 @@
       <div class="page-body" id="wes-body"></div>
     </div>
 
+    <!-- ===================== Anime Songs（アニメの曲のアルバム。85-anime-songs.js。スマホ版 v8.19.0） ===================== -->
+    <div id="page-anime" class="page">
+      <div class="page-header">
+        <span class="ui-label-tag ui-label-tag-ondark ui-label-tag-header-badge" style="top:8px;right:10px" onclick="copyUiLabel('Anime Songsのヘッダー', event)" title="クリックで「Anime Songsのヘッダー」をコピー">□</span>
+        <span class="page-header-icon" data-icon="anime"></span>
+        <h1>Anime Songs</h1>
+        <span class="count-badge" id="ani-count"></span>
+      </div>
+      <div class="filter-bar" id="ani-filter-bar">
+        <span class="ui-label-tag ui-label-tag-onlight" style="top:4px;right:6px" onclick="copyUiLabel('Anime Songsのフィルターバー', event)" title="クリックで「Anime Songsのフィルターバー」をコピー">□</span>
+        <div class="search-box">
+          <span class="search-icon" data-icon="search"></span>
+          <input type="search" id="ani-search" class="form-input" placeholder="アルバム名・アーティストで検索" autocomplete="off">
+        </div>
+        <span class="album-sort-wrap"><button type="button" class="btn-inline-small album-sort-btn" id="ani-sort-btn">並べ替え</button></span>
+        <span class="ani-play-btns"><button type="button" class="btn-inline-small" id="ani-play" title="表示中のアルバムの曲を連続再生"><span data-icon="play"></span>連続再生</button>
+          <button type="button" class="btn-inline-small" id="ani-shuffle" title="表示中のアルバムの曲をシャッフル再生" aria-label="シャッフル再生"><span data-icon="shuffle"></span></button></span>
+      </div>
+      <div class="ui-label-bar"><span class="ui-label-tag ui-label-tag-onlight" style="top:4px;right:6px" onclick="copyUiLabel('Anime Songsの本文エリア', event)" title="クリックで「Anime Songsの本文エリア」をコピー">□</span></div>
+      <div class="page-body" id="ani-body"></div>
+    </div>
+
     <!-- ===================== ファイル整理 ===================== -->
     <div id="page-organizer" class="page">
       <div class="page-header">
@@ -503,6 +528,14 @@
           <div id="set-pinned-artists"></div>
         </section>
 
+        <!-- Pin の曲（スマホ版 v8.18.0。84-pinned-songs.js） -->
+        <section class="panel">
+          <span class="ui-label-tag ui-label-tag-onlight" style="top:6px;right:8px" onclick="copyUiLabel('Pin の曲（tools）', event)" title="クリックで「Pin の曲（tools）」をコピー">□</span>
+          <h2 class="panel-title">Pin の曲</h2>
+          <p class="panel-desc">songs の先頭（Pin の区切り）に並べる曲です（曲の行の Pin ボタンや、曲の長押しのメニューで追加）。「↑」「↓」で先頭での順番を変えられます。ファイルは変わりません。設定はバックアップに含まれます。</p>
+          <div id="set-pinned-songs"></div>
+        </section>
+
         <!-- タグの設定（v4.4。31-album-tags.js） -->
         <section class="panel">
           <span class="ui-label-tag ui-label-tag-onlight" style="top:6px;right:8px" onclick="copyUiLabel('タグの設定（tools）', event)" title="クリックで「タグの設定（tools）」をコピー">□</span>
@@ -533,6 +566,14 @@
           <h2 class="panel-title">Western music の設定</h2>
           <p class="panel-desc">Western music（洋楽）に出すアルバムの決め方です。設定はバックアップに含まれます。ファイルは変わりません。</p>
           <div id="set-western"></div>
+        </section>
+
+        <!-- Anime Songs の設定（スマホ版 v8.19.0。85-anime-songs.js） -->
+        <section class="panel">
+          <span class="ui-label-tag ui-label-tag-onlight" style="top:6px;right:8px" onclick="copyUiLabel('Anime Songs の設定（tools）', event)" title="クリックで「Anime Songs の設定（tools）」をコピー">□</span>
+          <h2 class="panel-title">Anime Songs の設定</h2>
+          <p class="panel-desc">Anime Songs に出すアルバムの決め方です。設定はバックアップに含まれます。ファイルは変わりません。</p>
+          <div id="set-anime"></div>
         </section>
 
         <!-- Seasons Song の設定（v7.4。46-seasons.js） -->
@@ -700,86 +741,91 @@
 <div id="busy-overlay" class="busy-overlay" hidden><div class="busy-box"><div class="busy-spinner"></div><div id="busy-text">実行中…</div></div></div>
 
 <!-- js は機能ごとのファイル。起動処理（12-init.js）は必ず最後（新しいファイルはその直前に足す） -->
-<script src="js/01-core.js?v=20261010-6"></script>
-<script src="js/02-folder-access.js?v=20261010-6"></script>
-<script src="js/03-tag-reader.js?v=20261010-6"></script>
-<script src="js/04-library.js?v=20261010-6"></script>
-<script src="js/05-library-page.js?v=20261010-6"></script>
-<script src="js/06-player.js?v=20261010-6"></script>
-<script src="js/07-playlists.js?v=20261010-6"></script>
-<script src="js/08-organizer.js?v=20261010-6"></script>
-<script src="js/09-file-ops.js?v=20261010-6"></script>
-<script src="js/10-settings-backup.js?v=20261010-6"></script>
-<script src="js/11-changelog.js?v=20261010-6"></script>
-<script src="js/13-artwork.js?v=20261010-6"></script>
-<script src="js/14-albums.js?v=20261010-6"></script>
-<script src="js/15-lyrics.js?v=20261010-6"></script>
-<script src="js/16-tag-writer.js?v=20261010-6"></script>
-<script src="js/17-tag-edit.js?v=20261010-6"></script>
-<script src="js/18-artwork-edit.js?v=20261010-6"></script>
-<script src="js/19-new-songs.js?v=20261010-6"></script>
-<script src="js/20-heavy-rotation.js?v=20261010-6"></script>
-<script src="js/21-artists.js?v=20261010-6"></script>
-<script src="js/22-load-progress.js?v=20261010-6"></script>
-<script src="js/23-library-index.js?v=20261010-6"></script>
-<script src="js/24-hidden-albums.js?v=20261010-6"></script>
-<script src="js/25-navigation.js?v=20261010-6"></script>
-<script src="js/26-pinned-albums.js?v=20261010-6"></script>
-<script src="js/27-card-actions.js?v=20261010-6"></script>
-<script src="js/28-pinned-artists.js?v=20261010-6"></script>
-<script src="js/29-album-sort.js?v=20261010-6"></script>
-<script src="js/30-album-sortkey.js?v=20261010-6"></script>
-<script src="js/31-album-tags.js?v=20261010-6"></script>
-<script src="js/32-genre-suggest.js?v=20261010-6"></script>
-<script src="js/33-album-genre.js?v=20261010-6"></script>
-<script src="js/34-duplicates.js?v=20261010-6"></script>
-<script src="js/35-album-folder.js?v=20261010-6"></script>
-<script src="js/36-western.js?v=20261010-6"></script>
-<script src="js/37-now-playing.js?v=20261010-6"></script>
-<script src="js/38-album-groups.js?v=20261010-6"></script>
-<script src="js/39-playlist-play.js?v=20261010-6"></script>
-<script src="js/40-coverflow.js?v=20261010-6"></script>
-<script src="js/41-album-bulk-edit.js?v=20261010-6"></script>
-<script src="js/42-sortkey-cover.js?v=20261010-6"></script>
-<script src="js/43-playlist-copy.js?v=20261010-6"></script>
-<script src="js/44-playlist-add-albums.js?v=20261010-6"></script>
-<script src="js/45-album-scroll.js?v=20261010-6"></script>
-<script src="js/46-seasons.js?v=20261010-6"></script>
-<script src="js/47-shuffle-play.js?v=20261010-6"></script>
-<script src="js/48-album-context-menu.js?v=20261010-6"></script>
-<script src="js/49-upbeat.js?v=20261010-6"></script>
-<script src="js/50-np-album.js?v=20261010-6"></script>
-<script src="js/51-album-reset.js?v=20261010-6"></script>
-<script src="js/52-data-store.js?v=20261010-6"></script>
-<script src="js/53-storage-usage.js?v=20261010-6"></script>
-<script src="js/54-spin-cd.js?v=20261010-6"></script>
-<script src="js/55-np-title-fit.js?v=20261010-6"></script>
-<script src="js/56-cassette.js?v=20261010-6"></script>
-<script src="js/57-record.js?v=20261010-6"></script>
-<script src="js/58-md.js?v=20261010-6"></script>
-<script src="js/59-mobile.js?v=20261010-6"></script>
-<script src="js/60-album-bar.js?v=20261010-6"></script>
-<script src="js/61-album-filter-icons.js?v=20261010-6"></script>
-<script src="js/62-lyrics-mini.js?v=20261010-6"></script>
-<script src="js/63-header-brand.js?v=20261010-6"></script>
-<script src="js/64-card-menu.js?v=20261010-6"></script>
-<script src="js/65-album-play-np.js?v=20261010-6"></script>
-<script src="js/66-bottom-nav.js?v=20261010-6"></script>
-<script src="js/67-np-viz-menu.js?v=20261010-6"></script>
-<script src="js/68-np-onescreen.js?v=20261010-6"></script>
-<script src="js/69-album-head-mobile.js?v=20261010-6"></script>
-<script src="js/70-np-viz-trail.js?v=20261010-6"></script>
-<script src="js/71-np-landscape.js?v=20261010-6"></script>
-<script src="js/72-pin-sort-drag.js?v=20261010-6"></script>
-<script src="js/73-np-viz-settings.js?v=20261010-6"></script>
-<script src="js/74-album-set-play.js?v=20261010-6"></script>
-<script src="js/75-np-viz-more.js?v=20261010-6"></script>
-<script src="js/76-romaji.js?v=20261010-6"></script>
-<script src="js/77-album-home.js?v=20261010-6"></script>
-<script src="js/78-np-lyrics-over.js?v=20261010-6"></script>
-<script src="js/79-artist-copy.js?v=20261010-6"></script>
-<script src="js/80-season-hidden.js?v=20261010-6"></script>
-<script src="js/81-np-bg.js?v=20261010-6"></script>
-<script src="js/12-init.js?v=20261010-6"></script>
+<script src="js/01-core.js?v=20261014-6"></script>
+<script src="js/02-folder-access.js?v=20261014-6"></script>
+<script src="js/03-tag-reader.js?v=20261014-6"></script>
+<script src="js/04-library.js?v=20261014-6"></script>
+<script src="js/05-library-page.js?v=20261014-6"></script>
+<script src="js/06-player.js?v=20261014-6"></script>
+<script src="js/07-playlists.js?v=20261014-6"></script>
+<script src="js/08-organizer.js?v=20261014-6"></script>
+<script src="js/09-file-ops.js?v=20261014-6"></script>
+<script src="js/10-settings-backup.js?v=20261014-6"></script>
+<script src="js/11-changelog.js?v=20261014-6"></script>
+<script src="js/13-artwork.js?v=20261014-6"></script>
+<script src="js/14-albums.js?v=20261014-6"></script>
+<script src="js/15-lyrics.js?v=20261014-6"></script>
+<script src="js/16-tag-writer.js?v=20261014-6"></script>
+<script src="js/17-tag-edit.js?v=20261014-6"></script>
+<script src="js/18-artwork-edit.js?v=20261014-6"></script>
+<script src="js/19-new-songs.js?v=20261014-6"></script>
+<script src="js/20-heavy-rotation.js?v=20261014-6"></script>
+<script src="js/21-artists.js?v=20261014-6"></script>
+<script src="js/22-load-progress.js?v=20261014-6"></script>
+<script src="js/23-library-index.js?v=20261014-6"></script>
+<script src="js/24-hidden-albums.js?v=20261014-6"></script>
+<script src="js/25-navigation.js?v=20261014-6"></script>
+<script src="js/26-pinned-albums.js?v=20261014-6"></script>
+<script src="js/27-card-actions.js?v=20261014-6"></script>
+<script src="js/28-pinned-artists.js?v=20261014-6"></script>
+<script src="js/29-album-sort.js?v=20261014-6"></script>
+<script src="js/30-album-sortkey.js?v=20261014-6"></script>
+<script src="js/31-album-tags.js?v=20261014-6"></script>
+<script src="js/32-genre-suggest.js?v=20261014-6"></script>
+<script src="js/33-album-genre.js?v=20261014-6"></script>
+<script src="js/34-duplicates.js?v=20261014-6"></script>
+<script src="js/35-album-folder.js?v=20261014-6"></script>
+<script src="js/36-western.js?v=20261014-6"></script>
+<script src="js/37-now-playing.js?v=20261014-6"></script>
+<script src="js/38-album-groups.js?v=20261014-6"></script>
+<script src="js/39-playlist-play.js?v=20261014-6"></script>
+<script src="js/40-coverflow.js?v=20261014-6"></script>
+<script src="js/41-album-bulk-edit.js?v=20261014-6"></script>
+<script src="js/42-sortkey-cover.js?v=20261014-6"></script>
+<script src="js/43-playlist-copy.js?v=20261014-6"></script>
+<script src="js/44-playlist-add-albums.js?v=20261014-6"></script>
+<script src="js/45-album-scroll.js?v=20261014-6"></script>
+<script src="js/46-seasons.js?v=20261014-6"></script>
+<script src="js/47-shuffle-play.js?v=20261014-6"></script>
+<script src="js/48-album-context-menu.js?v=20261014-6"></script>
+<script src="js/49-upbeat.js?v=20261014-6"></script>
+<script src="js/50-np-album.js?v=20261014-6"></script>
+<script src="js/51-album-reset.js?v=20261014-6"></script>
+<script src="js/52-data-store.js?v=20261014-6"></script>
+<script src="js/53-storage-usage.js?v=20261014-6"></script>
+<script src="js/54-spin-cd.js?v=20261014-6"></script>
+<script src="js/55-np-title-fit.js?v=20261014-6"></script>
+<script src="js/56-cassette.js?v=20261014-6"></script>
+<script src="js/57-record.js?v=20261014-6"></script>
+<script src="js/58-md.js?v=20261014-6"></script>
+<script src="js/59-mobile.js?v=20261014-6"></script>
+<script src="js/60-album-bar.js?v=20261014-6"></script>
+<script src="js/61-album-filter-icons.js?v=20261014-6"></script>
+<script src="js/62-lyrics-mini.js?v=20261014-6"></script>
+<script src="js/63-header-brand.js?v=20261014-6"></script>
+<script src="js/64-card-menu.js?v=20261014-6"></script>
+<script src="js/65-album-play-np.js?v=20261014-6"></script>
+<script src="js/66-bottom-nav.js?v=20261014-6"></script>
+<script src="js/67-np-viz-menu.js?v=20261014-6"></script>
+<script src="js/68-np-onescreen.js?v=20261014-6"></script>
+<script src="js/69-album-head-mobile.js?v=20261014-6"></script>
+<script src="js/70-np-viz-trail.js?v=20261014-6"></script>
+<script src="js/71-np-landscape.js?v=20261014-6"></script>
+<script src="js/72-pin-sort-drag.js?v=20261014-6"></script>
+<script src="js/73-np-viz-settings.js?v=20261014-6"></script>
+<script src="js/74-album-set-play.js?v=20261014-6"></script>
+<script src="js/75-np-viz-more.js?v=20261014-6"></script>
+<script src="js/76-romaji.js?v=20261014-6"></script>
+<script src="js/77-album-home.js?v=20261014-6"></script>
+<script src="js/78-np-lyrics-over.js?v=20261014-6"></script>
+<script src="js/79-artist-copy.js?v=20261014-6"></script>
+<script src="js/80-season-hidden.js?v=20261014-6"></script>
+<script src="js/81-np-bg.js?v=20261014-6"></script>
+<script src="js/82-up-next.js?v=20261014-6"></script>
+<script src="js/83-tag-file-write.js?v=20261014-6"></script>
+<script src="js/84-pinned-songs.js?v=20261014-6"></script>
+<script src="js/85-anime-songs.js?v=20261014-6"></script>
+<script src="js/86-fast-start.js?v=20261014-6"></script>
+<script src="js/12-init.js?v=20261014-6"></script>
 </body>
 </html>
