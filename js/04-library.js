@@ -90,6 +90,21 @@ function applyCacheToTrack(t, c) {
   t.tagAlbumArtist = c.aa || ''; t.tagTrack = c.n || 0; t.tagDisc = c.k || 0;
   t.duration = c.d || 0; t.size = c.s || 0; t.lastModified = c.m || 0;
 }
+// 文字化けしたタグかどうか（スマホ版 v8.23.2）
+//   古い編集ソフトなどが日本語を書けずに「?」へ置き換えて保存したタグ（「???」「?????? (Live)」など）を見分ける。
+//   「?」（全角の「？」・読めない文字の印 U+FFFD も）が2つ以上続き、文字の半分以上が「?」で、
+//   代わりに使うファイル名の方に日本語など（ASCII 以外の文字）があり「?」が続いていないときだけ「化けている」とする。
+//   化けていれば ''（＝タグが無い扱いで推定を使う）、そうでなければ元の文字を返す
+function tagTextOrEmptyIfBroken(s, guess) {
+  s = String(s || '');
+  if (!s || !/[?\uFF1F\uFFFD]{2,}/.test(s)) return s;
+  var body = s.replace(/[\s\-_.,:;()\[\]（）「」『』・!！~〜]/g, '');
+  var q = (body.match(/[?\uFF1F\uFFFD]/g) || []).length;
+  if (!body || q * 2 < body.length) return s;
+  guess = String(guess || '');
+  if (!guess || !/[^\x00-\x7F]/.test(guess) || /[?\uFF1F\uFFFD]{2,}/.test(guess)) return s;
+  return '';
+}
 // 表示用の曲名・アーティスト・アルバム。タグが無ければファイル名とフォルダ名から推定する
 //   例）「アーティスト/アルバム/01 曲名.mp3」→ 曲名「曲名」、アルバム「アルバム」、アーティスト「アーティスト」
 function fillDisplayFields(t) {
@@ -107,8 +122,13 @@ function fillDisplayFields(t) {
   var dirs = t.folder ? t.folder.split('/') : [];
   var base = stripExt(t.name);
   var guessTitle = base.replace(/^\d{1,3}(-\d{1,3})?[\s._-]+(?=\S)/, '') || base;
-  t.title = t.tagTitle || guessTitle;
-  t.titleGuessed = !t.tagTitle;
+  // 文字化けした曲名（スマホ版 v8.23.2）：日本語が「?」に置き換わって保存されたタグ（例「???」）は使わず、
+  //   ファイル名から推定する（ファイル名に日本語などがあるときだけ。アプリ内の上書きはそのまま使う）。タグ自体は書き換えない。
+  //   アルバム名・アーティスト名はアルバムのまとめ方・Pin・並び順の目印に使われているので変えない（曲名だけ）
+  var tTitle = (ov && 'title' in ov) ? t.tagTitle : tagTextOrEmptyIfBroken(t.tagTitle, guessTitle);
+  t.titleBroken = tTitle !== t.tagTitle;
+  t.title = tTitle || guessTitle;
+  t.titleGuessed = !tTitle;
   t.album = t.tagAlbum || (dirs.length ? dirs[dirs.length - 1] : '');
   t.albumGuessed = !t.tagAlbum;
   t.artist = t.tagArtist || (dirs.length >= 2 ? dirs[dirs.length - 2] : '');
@@ -187,7 +207,7 @@ async function scanLibrary(opts) {
   library.scanned = true;
 
   // ② 曲情報を読む：高速モードは増えた曲（控えの無い曲）と、古い版の控えの曲（ジャンル・発売年などを補う。v3.2）、全確認は全曲
-  var need = full ? library.tracks.slice() : library.tracks.filter(function (t) { return !t.metaLoaded || tagCacheNeedsDetail(tagCache[t.path]); });
+  var need = full ? library.tracks.slice() : library.tracks.filter(function (t) { return !t.metaLoaded || tagCacheNeedsDetail(tagCache[t.path]) || _cacheSizeChanged(t); });
   library.metaUpgradeN = full ? 0 : need.filter(function (t) { return t.metaLoaded; }).length;
   _metaForce = !!opts.force;   // 「曲情報を読み直す」：大きさ・更新日時が同じでも読み直す
   library.metaRunning = true;   // すぐ ② に入る（その間に「読み直す」が二重に始まらないように）
@@ -259,6 +279,13 @@ function _setTracks(tracks, folders, trash) {
   library.trashFiles = trash || 0;
 }
 // 全確認が必要か
+// 読み取り専用モード（スマホ）で、控えの大きさと選んだファイルの大きさが違う曲か（スマホ版 v8.23.2）
+//   スマホは選んだファイルの大きさがすぐ分かる（ファイルを開かない）ので、高速モードでも大きさが変わった曲は読み直す。
+//   （例：パソコンで曲名を直した曲をスマホにコピーし直したのに、前の控えの「???」のままになる、を防ぐ）
+function _cacheSizeChanged(t) {
+  var f = t && t.handle && t.handle._file, c = tagCache[t.path];
+  return !!(f && c && typeof f.size === 'number' && c.s !== f.size);
+}
 function _needFullCheck(opts) {
   if (opts.full) return true;
   if (db.settings.fastMode === false) return true;               // 高速モードがオフ（毎回きちんと確認）
