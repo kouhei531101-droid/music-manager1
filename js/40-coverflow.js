@@ -143,7 +143,7 @@ function _flowBind(box) {
   //   押したジャケットが分かる（タッチのあとの click・キーボードの Enter／スペースも同じ）。念のため、相手が入れ物のときは押した所（elementFromPoint）で探す
   box.addEventListener('pointerdown', function (ev) {
     if (ev.button !== 0) return;
-    flow.dragging = true; flow.moved = false; flow.x0 = ev.clientX; flow.drag = 0; flow.pid = ev.pointerId;
+    flow.dragging = true; flow.moved = false; flow.x0 = ev.clientX; flow.y0 = ev.clientY; flow.drag = 0; flow.pid = ev.pointerId;
     flow.slop = ev.pointerType === 'mouse' ? 10 : 12;
   });
   box.addEventListener('pointermove', function (ev) {
@@ -163,6 +163,8 @@ function _flowBind(box) {
   var end = function (ev) {
     if (!flow.dragging) return;
     flow.dragging = false;
+    // スマホ版 v8.23.5：スマホの並びでは、左右のフリックで次の曲・前の曲（88-np-jacket-gesture.js の npJacketFlickEnd。扱ったら true）
+    if (flow.moved && typeof npJacketFlickEnd === 'function' && npJacketFlickEnd(ev)) { flow.justDragged = Date.now(); return; }
     if (flow.moved) { var st = Math.round(flow.drag); flow.drag = 0; flowSlide(st); flow.justDragged = Date.now(); return; }
     flow.drag = 0; _flowPlace();
   };

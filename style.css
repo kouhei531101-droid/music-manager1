@@ -3505,3 +3505,37 @@ body.alb-fab-on #main { padding-bottom: calc(var(--player-h) + var(--lyr-bottom)
 .mq-gap { display: inline-block; width: 2.5em; }   /* スマホ版 v8.22.1：文字の後ろのすき間（87-marquee.js の MQ_GAP_EM と同じ） */
 #np-title.mq-on { cursor: pointer; }
 @media (prefers-reduced-motion: reduce) { .mq-on > .mq-track { will-change: auto; } }
+
+/* ---------- スマホ版 v8.23.4：再生画面の右上のボタンの大きさをそろえる ----------
+   ・上部のボタン列の「歌詞ボタン」（#np-lyr-toggle）・「曲リストボタン」（#np-al-toggle。プレイリストではキュー）・
+     「プレイヤー表示ボタン」（#np-vis-toggle。ジャケットなど）を、閉じるボタン（.np-close）と同じ丸いアイコンだけのボタンにする
+   ・外形：40px の丸（400px 以下は 36px。閉じるボタンと同じ条件）、padding 0、枠線 1px（今まで通り）
+   ・中のアイコン：16px（閉じるボタンの × と同じ）。名前は title・aria-label に残す
+   ・スマホ幅（760px 以下・横向きのスマホ）だけ。#now-playing の ID で、今までのスマホ幅・横向きの指定より優先させる
+   ・閉じるボタンの大きさは変えない */
+@media (max-width: 760px), (orientation: landscape) and (max-height: 500px) and (max-width: 1000px) {
+  #now-playing .np-top .np-lyr-toggle { flex: none; width: 40px; height: 40px; padding: 0; gap: 0; border-radius: 50%; justify-content: center; font-size: 0; white-space: nowrap; }
+  #now-playing .np-top .np-lyr-toggle svg { width: 16px; height: 16px; }
+}
+@media (max-width: 400px) {
+  #now-playing .np-top .np-lyr-toggle { width: 36px; height: 36px; }
+}
+
+/* ---------- スマホ版 v8.23.5：再生画面の「ジャケットの操作」（88-np-jacket-gesture.js）----------
+   ・タップの手ごたえ：ジャケットの並び（#np-flow）の真ん中に ▶／❚❚ の印（.np-jg-badge）を一瞬出し、
+     中央のジャケットの絵（.np-jg-tap の中身）を軽く沈ませる。並びの位置（.np-flow-item の transform）には触らない
+   ・prefers-reduced-motion では沈ませず、印も動かさずに出して消すだけ */
+.np-jg-badge { position: absolute; left: 50%; top: calc(14px + var(--c) / 2); z-index: 200; width: 64px; height: 64px; margin: -32px 0 0 -32px;
+  display: flex; align-items: center; justify-content: center; border-radius: 50%; background: rgba(0, 0, 0, 0.45); color: #fff;
+  opacity: 0; pointer-events: none; }
+.np-jg-badge svg { width: 28px; height: 28px; }
+#now-playing.np-jacket-mode .np-jg-badge { top: calc(50% - 10px); }   /* スマホの並びではジャケットを並びの高さの真ん中（少し上）に置いているので合わせる */
+.np-jg-badge.is-show { animation: np-jg-badge 0.65s ease-out forwards; }
+@keyframes np-jg-badge { 0% { opacity: 0; transform: scale(0.8); } 20% { opacity: 1; transform: scale(1); } 70% { opacity: 1; } 100% { opacity: 0; transform: scale(1.08); } }
+.np-flow-item.np-jg-tap > * { animation: np-jg-tap 0.22s ease-out; }
+@keyframes np-jg-tap { 0% { transform: scale(1); } 40% { transform: scale(0.96); } 100% { transform: scale(1); } }
+@media (prefers-reduced-motion: reduce) {
+  .np-jg-badge.is-show { animation: np-jg-badge-rm 0.65s linear forwards; }
+  @keyframes np-jg-badge-rm { 0%, 70% { opacity: 1; } 100% { opacity: 0; } }
+  .np-flow-item.np-jg-tap > * { animation: none; }
+}
