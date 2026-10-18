@@ -66,6 +66,17 @@ function marqueeApply(id) {
   st.key = key;
   if (st.paused) { st.anim.pause(); el.classList.add('mq-paused'); }
 }
+// スマホ版 v8.24.2：次のフレームの前に1回だけ marqueeApply する（同じフレームの中で何度呼ばれても1回）
+var _mqSoonIds = {}, _mqSoonRaf = 0;
+function marqueeSoon(id) {
+  _mqSoonIds[id] = true;
+  if (_mqSoonRaf) return;
+  _mqSoonRaf = requestAnimationFrame(function () {
+    _mqSoonRaf = 0;
+    var ids = Object.keys(_mqSoonIds); _mqSoonIds = {};
+    ids.forEach(function (x) { try { marqueeApply(x); } catch (e) { console.warn(e); } });
+  });
+}
 function marqueeStopAll() {
   Object.keys(mq.state).forEach(function (id) { var s = mq.state[id]; if (s.anim && id !== 'pb-title') { s.anim.cancel(); s.anim = null; s.key = ''; } });
 }
@@ -105,7 +116,8 @@ function _mqObserve() {
   if (typeof nr === 'function') window.npRender = function () { var r = nr.apply(this, arguments); try { marqueeApply('np-sub'); _mqObserve(); } catch (e) { console.warn(e); } return r; };
   // 再生バーの曲名
   var up = window.updatePlayerUi;
-  if (typeof up === 'function') window.updatePlayerUi = function () { var r = up.apply(this, arguments); try { marqueeApply('pb-title'); _mqObserve(); } catch (e) { console.warn(e); } return r; };
+  // スマホ版 v8.24.2：測るのは次のフレームの前に1回だけ（続けて呼ばれてもまとめる。一覧を作り直した直後に、その場で画面全体の並べ直しを起こさない）
+  if (typeof up === 'function') window.updatePlayerUi = function () { var r = up.apply(this, arguments); try { marqueeSoon('pb-title'); _mqObserve(); } catch (e) { console.warn(e); } return r; };
   // 再生画面を閉じたら止める（電池のため）
   var hd = window._npHide;
   if (typeof hd === 'function') window._npHide = function () { try { marqueeStopAll(); } catch (e) { /* 無視 */ } return hd.apply(this, arguments); };
@@ -120,4 +132,4 @@ document.addEventListener('click', function (ev) {
   if (st.paused) st.anim.pause(); else st.anim.play();
   el.classList.toggle('mq-paused', st.paused);
 });
-window.addEventListener('resize', function () { MQ_TARGETS.forEach(function (id) { if (id !== 'np-title') marqueeApply(id); }); });
+window.addEventListener('resize', function () { MQ_TARGETS.forEach(function (id) { if (id !== 'np-title') marqueeSoon(id); }); });   // v8.24.2：次のフレームの前にまとめて

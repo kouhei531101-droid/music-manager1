@@ -72,6 +72,7 @@ function openNowPlaying(opts) {
   try { history.pushState({ mmNP: 1 }, ''); np.pushed = true; } catch (e) { np.pushed = false; }
   npRender();
   _npStartLoop();
+  if (typeof artObservePause === 'function') artObservePause(el);   // スマホ版 v8.24.2：下の一覧のサムネイルは見張らない（13-artwork.js）
   setTimeout(function () { var c = document.getElementById('np-close'); if (c) c.focus(); }, 0);
 }
 // 閉じる。then：閉じたあとにすること（リンクで別の画面へ移るとき）
@@ -88,6 +89,7 @@ function _npHide() {
   if (el) el.hidden = true;
   document.body.classList.remove('np-open');
   _npStopLoop();
+  if (typeof artObserveResume === 'function') artObserveResume();   // スマホ版 v8.24.2：一覧のサムネイルを見張り直す（13-artwork.js）
   var fn = np.afterClose; np.afterClose = null;
   var art = document.getElementById('pb-art'); if (art && !fn) { try { art.focus({ preventScroll: true }); } catch (e) { /* 無視 */ } }
   if (fn) setTimeout(fn, 0);
@@ -318,11 +320,15 @@ function _hslToRgb(h, s, l) {
 }
 
 /* ---------- 描く ---------- */
+// スマホ版 v8.24.2：キャンバスの点の数の上限（NP_VIZ_MAX_PX）。タブレット（1280×800・画面の細かさ 2）では 2560×1600＝約410万点を
+//   毎フレーム描いていて、端末の描く力（GPU）を使い切っていた。上限を超えるときは細かさを下げる（スマホの大きさ 412×915×2 はほぼそのまま）
+var NP_VIZ_MAX_PX = 1500000;
 function _npSizeCanvas() {
   var cv = document.getElementById('np-viz');
   if (!cv) return;
   var dpr = Math.min(2, window.devicePixelRatio || 1), w = cv.clientWidth, h = cv.clientHeight;
-  if (cv.width !== Math.round(w * dpr) || cv.height !== Math.round(h * dpr)) { cv.width = Math.round(w * dpr); cv.height = Math.round(h * dpr); }
+  if (w * h * dpr * dpr > NP_VIZ_MAX_PX) dpr = Math.max(0.75, Math.sqrt(NP_VIZ_MAX_PX / Math.max(1, w * h)));
+  if (cv.width !== Math.round(w * dpr) || cv.height !== Math.round(h * dpr)) { cv.width = Math.round(w * dpr); cv.height = Math.round(h * dpr); np.vizAt = 0; }
 }
 // 「円」の中心と半径（canvas の点の単位）：中央のジャケットの中心・ジャケットの一辺の 0.6 倍。0.5秒ごとに測り直す（並びが変わってもついていく）。
 // スマホ幅（縦にスクロールする）・ジャケットが無いときは null（今までどおり画面の真ん中）
@@ -337,12 +343,18 @@ function _npVizCenter(cv) {
   np.vizC = { x: (br.left + br.width / 2 - cr.left) * k, y: (br.top + it.offsetTop + it.offsetHeight / 2 - cr.top) * k, r: it.offsetWidth * 0.6 * k };
   return np.vizC;
 }
+// スマホ版 v8.24.2：止まっている（一時停止・曲が無い）ときは、残像・粒が消えるまで（NP_VIZ_IDLE_AFTER ミリ秒）だけふつうに描き、
+//   そのあとは NP_VIZ_IDLE_EVERY ミリ秒に1回だけ描く（設定を変えたとき・向きを変えたときも少し待てば描き直される）
+var NP_VIZ_IDLE_AFTER = 3000, NP_VIZ_IDLE_EVERY = 250;
 function _npStartLoop() {
   if (np.raf || !np.open || document.hidden) return;
   var step = function (ts) {
     np.raf = 0;
     if (!np.open || document.hidden) return;
-    if (!np.reduced || ts - np.lastDraw > 120) { np.lastDraw = ts; _npDraw(); }
+    var a = player.audio, idle = !a || a.paused || !a.getAttribute('src');
+    if (!idle) np.idleAt = 0; else if (!np.idleAt) np.idleAt = ts;
+    var gap = np.reduced ? 120 : (idle && ts - np.idleAt > NP_VIZ_IDLE_AFTER ? NP_VIZ_IDLE_EVERY : 0);
+    if (!gap || ts - np.lastDraw > gap) { np.lastDraw = ts; _npDraw(); }
     np.raf = requestAnimationFrame(step);
   };
   np.raf = requestAnimationFrame(step);

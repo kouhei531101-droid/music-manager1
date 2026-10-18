@@ -327,8 +327,22 @@ function artObserve(container) {
     if (!('IntersectionObserver' in window)) return;
     art.observer = new IntersectionObserver(_artOnIntersect, { rootMargin: '200px 0px' });
   }
-  container.querySelectorAll('.art-pending[data-art-path]').forEach(function (el) { art.observer.observe(el); });
+  // スマホ版 v8.24.2：再生画面を開いている間は、再生画面の中だけ見張る（下の artObservePause。閉じたら見張り直す）
+  var npEl = typeof np !== 'undefined' && np.open ? document.getElementById('now-playing') : null;
+  container.querySelectorAll('.art-pending[data-art-path]').forEach(function (el) { if (npEl && !npEl.contains(el)) return; art.observer.observe(el); });
 }
+// スマホ版 v8.24.2：再生画面を開いている間は、その下の一覧のサムネイルを見張らない（keepEl の中＝再生画面の中だけ見張る）。
+//   見張っている数が多い（一覧の 500 行など）と、再生画面のビジュアライザー・回転CDが動くたびに（1秒に約60回）
+//   「画面に入ったか」の計算が全部の行で走り、それだけで画面の処理の 1割ほどを使っていた。閉じたら artObserveResume で見張り直す
+function artObservePause(keepEl) {
+  if (!art.observer) return;
+  document.querySelectorAll('.art-pending[data-art-path]').forEach(function (el) {
+    if (keepEl && keepEl.contains(el)) return;
+    art.observer.unobserve(el);
+    _artForget(el);
+  });
+}
+function artObserveResume() { artObserve(document); }
 function _artOnIntersect(entries) {
   entries.forEach(function (en) {
     var el = en.target;

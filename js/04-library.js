@@ -429,6 +429,7 @@ async function readMetadataInBackground(token, list, full) {
   var idx = 0, lastRender = Date.now();
   // 途中の描き直しの間隔：曲が多いほど長く（16,200曲で約8秒。描き直し自体が重いため。進み具合は帯に出る。v2.7）
   var renderEvery = Math.max(1500, Math.min(10000, library.tracks.length / 2));
+  var renderGap = renderEvery;   // スマホ版 v8.24.2：実際の間（描き直しが重い端末では長くする。_metaRenderCost）
   _metaDirty = false;
   _metaFsInitial = Object.keys(firstSeen).length === 0;   // いちばん最初の読み込み
 
@@ -444,10 +445,13 @@ async function readMetadataInBackground(token, list, full) {
       delete t._metaP;
       library.metaDone++;
       if (typeof loadProgressTick === 'function') loadProgressTick();
-      if (Date.now() - lastRender > renderEvery) {
+      if (Date.now() - lastRender > renderGap) {
         lastRender = Date.now();
         if (_metaDirty) { libIndexChanged(); _metaDirty = false; }
+        var t0 = performance.now();
         onMetadataProgress(false);
+        // スマホ版 v8.24.2：描き直しにかかった時間（画面に出し終わるまで）を測り、次の描き直しまでの間をその META_RENDER_RATIO 倍以上あける
+        _metaRenderCost(t0, function (ms) { renderGap = Math.max(renderEvery, Math.min(META_RENDER_GAP_MAX, ms * META_RENDER_RATIO)); });
       }
     }
   }
@@ -469,6 +473,17 @@ async function readMetadataInBackground(token, list, full) {
   if (typeof memoAutoWrite === 'function') memoAutoWrite().catch(function (e) { console.warn(e); });   // 情報のメモファイル（変化があれば）
 }
 
+// スマホ版 v8.24.2：読み込み中の途中の描き直しの間隔
+//   曲が多いと、途中の描き直し（一覧を作り直す＋画面の並べ直し）がタブレット・スマホでは1回 1秒を超え、
+//   今までの間隔（1.5秒〜）ではほとんど休みなく画面が止まり、曲情報の読み込みもほとんど進まなかった（3000曲で1分に約50曲）。
+//   描き直しにかかった時間の META_RENDER_RATIO 倍（最大 META_RENDER_GAP_MAX）は次の描き直しを待つ（画面が止まるのは全体の 1割ほどまで）
+var META_RENDER_RATIO = 10, META_RENDER_GAP_MAX = 60000;
+// t0 から、描き直した結果が画面に出るまで（次のフレームの描画のあと）の時間を測って cb(ミリ秒) を呼ぶ。タブが隠れていると呼ばれない（そのときは今までの間隔）
+function _metaRenderCost(t0, cb) {
+  if (typeof requestAnimationFrame !== 'function') return;
+  requestAnimationFrame(function () { setTimeout(function () { cb(performance.now() - t0); }, 0); });
+}
+
 // 読み進んだら、今の画面と再生バーを更新する
 function onMetadataProgress(finished) {
   renderLibScanStatus();
@@ -476,7 +491,9 @@ function onMetadataProgress(finished) {
   if (finished) renderSidebarCounts();   // アルバム数はアルバム名を読み終わってから決まる
   // ファイル整理は操作中に描き直すと選択がちらつくので、読み終わったときだけ描き直す
   // 一覧をたくさん読み込んでいるときは、途中で描き直すと重いので、読み終わったときだけ描き直す（v2.4）
-  var heavyList = (currentPage === 'library' && libView.limit > LIB_PAGE_SIZE) || (currentPage === 'albums' && albView.limit > ALB_PAGE_SIZE);
+  // スマホ版 v8.24.2：再生画面を開いている間は一覧が見えないので、途中では描き直さない（読み終わったときは描き直す）
+  var heavyList = (currentPage === 'library' && libView.limit > LIB_PAGE_SIZE) || (currentPage === 'albums' && albView.limit > ALB_PAGE_SIZE) ||
+    (typeof np !== 'undefined' && np.open);
   if (finished || (!heavyList && ['library', 'playlists', 'albums', 'artists', 'newsongs', 'western'].indexOf(currentPage) >= 0)) renderCurrentPage();
   if (typeof updatePlayerUi === 'function') updatePlayerUi();
 }
