@@ -18,7 +18,11 @@ var RO_MSG = 'スマホでは使えません（PCで操作してください）'
 // 今までの「window.innerWidth <= 760」の代わりに使う（横向きで幅が 760px を超えるスマホでも PC の並びにしない）
 var MOBILE_MQ = '(max-width: 760px), (orientation: landscape) and (max-height: 500px) and (max-width: 1000px)';
 var _mobileMql = window.matchMedia ? window.matchMedia(MOBILE_MQ) : null;
-function isMobileLayout() { return _mobileMql ? _mobileMql.matches : window.innerWidth <= 760; }
+// スマホ版 v8.24.1：表示モード（00-view-mode.js）の「スマホ表示」を当てているときは、幅に関係なくスマホの並び（vmMql が条件を書き換える）
+function isMobileLayout() {
+  var m = typeof vmMql === 'function' ? vmMql(MOBILE_MQ) : _mobileMql;
+  return m ? m.matches : window.innerWidth <= 760;
+}
 
 // 読み取り専用モードの表示（02 の renderConnectionStatus から呼ばれる）
 function renderReadonlyBanner() {

@@ -14,7 +14,9 @@
 var NP_LAND_MQ = '(orientation: landscape) and (max-height: 500px) and (max-width: 1000px)';
 var _npLandMql = window.matchMedia ? window.matchMedia(NP_LAND_MQ) : null;
 
-function npOneLand() { return !!(_npLandMql && _npLandMql.matches); }
+// スマホ版 v8.24.1：表示モード（00-view-mode.js）の「スマホ表示」のときは、横向きなら高さ・幅に関係なく横向きの並び（vmMql が条件を書き換える）
+function _npLandCur() { return typeof vmMql === 'function' ? vmMql(NP_LAND_MQ) : _npLandMql; }
+function npOneLand() { var m = _npLandCur(); return !!(m && m.matches); }
 
 // 横向きの class を付け外しする（68-np-onescreen.js の npOneSync のあとに）
 function npLandSync() {
@@ -44,7 +46,18 @@ function npLandRelayout() {
   });
 }
 window.addEventListener('orientationchange', npLandRelayout);
-if (_npLandMql) {
-  if (_npLandMql.addEventListener) _npLandMql.addEventListener('change', npLandRelayout);
-  else if (_npLandMql.addListener) _npLandMql.addListener(npLandRelayout);
+// 条件の切り替わりを見張る（表示モードを切り替えたら、見張る条件も付け替える。00-view-mode.js の setViewMode から呼ぶ）
+var _npLandWatched = null;
+function npLandBind() {
+  var m = _npLandCur();
+  if (m === _npLandWatched) return;
+  if (_npLandWatched) {
+    if (_npLandWatched.removeEventListener) _npLandWatched.removeEventListener('change', npLandRelayout);
+    else if (_npLandWatched.removeListener) _npLandWatched.removeListener(npLandRelayout);
+  }
+  _npLandWatched = m;
+  if (!m) return;
+  if (m.addEventListener) m.addEventListener('change', npLandRelayout);
+  else if (m.addListener) m.addListener(npLandRelayout);
 }
+npLandBind();

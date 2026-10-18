@@ -9,6 +9,7 @@ PAGE_RENDERERS.settings = renderSettingsPage;
 
 function renderSettingsPage() {
   applyUiLabelSetting();
+  if (typeof renderViewModeSetting === 'function') renderViewModeSetting();   // 表示モード（スマホ版 v8.24.1。00-view-mode.js）
   renderSetFolder();
   if (typeof renderSetMemo === 'function') renderSetMemo();   // 情報のメモファイル（v2.7）
   if (typeof renderSetHiddenAlbums === 'function') renderSetHiddenAlbums();   // 非表示のアルバム（v3.0）
