@@ -3570,3 +3570,34 @@ body.alb-fab-on #main { padding-bottom: calc(var(--player-h) + var(--lyr-bottom)
     #now-playing .np-top { gap: 4px; }
   }
 }
+
+/* ---------- スマホ版 v8.24.0：「音質ボタン」と「音質パネル」（91-equalizer.js）----------
+   ・音質ボタン（#np-eq-btn）：再生画面の音量の行（.np-volume）の右端。消音ボタンと同じ大きさ（np-btn-sm）。
+     フラット以外を選んでいるときは .active（アクセントの色）
+   ・音質パネル：ダイアログ（openDialog）。上に「今の音質」と特性のグラフ・10バンドの値、下にプリセットのチップ（3列。各チップに小さなグラフ） */
+.np-eq-btn svg { width: 18px; height: 18px; }
+#now-playing .np-volume .np-eq-btn svg { width: 16px; height: 16px; }
+.eq-panel { clear: both; }
+.eq-now { display: flex; align-items: baseline; flex-wrap: wrap; gap: 4px 8px; margin: 2px 0 2px; }
+.eq-now-label { font-size: 12px; color: var(--text-sub); }
+.eq-now-name { font-size: 18px; color: var(--ink); }
+.eq-now-pre { margin-left: auto; font-size: 11.5px; color: var(--text-sub); }
+.eq-now-desc { font-size: 12px; color: var(--text-sub); margin-bottom: 8px; }
+.eq-graph { border: 1px solid var(--border); border-radius: 10px; background: var(--surface-2); padding: 6px 6px 4px; margin-bottom: 10px; }
+.eq-curve { display: block; width: 100%; height: 26px; overflow: visible; }
+.eq-curve-big { height: 80px; }
+.eq-curve .eq-zero { stroke: var(--border2); stroke-width: 1; vector-effect: non-scaling-stroke; }
+.eq-curve .eq-line { fill: none; stroke: var(--primary-mid); stroke-width: 2; stroke-linejoin: round; vector-effect: non-scaling-stroke; }
+.eq-graph-labels { display: grid; grid-template-columns: repeat(10, minmax(0, 1fr)); margin-top: 4px; font-size: 10px; color: var(--text-sub); text-align: center; }
+.eq-graph-labels span { display: flex; flex-direction: column; line-height: 1.25; white-space: nowrap; }
+.eq-graph-labels b { font-size: 11px; color: var(--text); font-weight: 600; }
+.eq-graph-labels .is-up b { color: var(--primary-mid); }
+.eq-chips { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
+.eq-chip { display: flex; flex-direction: column; align-items: stretch; gap: 3px; min-height: 54px; padding: 6px 6px 5px; border: 1px solid var(--border2); border-radius: 12px;
+  background: var(--surface-2); color: var(--text); font-size: 13px; cursor: pointer; }
+.eq-chip .eq-curve .eq-line { stroke: var(--text-sub); }
+.eq-chip-name { text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.eq-chip.is-cur { border-color: var(--primary-mid); background: var(--primary-pale); color: var(--ink); font-weight: 700; box-shadow: inset 0 0 0 1px var(--primary-mid); }
+.eq-chip.is-cur .eq-curve .eq-line { stroke: var(--primary-mid); }
+.eq-chip:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+@media (max-width: 360px) { .eq-chip { font-size: 12px; padding: 5px 4px; } }

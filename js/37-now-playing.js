@@ -6,6 +6,7 @@
      再生操作（前・再生／一時停止・次・シャッフル・リピート）、シーク、音量・消音、時間付き歌詞（前後の行も。切り替えは保存 ui.npLyrics）
    ・オーディオビジュアライザー：Web Audio API。最初に再生画面を開いたとき（利用者の操作のあと）に AudioContext を作り、
      既存の audio 要素を createMediaElementSource で1回だけつなぐ（audio → 出力、audio → AnalyserNode の2本。音は今までどおり出る）。
+     スマホ版 v8.24.0：間に「音質」のイコライザー（91-equalizer.js の eqBuildChain）を入れる。音質を選んでいれば、再生画面を開く前でも再生時に作る
      描き方は「バー」「波形」「円」（ui.vizMode）。色はジャケットの代表色（取れなければテーマの色）を、ライト・ブラックの背景で見えるよう明るさを合わせる。
      再生画面を閉じている・タブが隠れているときは描かない。prefers-reduced-motion では 1秒に約8回だけ描き、動きを小さくする
    ・AudioContext が止まっている（ブラウザの自動再生の決まり）と音が出ないので、再生のたびに resume する
@@ -30,8 +31,18 @@ function _npEnsureAudioGraph() {
     np.analyser = np.ctx.createAnalyser();
     np.analyser.fftSize = 2048;
     np.analyser.smoothingTimeConstant = 0.8;
-    np.src.connect(np.ctx.destination);   // 音はそのまま出す
-    np.src.connect(np.analyser);          // 形を見るためだけの枝分かれ
+    // スマホ版 v8.24.0：音質（イコライザー。91-equalizer.js）を間に入れる。audio → イコライザー → プリアンプ → 出力。
+    //   ビジュアライザーはイコライザーの後・プリアンプの前から見る（音質で形は変わるが、全体の大きさは今まで通り）。
+    //   作れなかったときは今まで通り audio → 出力 に直接つなぐ
+    var eq = null;
+    if (typeof eqBuildChain === 'function') { try { eq = eqBuildChain(np.ctx, np.src); } catch (e) { console.warn('音質（イコライザー）を使えません', e); eq = null; } }
+    if (eq) {
+      eq.out.connect(np.ctx.destination);
+      eq.viz.connect(np.analyser);
+    } else {
+      np.src.connect(np.ctx.destination);   // 音はそのまま出す
+      np.src.connect(np.analyser);          // 形を見るためだけの枝分かれ
+    }
     np.freq = new Uint8Array(np.analyser.frequencyBinCount);
     np.wave = new Uint8Array(np.analyser.fftSize);
     // つないだあとは AudioContext が止まっていると音が出ないので、再生のたびに動かす

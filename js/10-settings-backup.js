@@ -195,6 +195,8 @@ async function onRestoreFileChosen(input) {
       // 再生画面の背景（スマホ版 v8.14.0。81-np-bg.js）：背景の種類・覆いの濃さ・自分の画像。古いバックアップに無ければ「なし」、画像が無ければ今の画像はそのまま
       (typeof npBgSummary === 'function' ? '<tr><td>再生画面の背景</td><td>' + npBgSummary(db.settings) + (npBgHasImage() ? '・自分の画像あり' : '') + '</td><td>' + npBgSummary(next.settings) +
         (npBgBackupHasImage(obj) ? '・自分の画像あり' : (npBgHasImage() ? '（画像は入っていないので今の画像のまま）' : '')) + '</td></tr>' : '') +
+      // 音質（スマホ版 v8.24.0。91-equalizer.js）：古いバックアップ・PC版のバックアップに無ければ「フラット」
+      (typeof eqPresetName === 'function' ? '<tr><td>音質（イコライザー）</td><td>' + escapeHtml(eqPresetName(db.settings)) + '</td><td>' + escapeHtml(eqPresetName(next.settings)) + '</td></tr>' : '') +
       '<tr><td>書き出した日時</td><td>—</td><td>' + (obj.exportedAt ? formatDateTime(obj.exportedAt) : '不明') + '</td></tr>' +
       '<tr><td>音楽フォルダ</td><td>' + escapeHtml(fsa.folderName || '—') + '</td><td>' + escapeHtml(obj.musicFolderName || '不明') + '</td></tr>' +
       '</table>' +
@@ -245,7 +247,8 @@ async function onRestoreFileChosen(input) {
     fillDisplayFields(t);
   });
   if (typeof migrateAlbumKeys === 'function') migrateAlbumKeys();   // 古いバックアップのカスタム順などの目印を今のまとめ方に（v2.9）
-  if (typeof npBgAfterRestore === 'function') await npBgAfterRestore(obj);   // 再生画面の背景（自分の画像を入れ替えて表示を合わせる。スマホ版 v8.14.0）
+  if (typeof npBgAfterRestore === 'function') await npBgAfterRestore(obj);
+  if (typeof eqAfterRestore === 'function') eqAfterRestore();   // 音質（イコライザー）を復元した設定に合わせる（スマホ版 v8.24.0）   // 再生画面の背景（自分の画像を入れ替えて表示を合わせる。スマホ版 v8.14.0）
   renderAll();
   showToast('バックアップから復元しました（プレイリスト ' + db.playlists.length + '件）');
 }
