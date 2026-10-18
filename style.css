@@ -3539,3 +3539,34 @@ body.alb-fab-on #main { padding-bottom: calc(var(--player-h) + var(--lyr-bottom)
   @keyframes np-jg-badge-rm { 0%, 70% { opacity: 1; } 100% { opacity: 0; } }
   .np-flow-item.np-jg-tap > * { animation: none; }
 }
+
+/* ---------- スマホ版 v8.23.6：再生画面の「プレイヤー表示の操作」（89-np-vis-gesture.js）----------
+   ・回転CD・カセット・レコード・MD の本体（.np-cd-disc・.np-cs-body・.np-rc-body・.np-md-body）を、ジャケットの並びと同じく
+     左右にはらうと次の曲／前の曲、押すと一時停止／再生にする（スマホの並びだけ）
+   ・本体は touch-action: pan-y（横の動きはアプリが受け取り、縦はブラウザへ）。押すと拡大ではないので、指の形は zoom-in にしない
+   ・動かしている間は置き場所（.np-cd-big など）を CSS の translate で少し横にずらす（transform・中の回る animation には触らない）。
+     離したら .np-vg-back で元の位置へなめらかに戻す（prefers-reduced-motion ではすぐ戻す）
+   ・タップの印（.np-jg-badge。v8.23.5 と同じ見た目）は、プレイヤー表示の枠（#np-vis-frame）の真ん中に出す */
+@media (max-width: 760px), (orientation: landscape) and (max-height: 500px) and (max-width: 1000px) {
+  #now-playing .np-cd-disc, #now-playing .np-cs-body, #now-playing .np-rc-body, #now-playing .np-md-body {
+    touch-action: pan-y; cursor: pointer; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; }
+  #now-playing .np-cd-disc img, #now-playing .np-cs-body img, #now-playing .np-rc-body img, #now-playing .np-md-body img { -webkit-user-drag: none; }
+}
+.np-vg-back { transition: translate 0.22s ease-out; }
+#now-playing .np-vis-frame > .np-jg-badge { top: 50%; }
+@media (prefers-reduced-motion: reduce) {
+  .np-vg-back { transition: none; }
+}
+
+/* ---------- スマホ版 v8.23.8：再生画面の「全画面ボタン」（#np-fs-btn。90-np-fullscreen.js）----------
+   ・上部のボタン列、閉じるボタン（×）のすぐ左。class に np-lyr-toggle を付けているので、大きさは v8.23.4 の指定
+     （閉じるボタンと同じ 40px の丸〔400px 以下は 36px〕・中のアイコン 16px）がそのまま効く
+   ・歌詞ボタンのように左の余白を auto にしない（左の余白は 0）。全画面の間は .active（紺の枠）
+   ・ボタンが1つ増えたので、横向きで上部のボタン列が狭いとき（中の幅 330px 以下：667px など）はすき間を 4px に詰める */
+.np-fs-btn { margin-left: 0; }
+#now-playing .np-top .np-fs-btn { margin-left: 0; }
+@media (orientation: landscape) and (max-height: 500px) and (max-width: 1000px) {
+  @container np-top (max-width: 330px) {
+    #now-playing .np-top { gap: 4px; }
+  }
+}

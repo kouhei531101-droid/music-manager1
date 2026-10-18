@@ -14,6 +14,9 @@
 var np = { open: false, pushed: false, afterClose: null, ctx: null, src: null, analyser: null, freq: null, wave: null, raf: 0, lastDraw: 0,
   color: null, colorKey: '', path: null, lyrIdx: -2, reduced: false };
 var NP_MODES = [['bars', 'バー'], ['wave', '波形'], ['circle', '円']];
+// 再生画面の「歌詞ボタン」のアイコン（スマホ版 v8.23.7：PC版 v8.7.66 の ICONS.lyrics と同じマイクの絵。再生画面の上の列の歌詞ボタンだけに使う。
+//   再生バーなど再生画面以外の歌詞のアイコン〔ICONS.lyrics〕は変えない）
+var NP_LYR_ICON = _svg('<rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0"/><line x1="12" y1="17.5" x2="12" y2="21"/><line x1="8.5" y1="21" x2="15.5" y2="21"/>', 16);
 function npMode() { var m = ui.vizMode; return NP_MODES.some(function (x) { return x[0] === m; }) ? m : 'bars'; }
 
 /* ---------- Web Audio（1回だけつなぐ） ---------- */
@@ -105,7 +108,7 @@ function _npEnsureDom() {
     '<div class="np-top">' +
       '<div class="np-modes" role="group" aria-label="オーディオビジュアライザーの描き方" id="np-modes"></div>' +
       '<span class="ui-label-tag ui-label-tag-onlight" style="position:static" onclick="copyUiLabel(\'オーディオビジュアライザー\', event)" title="クリックで「オーディオビジュアライザー」をコピー">□</span>' +
-      '<button class="np-lyr-toggle" id="np-lyr-toggle" aria-pressed="false">' + ICONS.lyrics + '歌詞</button>' +
+      '<button class="np-lyr-toggle" id="np-lyr-toggle" aria-pressed="false">' + NP_LYR_ICON + '歌詞</button>' +
       '<button class="np-close" id="np-close" title="再生画面を閉じる（Esc）" aria-label="再生画面を閉じる">' + ICONS.x + '</button>' +
     '</div>' +
     '<div class="np-main">' +

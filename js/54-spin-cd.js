@@ -24,7 +24,7 @@ var SCD_ICON = _svg('<circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1
 // スマホ版 v8.9：「なし」をやめ、先頭に「ジャケット」（'jacket'。ジャケットの並び）を足した。順は ジャケット → 回転CD → カセット → レコード → MD → …
 var NP_VISUALS = [['jacket', 'ジャケット'], ['cd', '回転CD'], ['cassette', 'カセット'], ['record', 'レコード'], ['md', 'MD']];
 var NP_VISUAL_LONG = { jacket: 'ジャケットの並び', cd: '回転CD', cassette: 'カセットテープ', record: 'レコード', md: 'MD（ミニディスク）' };   // ボタンの説明に使う名前
-// 「ジャケット」のアイコン（真ん中の四角と、左右に重なったジャケットの縁）
+// 「ジャケット」のアイコン（真ん中の四角と、左右に重なったジャケットの縁）。スマホ版 v8.23.7 からプレイヤー表示ボタンでは使わない（PC版と同じ ICONS.image）
 var FLOW_VIS_ICON = _svg('<rect x="7" y="5" width="10" height="14" rx="1.5"/><path d="M5 7.5v9M2.5 9v6M19 7.5v9M21.5 9v6"/>');
 // 今のプレイヤー表示（v8.4。古いデータは npSpinCd から読む。スマホ版 v8.9：古い 'none'〔なし〕・'flow' と npSpinCd:false は 'jacket' として読む）
 function npVisual() {
@@ -103,7 +103,8 @@ function spinCdApply() {
   var vis = npVisual(), on = vis === 'cd', tg = _scdEnsureToggle(el), box = _scdEnsureDisc(el);
   if (tg) {
     var next = NP_VISUALS[(NP_VISUALS.findIndex(function (x) { return x[0] === vis; }) + 1) % NP_VISUALS.length][0];
-    var icon = vis === 'jacket' ? FLOW_VIS_ICON : vis === 'cassette' && typeof CST_ICON !== 'undefined' ? CST_ICON : vis === 'record' && typeof RC_ICON !== 'undefined' ? RC_ICON : vis === 'md' && typeof MD_ICON !== 'undefined' ? MD_ICON : SCD_ICON;
+    var icon = vis === 'jacket' ? ICONS.image :   // スマホ版 v8.23.7：ジャケットは PC版の再生画面と同じ ICONS.image（回転CD・カセット・レコード・MD は前から PC版と同じ絵）
+       vis === 'cassette' && typeof CST_ICON !== 'undefined' ? CST_ICON : vis === 'record' && typeof RC_ICON !== 'undefined' ? RC_ICON : vis === 'md' && typeof MD_ICON !== 'undefined' ? MD_ICON : SCD_ICON;
     tg.innerHTML = icon + _npVisualName(vis);
     tg.classList.toggle('active', true);   // スマホ版 v8.9：「なし」が無くなったので、いつも何かを表示中
     tg.setAttribute('aria-label', 'プレイヤー表示：' + _npVisualName(vis));

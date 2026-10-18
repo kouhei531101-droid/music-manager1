@@ -961,9 +961,10 @@ function openNpBgDialog() {
 }
 
 /* ---------- 「背景ボタン」（スマホ版 v8.14.2。再生画面の上の列、描き方ボタン ⓘ の右） ----------
-   風景（山と太陽を枠で囲んだ）アイコンの丸いボタン。押すと「背景の選択」ダイアログを直接開く。大きさは描き方ボタンと同じ（40px。400px 以下は 36px） */
-var NP_BG_BTN_ICON = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
-  '<rect x="3" y="4.5" width="18" height="15" rx="2.5"/><circle cx="16" cy="9.2" r="1.7"/><path d="M3.5 17.5l5.2-6 3.8 4.3 2.4-2.6 5.6 5.8"/></svg>';
+   風景（山と太陽を枠で囲んだ）アイコンの丸いボタン。押すと「背景の選択」ダイアログを直接開く。大きさは描き方ボタンと同じ（40px。400px 以下は 36px）
+   スマホ版 v8.23.7：絵柄を PC版の背景ボタン（np-bg-panel.js の NP_BG_ICON）と同じにした。中のアイコンの大きさ（20px）は今まで通り */
+var NP_BG_BTN_ICON = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
+  '<rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="8.5" cy="9" r="1.6"/><path d="M3 17l5-5 4 4 3-3 6 6"/></svg>';
 function _npbgEnsureBtn() {
   var host = document.getElementById('now-playing');
   if (!host || document.getElementById('np-bg-btn')) return;

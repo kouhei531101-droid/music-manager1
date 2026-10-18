@@ -25,7 +25,7 @@ function _npalEnsure(el) {
   // 「曲リスト」ボタン（歌詞ボタンの右）
   var lt = el.querySelector('#np-lyr-toggle'), tg = document.createElement('button');
   tg.className = 'np-lyr-toggle np-al-toggle'; tg.id = 'np-al-toggle';
-  tg.innerHTML = ICONS.album + '曲リスト'; tg.setAttribute('aria-label', '曲リスト');
+  tg.innerHTML = ICONS.playlist + '曲リスト';   // スマホ版 v8.23.7：PC版の再生画面のキューボタンと同じ ICONS.playlist（アルバムの曲リストでもプレイリストのキューでも同じ絵） tg.setAttribute('aria-label', '曲リスト');
   lt.insertAdjacentElement('afterend', tg);
   tg.addEventListener('click', function () { ui.npAlbumList = !npAlbumListOn(); saveUi(); npal.key = ''; npAlbumRender(true); });
   sec = document.createElement('section');

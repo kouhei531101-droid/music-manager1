@@ -15,7 +15,10 @@
        中央（再生中の曲）のジャケットを押す → ジャケット拡大表示　→　一時停止／再生 に変更
        前後のジャケットを押す → その曲を再生　→　一時停止／再生 に変更
        左右にスワイプ → 並びを見るだけ（曲は変わらず5秒で戻る）　→　次の曲／前の曲 に変更
-     ジャケット拡大表示は、回転CD・カセット・レコード・MD を押したとき・PC 幅のジャケットの並びでは今まで通り
+     ジャケット拡大表示は、PC 幅のジャケットの並びでは今まで通り
+   ・スマホ版 v8.23.6：回転CD・カセット・レコード・MD でも同じ操作にした（89-np-vis-gesture.js）。そのため判定・曲送り・一時停止／再生・印を
+     共通の部品（npGestureFlickDir・npGestureSkip・npGestureToggle・npGestureBadge）に分けた。
+     印の向きの直し：v8.23.5 は togglePlay() のあとの状態で決めていたため、再生を始めたのに ❚❚ が出ていた → 押す前の状態で決める
    ・保存データ・バックアップには触らない
    ========================================================= */
 
@@ -33,9 +36,7 @@ function npJacketFlickEnd(ev) {
   var dx = 0, dy = 0;
   if (ev && ev.type === 'pointerup') { dx = ev.clientX - flow.x0; dy = ev.clientY - (flow.y0 || ev.clientY); }
   flow.drag = 0;
-  if (Math.abs(dx) >= JG_FLICK_PX && Math.abs(dx) > Math.abs(dy) && player.queue && player.queue.length) {
-    if (dx < 0) playNext(true); else playPrev();
-  }
+  npGestureSkip(npGestureFlickDir(dx, dy));
   // 再生中の曲を中央に（曲が変わっていれば、指の位置からなめらかに次の曲へ。変わらなければ元の位置へ戻る）
   flow.view = Math.max(0, player.index);
   flowRender();
@@ -49,18 +50,36 @@ function npJacketFlickEnd(ev) {
   window.flowActivate = function (it) {
     if (!npJacketGestureOn()) return f.apply(this, arguments);
     if (flow.idleTimer) { clearTimeout(flow.idleTimer); flow.idleTimer = 0; }
-    togglePlay();
-    _jgTapFeedback();
+    var willPlay = npGestureToggle();
+    _jgTapFeedback(willPlay);
   };
 })();
 
-// タップの手ごたえ：中央に ▶／❚❚ の印を一瞬出し、中央のジャケットを軽く沈ませる
-function _jgTapFeedback() {
-  var box = document.getElementById('np-flow');
+/* ---------- 共通の部品（スマホ版 v8.23.6 で分けた。ジャケットの並びと、回転CD・カセット・レコード・MD の両方で使う） ---------- */
+// フリックの判定：横に JG_FLICK_PX 以上・横の動きが縦より大きければ 'next'（左へ）／'prev'（右へ）、そうでなければ ''
+function npGestureFlickDir(dx, dy) {
+  if (Math.abs(dx) < JG_FLICK_PX || Math.abs(dx) <= Math.abs(dy)) return '';
+  return dx < 0 ? 'next' : 'prev';
+}
+// 曲送り：'next' → 次の曲 playNext(true)、'prev' → 前の曲 playPrev()。曲リストが空なら何もしない。送ったら true
+function npGestureSkip(dir) {
+  if (!dir || !player.queue || !player.queue.length) return false;
+  if (dir === 'next') playNext(true); else playPrev();
+  return true;
+}
+// 一時停止／再生（togglePlay()）。戻り値：再生を始めたら true、止めたら false
+//   押す前の状態で決める（v8.23.5 は押したあとの paused で決めていたため、印が逆〔始めたのに ❚❚〕になっていたのを直した）
+function npGestureToggle() {
+  var a = player.audio;
+  var willPlay = !(a && a.getAttribute('src') && !a.paused);
+  togglePlay();
+  return willPlay;
+}
+// 「タップの印」（.np-jg-badge）を box の真ん中に一瞬出す（再生を始めた → ▶、止めた → ❚❚）
+function npGestureBadge(box, willPlay) {
   if (!box) return;
-  // 押したあとの状態（再生を始めた → ▶、止めた → ❚❚）。play() は少し遅れるので、押す前の状態の反対で決める
-  var willPlay = !(player.audio && !player.audio.paused);
-  var badge = box.querySelector('.np-jg-badge');
+  var badge = null;
+  for (var i = 0; i < box.children.length; i++) if (box.children[i].classList.contains('np-jg-badge')) badge = box.children[i];
   if (!badge) {
     badge = document.createElement('span');
     badge.className = 'np-jg-badge';
@@ -69,6 +88,13 @@ function _jgTapFeedback() {
   }
   badge.innerHTML = willPlay ? ICONS.play : ICONS.pause;
   badge.classList.remove('is-show'); void badge.offsetWidth; badge.classList.add('is-show');
+}
+
+// タップの手ごたえ（ジャケットの並び）：中央に ▶／❚❚ の印を一瞬出し、中央のジャケットを軽く沈ませる
+function _jgTapFeedback(willPlay) {
+  var box = document.getElementById('np-flow');
+  if (!box) return;
+  npGestureBadge(box, willPlay);
   var cur = box.querySelector('.np-flow-item.is-center');
   if (cur) { cur.classList.remove('np-jg-tap'); void cur.offsetWidth; cur.classList.add('np-jg-tap'); }
 }
