@@ -126,6 +126,7 @@ async function exportBackup() {
     appVersion: APP_VERSION,
     exportedAt: nowIso(),
     musicFolderName: fsa.folderName || db.settings.musicFolderName || '',
+    ui: { theme: currentThemeSetting() },   // 画面の色（v8.24.3。この端末の見た目の設定 musicManager_ui のうち、画面の色だけ入れる）
     data: db
   };
   if (npBgImage) payload.npBgImage = npBgImage;
@@ -164,6 +165,8 @@ async function onRestoreFileChosen(input) {
     return;
   }
   var next = normalizeDB(data);
+  // 画面の色（v8.24.3）：入っていない古いバックアップ・知らない値なら、今の色のまま変えない
+  var bkTheme = obj && obj.ui && typeof obj.ui.theme === 'string' && themeInfo(obj.ui.theme) ? obj.ui.theme : null;
   var v = await openDialog({
     title: 'バックアップから復元',
     size: 'small',
@@ -198,6 +201,7 @@ async function onRestoreFileChosen(input) {
         (npBgBackupHasImage(obj) ? '・自分の画像あり' : (npBgHasImage() ? '（画像は入っていないので今の画像のまま）' : '')) + '</td></tr>' : '') +
       // 音質（スマホ版 v8.24.0。91-equalizer.js）：古いバックアップ・PC版のバックアップに無ければ「フラット」
       (typeof eqPresetName === 'function' ? '<tr><td>音質（イコライザー）</td><td>' + escapeHtml(eqPresetName(db.settings)) + '</td><td>' + escapeHtml(eqPresetName(next.settings)) + '</td></tr>' : '') +
+      '<tr><td>画面の色</td><td>' + escapeHtml(themeName(currentThemeSetting())) + '</td><td>' + (bkTheme ? escapeHtml(themeName(bkTheme)) : '含まれていません（今の色のまま）') + '</td></tr>' +
       '<tr><td>書き出した日時</td><td>—</td><td>' + (obj.exportedAt ? formatDateTime(obj.exportedAt) : '不明') + '</td></tr>' +
       '<tr><td>音楽フォルダ</td><td>' + escapeHtml(fsa.folderName || '—') + '</td><td>' + escapeHtml(obj.musicFolderName || '不明') + '</td></tr>' +
       '</table>' +
@@ -239,6 +243,7 @@ async function onRestoreFileChosen(input) {
     document.getElementById('pb-volume').value = Math.round(player.audio.volume * 100);
   }
   ui.lastPlaylistId = db.playlists.length ? db.playlists[0].id : null; saveUi();
+  if (bkTheme) setTheme(bkTheme);   // 画面の色（v8.24.3）
   renderAll();
   if (typeof lyricsReload === 'function') lyricsReload();   // 入力した歌詞が変わったかもしれないので表示し直す
   // アプリ内の曲情報の上書きが変わったかもしれないので、曲の表示を作り直す

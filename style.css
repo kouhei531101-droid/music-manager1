@@ -215,6 +215,213 @@
   --md-hub:       #b4b7c4;
   --md-hub-dark:  #3e4050;
 }
+/* 色テーマ（vv8.24.3）：ライト・ブラックのほかに選べる6色。<html data-palette="blue"> などを付けて、色の変数だけを上書きする（部品の CSS は同じ）。
+   明るい系（ブルー・グリーン・ピンク・オレンジ・セピア）は data-theme を付けない（＝ライトの上に重ねる）。
+   暗い系（パープル）は data-theme="dark" も付ける（＝ブラックの上に重ねる。暗い面用の部品の上書きやビジュアライザーの明るさもブラックと同じになる）。
+   当て方は 01-core.js の applyTheme()・index.html の head。テーマの一覧は 01-core.js の THEME_LIST。
+   文字の読みやすさ：本文 12:1 以上・補足 5:1 以上・見出し 10:1 以上・白い文字のボタン／ページヘッダー 4.5:1 以上（ライトと同じくらい） */
+:root {
+  /* tools の「画面の色の設定」の色見本（どのテーマでも同じ色。左上＝ヘッダーの色・右下＝本文の背景の色） */
+  --sw-light-a: #463f8c;  --sw-light-b: #f6f5fa;
+  --sw-dark-a:  #3e3874;  --sw-dark-b:  #121216;
+  --sw-blue-a:  #1f5592;  --sw-blue-b:  #f2f6fb;
+  --sw-green-a: #2b6a4b;  --sw-green-b: #f2f7f3;
+  --sw-pink-a:  #983264;  --sw-pink-b:  #fbf3f7;
+  --sw-purple-a: #553388; --sw-purple-b: #16111e;
+  --sw-orange-a: #9f4b13; --sw-orange-b: #fcf5ef;
+  --sw-sepia-a: #6a5136;  --sw-sepia-b: #f3eee3;
+}
+/* ブルー（明るい系） */
+:root[data-palette="blue"] {
+  --bg:            #f2f6fb;
+  --surface-2:     #f7f9fd;
+  --border:        rgba(30, 60, 120, 0.12);
+  --border2:       rgba(30, 60, 120, 0.24);
+  --primary-deep:  #163a62;
+  --primary-mid:   #1f5592;
+  --primary:       #2e6cb5;
+  --primary-dim:   rgba(46, 108, 181, 0.14);
+  --primary-pale:  #e2ecf8;
+  --text:          #1a2230;
+  --text-sub:      #5b6676;
+  --text-faint:    #8b95a5;
+  --shadow-sm: 0 1px 4px rgba(20, 45, 90, 0.08);
+  --shadow:    0 4px 16px rgba(20, 45, 90, 0.10);
+  --shadow-md: 0 8px 28px rgba(20, 45, 90, 0.16);
+  --ink:           #163a62;
+  --ink-mid:       #1f5592;
+  --ink-soft:      #2a64a8;
+  --on-light-ink:  #163a62;
+  --header-a:      #1f5592;
+  --header-b:      #2e6cb5;
+  --label-bg:      rgba(22, 58, 98, 0.12);
+  --label-fg:      #163a62;
+  --toast-bg:      #163a62;
+  --light-pale:    #e2ecf8;
+  --cd-tint-1:     #cfdff4;
+  --cd-hub-edge:   rgba(30, 60, 120, 0.28);
+  --cd-rim:        rgba(30, 60, 120, 0.30);
+}
+/* グリーン（明るい系） */
+:root[data-palette="green"] {
+  --bg:            #f2f7f3;
+  --surface-2:     #f7fbf8;
+  --border:        rgba(30, 80, 55, 0.12);
+  --border2:       rgba(30, 80, 55, 0.24);
+  --primary-deep:  #1e4834;
+  --primary-mid:   #2b6a4b;
+  --primary:       #3a8060;
+  --primary-dim:   rgba(58, 128, 96, 0.14);
+  --primary-pale:  #e1f0e6;
+  --text:          #1b241f;
+  --text-sub:      #5b6a62;
+  --text-faint:    #8d9b93;
+  --shadow-sm: 0 1px 4px rgba(20, 60, 40, 0.08);
+  --shadow:    0 4px 16px rgba(20, 60, 40, 0.10);
+  --shadow-md: 0 8px 28px rgba(20, 60, 40, 0.16);
+  --ink:           #1e4834;
+  --ink-mid:       #2b6a4b;
+  --ink-soft:      #2e7051;
+  --on-light-ink:  #1e4834;
+  --header-a:      #2b6a4b;
+  --header-b:      #3a8060;
+  --label-bg:      rgba(30, 72, 52, 0.12);
+  --label-fg:      #1e4834;
+  --toast-bg:      #1e4834;
+  --light-pale:    #e1f0e6;
+  --cd-tint-1:     #d2ead9;
+  --cd-hub-edge:   rgba(30, 80, 55, 0.28);
+  --cd-rim:        rgba(30, 80, 55, 0.30);
+}
+/* ピンク（明るい系） */
+:root[data-palette="pink"] {
+  --bg:            #fbf3f7;
+  --surface-2:     #fdf8fa;
+  --border:        rgba(120, 40, 80, 0.12);
+  --border2:       rgba(120, 40, 80, 0.24);
+  --primary-deep:  #682244;
+  --primary-mid:   #983264;
+  --primary:       #b6487d;
+  --primary-dim:   rgba(182, 72, 125, 0.14);
+  --primary-pale:  #f8e4ee;
+  --text:          #2a1c23;
+  --text-sub:      #735f69;
+  --text-faint:    #a3909a;
+  --shadow-sm: 0 1px 4px rgba(90, 30, 60, 0.08);
+  --shadow:    0 4px 16px rgba(90, 30, 60, 0.10);
+  --shadow-md: 0 8px 28px rgba(90, 30, 60, 0.16);
+  --ink:           #682244;
+  --ink-mid:       #983264;
+  --ink-soft:      #a53e6e;
+  --on-light-ink:  #682244;
+  --header-a:      #983264;
+  --header-b:      #b6487d;
+  --label-bg:      rgba(104, 34, 68, 0.12);
+  --label-fg:      #682244;
+  --toast-bg:      #682244;
+  --light-pale:    #f8e4ee;
+  --cd-tint-1:     #f3d6e4;
+  --cd-hub-edge:   rgba(120, 40, 80, 0.28);
+  --cd-rim:        rgba(120, 40, 80, 0.30);
+}
+/* オレンジ（明るい系）。「＋追加」などのアクセント色は、オレンジと見分けられるよう青緑にする */
+:root[data-palette="orange"] {
+  --bg:            #fcf5ef;
+  --surface-2:     #fefaf6;
+  --border:        rgba(120, 65, 20, 0.12);
+  --border2:       rgba(120, 65, 20, 0.24);
+  --primary-deep:  #693310;
+  --primary-mid:   #9f4b13;
+  --primary:       #be601e;
+  --primary-dim:   rgba(190, 96, 30, 0.14);
+  --primary-pale:  #fae8d8;
+  --accent:        #1f7a75;
+  --accent-light:  #3a9a94;
+  --new-ink:       #1b6b66;
+  --text:          #2b2018;
+  --text-sub:      #74645a;
+  --text-faint:    #a3948a;
+  --shadow-sm: 0 1px 4px rgba(90, 45, 15, 0.08);
+  --shadow:    0 4px 16px rgba(90, 45, 15, 0.10);
+  --shadow-md: 0 8px 28px rgba(90, 45, 15, 0.16);
+  --ink:           #693310;
+  --ink-mid:       #9f4b13;
+  --ink-soft:      #a6521a;
+  --on-light-ink:  #693310;
+  --header-a:      #9f4b13;
+  --header-b:      #b0561a;
+  --playing-bg:    rgba(31, 122, 117, 0.09);
+  --label-bg:      rgba(105, 51, 16, 0.12);
+  --label-fg:      #693310;
+  --toast-bg:      #693310;
+  --light-pale:    #fae8d8;
+  --cd-tint-1:     #cfe8e4;
+  --cd-hub-edge:   rgba(120, 65, 20, 0.28);
+  --cd-rim:        rgba(120, 65, 20, 0.30);
+}
+/* セピア（明るい系）。古い紙のような、少し黄みのある面 */
+:root[data-palette="sepia"] {
+  --bg:            #f3eee3;
+  --surface:       #fbf8f1;
+  --surface-2:     #f6f1e6;
+  --border:        rgba(90, 65, 30, 0.14);
+  --border2:       rgba(90, 65, 30, 0.26);
+  --primary-deep:  #493927;
+  --primary-mid:   #6a5136;
+  --primary:       #86673e;
+  --primary-dim:   rgba(134, 103, 62, 0.16);
+  --primary-pale:  #ebe2cf;
+  --accent:        #c0602a;
+  --text:          #2e261c;
+  --text-sub:      #6b5f50;
+  --text-faint:    #978b79;
+  --shadow-sm: 0 1px 4px rgba(70, 50, 20, 0.10);
+  --shadow:    0 4px 16px rgba(70, 50, 20, 0.12);
+  --shadow-md: 0 8px 28px rgba(70, 50, 20, 0.18);
+  --ink:           #493927;
+  --ink-mid:       #6a5136;
+  --ink-soft:      #785b37;
+  --on-light-ink:  #493927;
+  --header-a:      #6a5136;
+  --header-b:      #86673e;
+  --chip-bg:       rgba(251, 248, 241, 0.92);
+  --chip-bg-soft:  rgba(251, 248, 241, 0.88);
+  --chip-hover:    #fbf8f1;
+  --label-bg:      rgba(73, 57, 39, 0.12);
+  --label-fg:      #493927;
+  --toast-bg:      #493927;
+  --light-pale:    #ebe2cf;
+  --cd-tint-1:     #e6dcc6;
+  --cd-hub-edge:   rgba(90, 65, 30, 0.28);
+  --cd-rim:        rgba(90, 65, 30, 0.30);
+}
+/* パープル（暗い系。data-theme="dark" と一緒に付ける）：ブラックより紫の強い夜の色 */
+:root[data-theme="dark"][data-palette="purple"] {
+  --bg:            #16111e;
+  --surface:       #20192b;
+  --surface-2:     #2a2137;
+  --border:        rgba(230, 210, 255, 0.11);
+  --border2:       rgba(230, 210, 255, 0.21);
+  --primary-deep:  #1b1128;
+  --primary-mid:   #7348b8;
+  --primary:       #9f78e4;
+  --primary-dim:   rgba(170, 130, 240, 0.22);
+  --primary-pale:  #35264c;
+  --text:          #f0eaf7;
+  --text-sub:      #c2b5d2;
+  --text-faint:    #9888a9;
+  --ink:           #e8dcff;
+  --ink-mid:       #ccb4ff;
+  --ink-soft:      #bea2fa;
+  --header-a:      #3a2460;
+  --header-b:      #553388;
+  --chip-bg:       rgba(52, 40, 70, 0.92);
+  --chip-bg-soft:  rgba(52, 40, 70, 0.88);
+  --chip-hover:    #45365c;
+  --label-fg:      #e8dcff;
+  --toast-bg:      #47336b;
+  --cd-tint-1:     #4a3470;
+}
 
 /* ---------- 2. 基本 ---------- */
 * { box-sizing: border-box; }
@@ -1357,6 +1564,18 @@ body.lyr-collapsed { --lyr-right: var(--lyrics-strip-w); }
 .theme-choice { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 16px; margin: 4px 0 12px; font-size: 13.5px; }
 .theme-choice-label { font-weight: 700; margin-right: 4px; }
 .theme-choice label { display: inline-flex; align-items: center; gap: 5px; cursor: pointer; }
+/* 画面の色の設定の色見本（v8.24.3）：左上＝ヘッダーの色・右下＝本文の背景の色。色は :root の --sw-* */
+.theme-swatch { display: inline-block; flex: none; width: 15px; height: 15px; border-radius: 50%; border: 1px solid var(--border2);
+  background: linear-gradient(135deg, var(--sw-a) 0 50%, var(--sw-b) 50% 100%); }
+.theme-swatch[data-sw="light"] { --sw-a: var(--sw-light-a); --sw-b: var(--sw-light-b); }
+.theme-swatch[data-sw="dark"] { --sw-a: var(--sw-dark-a); --sw-b: var(--sw-dark-b); }
+.theme-swatch[data-sw="blue"] { --sw-a: var(--sw-blue-a); --sw-b: var(--sw-blue-b); }
+.theme-swatch[data-sw="green"] { --sw-a: var(--sw-green-a); --sw-b: var(--sw-green-b); }
+.theme-swatch[data-sw="pink"] { --sw-a: var(--sw-pink-a); --sw-b: var(--sw-pink-b); }
+.theme-swatch[data-sw="purple"] { --sw-a: var(--sw-purple-a); --sw-b: var(--sw-purple-b); }
+.theme-swatch[data-sw="orange"] { --sw-a: var(--sw-orange-a); --sw-b: var(--sw-orange-b); }
+.theme-swatch[data-sw="sepia"] { --sw-a: var(--sw-sepia-a); --sw-b: var(--sw-sepia-b); }
+.theme-swatch[data-sw="auto"] { background: linear-gradient(135deg, var(--sw-light-b) 0 50%, var(--sw-dark-b) 50% 100%); }
 .tagedit-write { display: flex; align-items: center; gap: 8px; font-size: 13.5px; font-weight: 700; margin-top: 6px; cursor: pointer; }
 .tagedit-write input { width: 17px; height: 17px; }
 .tagedit-itunes { font-size: 11px; }
@@ -1554,7 +1773,7 @@ body.load-progress-on { --load-h: 34px; }
 /* 帯のアイコンは回さない（回るのは「読み直す」ボタンだけ。描き直しを減らして読み込みを遅くしないため） */
 .lp-spin svg { width: 13px; height: 13px; }
 .lp-stop { flex: none; font-size: 11px; padding: 1px 8px; }
-.lp-bar { height: 3px; background: rgba(91, 83, 168, 0.18); border-radius: 2px; overflow: hidden; }
+.lp-bar { height: 3px; background: var(--primary-dim); border-radius: 2px; overflow: hidden; }
 .lp-fill { height: 100%; width: 100%; background: var(--primary); border-radius: 2px; transform-origin: left center; transform: scaleX(0); }   /* 長さは transform で（描き直しを少なく） */
 .load-progress.is-indeterminate .lp-fill {   /* 全体の数がまだ分からない（① フォルダの中を探す） */
   background: linear-gradient(90deg, transparent 0%, var(--primary) 50%, transparent 100%); background-size: 40% 100%; background-repeat: no-repeat;

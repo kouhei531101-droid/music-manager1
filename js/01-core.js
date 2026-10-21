@@ -384,21 +384,43 @@ function applyUiLabelSetting() {
   var pa = document.getElementById('set-pl-autoopen');   // v5.6
   if (pa) pa.checked = !!db.settings.plAutoOpen;
 }
-/* ---------- 画面の色（v3.7） ----------
-   ui.theme：'light'（初期値。今までの見た目）・'dark'（ブラックモード）・'auto'（パソコンの設定 prefers-color-scheme に合わせる）。
-   この PC の見た目の設定なので musicManager_ui に保存（バックアップには入れない）。<html data-theme="dark"> を付け外しするだけで、
-   CSS の色の変数（style.css の :root[data-theme="dark"]）がすぐ切り替わる。起動時は index.html の head で先に当てる */
+/* ---------- 画面の色（v3.7。v8.24.3 で色テーマを追加） ----------
+   ui.theme：'light'（初期値。今までの見た目）・'dark'（ブラックモード）・'auto'（パソコンの設定 prefers-color-scheme に合わせる）、
+   v8.24.3 から色テーマ 'blue'・'green'・'pink'・'orange'・'sepia'（明るい系）・'purple'（暗い系）。一覧は THEME_LIST。
+   保存は今までどおり musicManager_ui の theme（今までの 'light'・'dark'・'auto' はそのまま使える。知らない値はライト）。
+   v8.24.3 から、バックアップにも ui.theme として入れる（10-settings-backup.js。入っていない古いバックアップを復元しても今の色のまま）。
+   当て方：<html data-theme="dark">（ブラック・暗い系の色テーマ・自動で暗いとき）と <html data-palette="blue"> など（色テーマのとき）を付け外しするだけで、
+   CSS の色の変数（style.css の :root[data-theme="dark"]・:root[data-palette="…"]）がすぐ切り替わる。起動時は index.html の head で先に当てる */
+var THEME_LIST = [
+  { id: 'light', name: 'ライト' },
+  { id: 'dark', name: 'ブラック', dark: true },
+  { id: 'auto', name: '自動' },
+  { id: 'blue', name: 'ブルー', palette: true },
+  { id: 'green', name: 'グリーン', palette: true },
+  { id: 'pink', name: 'ピンク', palette: true },
+  { id: 'orange', name: 'オレンジ', palette: true },
+  { id: 'sepia', name: 'セピア', palette: true },
+  { id: 'purple', name: 'パープル（暗め）', palette: true, dark: true }
+];
+function themeInfo(v) { for (var i = 0; i < THEME_LIST.length; i++) if (THEME_LIST[i].id === v) return THEME_LIST[i]; return null; }
+function normalizeTheme(v) { return themeInfo(v) ? v : 'light'; }   // 知らない値・空はライト
+function themeName(v) { var t = themeInfo(v); return t ? t.name : 'ライト'; }
 var _themeMq = window.matchMedia ? window.matchMedia('(prefers-color-scheme: dark)') : null;
-function currentThemeSetting() { return ui.theme === 'dark' || ui.theme === 'auto' ? ui.theme : 'light'; }
+function currentThemeSetting() { return normalizeTheme(ui.theme); }
 function applyTheme() {
-  var t = currentThemeSetting();
-  var dark = t === 'dark' || (t === 'auto' && !!(_themeMq && _themeMq.matches));
-  if (dark) document.documentElement.setAttribute('data-theme', 'dark');
-  else document.documentElement.removeAttribute('data-theme');
+  var t = currentThemeSetting(), info = themeInfo(t), root = document.documentElement;
+  var dark = !!info.dark || (t === 'auto' && !!(_themeMq && _themeMq.matches));
+  if (dark) root.setAttribute('data-theme', 'dark');
+  else root.removeAttribute('data-theme');
+  if (info.palette) root.setAttribute('data-palette', t);   // 色テーマ（v8.24.3）
+  else root.removeAttribute('data-palette');
   document.querySelectorAll('#set-theme input[name="theme"]').forEach(function (r) { r.checked = r.value === t; });
+  // ブラウザの上の帯の色（スマホ・ホーム画面に追加したとき）もサイドバーの色に合わせる（v8.24.3）
+  var meta = document.querySelector('meta[name="theme-color"]');
+  if (meta) { var c = getComputedStyle(root).getPropertyValue('--primary-deep').trim(); if (c) meta.setAttribute('content', c); }
 }
 function setTheme(v) {
-  ui.theme = v === 'dark' || v === 'auto' ? v : 'light';
+  ui.theme = normalizeTheme(v);
   saveUi();
   applyTheme();
 }
