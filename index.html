@@ -8,14 +8,14 @@
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="theme-color" content="#2b2757">
 <meta name="mobile-web-app-capable" content="yes">
-<link rel="icon" href="icons/icon.svg?v=20261022-1" type="image/svg+xml">
-<link rel="apple-touch-icon" href="icons/icon-192.png?v=20261022-1">
+<link rel="icon" href="icons/icon.svg?v=20261022-2" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icons/icon-192.png?v=20261022-2">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,700&family=Cinzel:wght@400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=20261022-1">
+<link rel="stylesheet" href="style.css?v=20261022-2">
 <!-- 表示モード（スマホ版 v8.24.1。00-view-mode.js）：style.css の直後・最初の描画の前に、スマホ表示／PC表示を当てる -->
-<script src="js/00-view-mode.js?v=20261022-1"></script>
+<script src="js/00-view-mode.js?v=20261022-2"></script>
 <!-- 画面の色（v3.7。v8.24.3 で色テーマを追加）：最初の描画の前にブラックモード・色テーマを当てる（白→黒のちらつきを防ぐ）。保存場所は musicManager_ui の theme -->
 <script>
 (function () {
@@ -457,201 +457,254 @@
         <h1>tools</h1>
       </div>
       <div class="page-body settings-body">
-        <!-- 表示モード（スマホ版 v8.24.1。00-view-mode.js）：自動／スマホ表示／PC表示。端末ごとに保存し、バックアップには入れない -->
-        <section class="panel" id="set-view-mode-panel">
-          <span class="ui-label-tag ui-label-tag-onlight" style="top:6px;right:8px" onclick="copyUiLabel('表示モード', event)" title="クリックで「表示モード」をコピー">□</span>
-          <h2 class="panel-title">表示モード</h2>
-          <div class="theme-choice" id="set-view-mode" role="radiogroup" aria-label="表示モード">
-            <label><input type="radio" name="view-mode" value="auto" onchange="setViewMode(this.value)">自動</label>
-            <label><input type="radio" name="view-mode" value="mobile" onchange="setViewMode(this.value)">スマホ表示</label>
-            <label><input type="radio" name="view-mode" value="pc" onchange="setViewMode(this.value)">PC表示</label>
+        <!-- tools のグループ（スマホ版 v8.24.4。92-tools-groups.js）：欄をグループにまとめ、見出しを押すと開く／閉じる。開き閉じは musicManager_ui の toolsGroups に保存 -->
+        <div class="set-group-bar">
+          <span class="ui-label-tag ui-label-tag-onlight" style="position:static" onclick="copyUiLabel('グループの開き閉じ（tools）', event)" title="クリックで「グループの開き閉じ（tools）」をコピー">□</span>
+          <button type="button" class="btn-inline-small" onclick="setAllToolsGroups(true)">すべて開く</button>
+          <button type="button" class="btn-inline-small" onclick="setAllToolsGroups(false)">すべて閉じる</button>
+        </div>
+
+        <!-- ===== グループ「音楽フォルダ」 ===== -->
+        <section class="set-group is-open" id="setg-folder" data-group="folder">
+          <span class="ui-label-tag ui-label-tag-onlight" style="top:12px;right:10px" onclick="copyUiLabel('音楽フォルダのグループ（tools）', event)" title="クリックで「音楽フォルダのグループ（tools）」をコピー">□</span>
+          <h2 class="set-group-title"><button type="button" class="set-group-head" aria-expanded="true" aria-controls="setg-folder-body" onclick="toggleToolsGroup('folder')"><span class="set-group-chev" data-icon="down" aria-hidden="true"></span><span class="set-group-text"><span class="set-group-name">音楽フォルダ</span><span class="set-group-sub">音楽フォルダ設定・情報のメモファイル</span></span></button></h2>
+          <div class="set-group-body" id="setg-folder-body">
+          <!-- 音楽フォルダ設定 -->
+          <section class="panel">
+            <span class="ui-label-tag ui-label-tag-onlight" style="top:6px;right:8px" onclick="copyUiLabel('音楽フォルダ設定', event)" title="クリックで「音楽フォルダ設定」をコピー">□</span>
+            <h2 class="panel-title">音楽フォルダ設定</h2>
+            <div id="set-folder"></div>
+          </section>
+          <!-- 情報のメモファイル（v2.7。23-library-index.js） -->
+          <section class="panel">
+            <span class="ui-label-tag ui-label-tag-onlight" style="top:6px;right:8px" onclick="copyUiLabel('情報のメモファイル', event)" title="クリックで「情報のメモファイル」をコピー">□</span>
+            <h2 class="panel-title">情報のメモファイル</h2>
+            <p class="panel-desc">
+              音楽フォルダ直下に「.music-manager-index.json.gz」（曲の場所・大きさ・更新日時・曲情報・追加日を縮めて保存。画像・歌詞は入りません）を置きます。
+              ブラウザの控えが無いとき（別の PC・別のブラウザで開いたときなど）に、これを読んで一覧をすぐに出します。
+              読み込みが終わったとき、変化があれば書き直します（書き込みの許可があるときだけ。無ければ書かずに続けます）。曲一覧・ファイル整理には出ません。
+            </p>
+            <div id="set-memo"></div>
+          </section>
           </div>
-          <p class="panel-meta" id="set-view-mode-now"></p>
-          <p class="panel-desc">
-            自動：タブレットなどのタッチ端末ではスマホ表示、マウスの PC では画面の幅で決めます。スマホ表示：画面の幅に関係なくスマホの並び（下部メニューバー・再生画面のフリック・全画面ボタン・音質など）にします。PC表示：画面の幅で決めます（今までどおり）。
-            押すとすぐ切り替わります。この設定はこの端末だけのもので、バックアップには含まれません。
-          </p>
         </section>
 
-        <!-- 音楽フォルダ設定 -->
-        <section class="panel">
-          <span class="ui-label-tag ui-label-tag-onlight" style="top:6px;right:8px" onclick="copyUiLabel('音楽フォルダ設定', event)" title="クリックで「音楽フォルダ設定」をコピー">□</span>
-          <h2 class="panel-title">音楽フォルダ設定</h2>
-          <div id="set-folder"></div>
-        </section>
-
-        <!-- 情報のメモファイル（v2.7。23-library-index.js） -->
-        <section class="panel">
-          <span class="ui-label-tag ui-label-tag-onlight" style="top:6px;right:8px" onclick="copyUiLabel('情報のメモファイル', event)" title="クリックで「情報のメモファイル」をコピー">□</span>
-          <h2 class="panel-title">情報のメモファイル</h2>
-          <p class="panel-desc">
-            音楽フォルダ直下に「.music-manager-index.json.gz」（曲の場所・大きさ・更新日時・曲情報・追加日を縮めて保存。画像・歌詞は入りません）を置きます。
-            ブラウザの控えが無いとき（別の PC・別のブラウザで開いたときなど）に、これを読んで一覧をすぐに出します。
-            読み込みが終わったとき、変化があれば書き直します（書き込みの許可があるときだけ。無ければ書かずに続けます）。曲一覧・ファイル整理には出ません。
-          </p>
-          <div id="set-memo"></div>
-        </section>
-
-        <!-- バックアップ・復元 -->
-        <section class="panel">
-          <span class="ui-label-tag ui-label-tag-onlight" style="top:6px;right:8px" onclick="copyUiLabel('バックアップ・復元', event)" title="クリックで「バックアップ・復元」をコピー">□</span>
-          <h2 class="panel-title">バックアップ・復元</h2>
-          <p class="panel-desc">
-            プレイリスト・操作履歴・設定（アルバムの並べ替え・カスタム順を含む）・入力した歌詞・アプリ内の曲情報の上書きを JSON ファイルに書き出して保存できます（音楽ファイル自体と、アプリ内で設定した ogg・wav などのジャケット画像は含みません。再生画面の背景の自分の画像は含みます）。
-            ブラウザのデータを消すとプレイリストも消えてしまうので、ときどきバックアップしてください。
-          </p>
-          <div class="btn-row">
-            <button class="btn-save" onclick="exportBackup()"><span data-icon="download"></span>バックアップを書き出す（JSON）</button>
-            <button class="btn-cancel" onclick="document.getElementById('restore-file').click()"><span data-icon="upload"></span>バックアップから復元</button>
-            <input type="file" id="restore-file" accept=".json,application/json" hidden onchange="onRestoreFileChosen(this)">
+        <!-- ===== グループ「バックアップと復元」 ===== -->
+        <section class="set-group is-open" id="setg-backup" data-group="backup">
+          <span class="ui-label-tag ui-label-tag-onlight" style="top:12px;right:10px" onclick="copyUiLabel('バックアップと復元のグループ（tools）', event)" title="クリックで「バックアップと復元のグループ（tools）」をコピー">□</span>
+          <h2 class="set-group-title"><button type="button" class="set-group-head" aria-expanded="true" aria-controls="setg-backup-body" onclick="toggleToolsGroup('backup')"><span class="set-group-chev" data-icon="down" aria-hidden="true"></span><span class="set-group-text"><span class="set-group-name">バックアップと復元</span><span class="set-group-sub">バックアップ・復元（JSON ファイルへの書き出しと読み込み）</span></span></button></h2>
+          <div class="set-group-body" id="setg-backup-body">
+          <!-- バックアップ・復元 -->
+          <section class="panel">
+            <span class="ui-label-tag ui-label-tag-onlight" style="top:6px;right:8px" onclick="copyUiLabel('バックアップ・復元', event)" title="クリックで「バックアップ・復元」をコピー">□</span>
+            <h2 class="panel-title">バックアップ・復元</h2>
+            <p class="panel-desc">
+              プレイリスト・操作履歴・設定（アルバムの並べ替え・カスタム順を含む）・入力した歌詞・アプリ内の曲情報の上書きを JSON ファイルに書き出して保存できます（音楽ファイル自体と、アプリ内で設定した ogg・wav などのジャケット画像は含みません。再生画面の背景の自分の画像は含みます）。
+              ブラウザのデータを消すとプレイリストも消えてしまうので、ときどきバックアップしてください。
+            </p>
+            <div class="btn-row">
+              <button class="btn-save" onclick="exportBackup()"><span data-icon="download"></span>バックアップを書き出す（JSON）</button>
+              <button class="btn-cancel" onclick="document.getElementById('restore-file').click()"><span data-icon="upload"></span>バックアップから復元</button>
+              <input type="file" id="restore-file" accept=".json,application/json" hidden onchange="onRestoreFileChosen(this)">
+            </div>
+            <div class="panel-meta" id="set-backup-meta"></div>
+          </section>
           </div>
-          <div class="panel-meta" id="set-backup-meta"></div>
         </section>
 
-        <!-- □の表示設定 -->
-        <section class="panel">
-          <span class="ui-label-tag ui-label-tag-onlight" style="top:6px;right:8px" onclick="copyUiLabel('□の表示設定', event)" title="クリックで「□の表示設定」をコピー">□</span>
-          <h2 class="panel-title">表示の設定</h2>
-          <!-- 画面の色の設定（v3.7。v8.24.3 で色テーマ6色を追加） -->
-          <div class="theme-choice" id="set-theme" role="radiogroup" aria-label="画面の色">
-            <span class="theme-choice-label">画面の色</span>
-            <label><input type="radio" name="theme" value="light" onchange="setTheme(this.value)"><span class="theme-swatch" data-sw="light" aria-hidden="true"></span>ライト</label>
-            <label><input type="radio" name="theme" value="dark" onchange="setTheme(this.value)"><span class="theme-swatch" data-sw="dark" aria-hidden="true"></span>ブラック</label>
-            <label><input type="radio" name="theme" value="auto" onchange="setTheme(this.value)"><span class="theme-swatch" data-sw="auto" aria-hidden="true"></span>自動（パソコンの設定に合わせる）</label>
-            <!-- 色テーマ（v8.24.3。明るい系5色・暗い系1色） -->
-            <label><input type="radio" name="theme" value="blue" onchange="setTheme(this.value)"><span class="theme-swatch" data-sw="blue" aria-hidden="true"></span>ブルー</label>
-            <label><input type="radio" name="theme" value="green" onchange="setTheme(this.value)"><span class="theme-swatch" data-sw="green" aria-hidden="true"></span>グリーン</label>
-            <label><input type="radio" name="theme" value="pink" onchange="setTheme(this.value)"><span class="theme-swatch" data-sw="pink" aria-hidden="true"></span>ピンク</label>
-            <label><input type="radio" name="theme" value="orange" onchange="setTheme(this.value)"><span class="theme-swatch" data-sw="orange" aria-hidden="true"></span>オレンジ</label>
-            <label><input type="radio" name="theme" value="sepia" onchange="setTheme(this.value)"><span class="theme-swatch" data-sw="sepia" aria-hidden="true"></span>セピア</label>
-            <label><input type="radio" name="theme" value="purple" onchange="setTheme(this.value)"><span class="theme-swatch" data-sw="purple" aria-hidden="true"></span>パープル（暗め）</label>
-            <span class="ui-label-tag ui-label-tag-onlight" style="position:static" onclick="copyUiLabel('画面の色の設定', event)" title="クリックで「画面の色の設定」をコピー">□</span>
+        <!-- ===== グループ「表示の設定」 ===== -->
+        <section class="set-group" id="setg-display" data-group="display">
+          <span class="ui-label-tag ui-label-tag-onlight" style="top:12px;right:10px" onclick="copyUiLabel('表示の設定のグループ（tools）', event)" title="クリックで「表示の設定のグループ（tools）」をコピー">□</span>
+          <h2 class="set-group-title"><button type="button" class="set-group-head" aria-expanded="false" aria-controls="setg-display-body" onclick="toggleToolsGroup('display')"><span class="set-group-chev" data-icon="down" aria-hidden="true"></span><span class="set-group-text"><span class="set-group-name">表示の設定</span><span class="set-group-sub">画面の色・□の表示・表示モード</span></span></button></h2>
+          <div class="set-group-body" id="setg-display-body">
+          <!-- 表示の設定（v3.7〜。スマホ版 v8.24.4 で「プレイリスト再生時に play画面を自動で開く」を「再生の設定」の欄へ分けた） -->
+          <section class="panel" id="set-display-panel">
+            <span class="ui-label-tag ui-label-tag-onlight" style="top:6px;right:8px" onclick="copyUiLabel('表示の設定（tools）', event)" title="クリックで「表示の設定（tools）」をコピー">□</span>
+            <h2 class="panel-title">表示の設定</h2>
+            <!-- 画面の色の設定（v3.7。v8.24.3 で色テーマ6色を追加） -->
+            <div class="theme-choice" id="set-theme" role="radiogroup" aria-label="画面の色">
+              <span class="theme-choice-label">画面の色</span>
+              <label><input type="radio" name="theme" value="light" onchange="setTheme(this.value)"><span class="theme-swatch" data-sw="light" aria-hidden="true"></span>ライト</label>
+              <label><input type="radio" name="theme" value="dark" onchange="setTheme(this.value)"><span class="theme-swatch" data-sw="dark" aria-hidden="true"></span>ブラック</label>
+              <label><input type="radio" name="theme" value="auto" onchange="setTheme(this.value)"><span class="theme-swatch" data-sw="auto" aria-hidden="true"></span>自動（パソコンの設定に合わせる）</label>
+              <!-- 色テーマ（v8.24.3。明るい系5色・暗い系1色） -->
+              <label><input type="radio" name="theme" value="blue" onchange="setTheme(this.value)"><span class="theme-swatch" data-sw="blue" aria-hidden="true"></span>ブルー</label>
+              <label><input type="radio" name="theme" value="green" onchange="setTheme(this.value)"><span class="theme-swatch" data-sw="green" aria-hidden="true"></span>グリーン</label>
+              <label><input type="radio" name="theme" value="pink" onchange="setTheme(this.value)"><span class="theme-swatch" data-sw="pink" aria-hidden="true"></span>ピンク</label>
+              <label><input type="radio" name="theme" value="orange" onchange="setTheme(this.value)"><span class="theme-swatch" data-sw="orange" aria-hidden="true"></span>オレンジ</label>
+              <label><input type="radio" name="theme" value="sepia" onchange="setTheme(this.value)"><span class="theme-swatch" data-sw="sepia" aria-hidden="true"></span>セピア</label>
+              <label><input type="radio" name="theme" value="purple" onchange="setTheme(this.value)"><span class="theme-swatch" data-sw="purple" aria-hidden="true"></span>パープル（暗め）</label>
+              <span class="ui-label-tag ui-label-tag-onlight" style="position:static" onclick="copyUiLabel('画面の色の設定', event)" title="クリックで「画面の色の設定」をコピー">□</span>
+            </div>
+            <label class="tagedit-write"><input type="checkbox" id="set-show-labels" onchange="setShowUiLabels(this.checked)">画面の名前コピー（□）を表示する <span class="ui-label-tag ui-label-tag-onlight" style="position:static" onclick="copyUiLabel('□の表示設定', event)" title="クリックで「□の表示設定」をコピー">□</span></label>
+            <p class="panel-desc">オフにすると、画面の各部分の右上の小さな「□」（押すと呼び方をコピー）を全部隠します。設定はバックアップに含まれます。</p>
+          </section>
+          <!-- 表示モード（スマホ版 v8.24.1。00-view-mode.js）：自動／スマホ表示／PC表示。端末ごとに保存し、バックアップには入れない -->
+          <section class="panel" id="set-view-mode-panel">
+            <span class="ui-label-tag ui-label-tag-onlight" style="top:6px;right:8px" onclick="copyUiLabel('表示モード', event)" title="クリックで「表示モード」をコピー">□</span>
+            <h2 class="panel-title">表示モード</h2>
+            <div class="theme-choice" id="set-view-mode" role="radiogroup" aria-label="表示モード">
+              <label><input type="radio" name="view-mode" value="auto" onchange="setViewMode(this.value)">自動</label>
+              <label><input type="radio" name="view-mode" value="mobile" onchange="setViewMode(this.value)">スマホ表示</label>
+              <label><input type="radio" name="view-mode" value="pc" onchange="setViewMode(this.value)">PC表示</label>
+            </div>
+            <p class="panel-meta" id="set-view-mode-now"></p>
+            <p class="panel-desc">自動：タッチ端末（タブレットなど）はスマホ表示、マウスの PC は画面の幅で決めます。スマホ表示：幅に関係なくスマホの並び（下部メニューバー・再生画面のフリック・全画面ボタン・音質など）。PC表示：画面の幅で決めます（今まで通り）。押すとすぐ切り替わります。この端末だけの設定で、バックアップには含まれません。</p>
+          </section>
           </div>
-          <label class="tagedit-write"><input type="checkbox" id="set-show-labels" onchange="setShowUiLabels(this.checked)">画面の名前コピー（□）を表示する</label>
-          <label class="tagedit-write"><input type="checkbox" id="set-pl-autoopen" onchange="db.settings.plAutoOpen = this.checked; saveDB();">プレイリスト再生時に play画面を自動で開く（v5.6）</label>
-          <p class="panel-desc">オフにすると、画面の各部分の右上の小さな「□」（押すと呼び方をコピー）を全部隠します。設定はバックアップに含まれます。</p>
         </section>
 
-        <!-- 再生画面の背景（スマホ版 v8.14.0。81-np-bg.js） -->
-        <section class="panel">
-          <span class="ui-label-tag ui-label-tag-onlight" style="top:6px;right:8px" onclick="copyUiLabel('再生画面の背景（tools）', event)" title="クリックで「再生画面の背景（tools）」をコピー">□</span>
-          <h2 class="panel-title">再生画面の背景</h2>
-          <p class="panel-desc">再生画面のいちばん奥に出す絵です。押すとすぐ変わります（再生画面の ⓘ の描き方メニューの「背景」からも選べます）。設定と自分の画像はバックアップに含まれます。</p>
-          <div id="set-np-bg"></div>
+        <!-- ===== グループ「再生と再生画面」 ===== -->
+        <section class="set-group" id="setg-play" data-group="play">
+          <span class="ui-label-tag ui-label-tag-onlight" style="top:12px;right:10px" onclick="copyUiLabel('再生と再生画面のグループ（tools）', event)" title="クリックで「再生と再生画面のグループ（tools）」をコピー">□</span>
+          <h2 class="set-group-title"><button type="button" class="set-group-head" aria-expanded="false" aria-controls="setg-play-body" onclick="toggleToolsGroup('play')"><span class="set-group-chev" data-icon="down" aria-hidden="true"></span><span class="set-group-text"><span class="set-group-name">再生と再生画面</span><span class="set-group-sub">再生の設定・再生画面の背景</span></span></button></h2>
+          <div class="set-group-body" id="setg-play-body">
+          <!-- 再生の設定（スマホ版 v8.24.4 で「表示の設定」から分けた。中身は今まで通り） -->
+          <section class="panel" id="set-play-panel">
+            <span class="ui-label-tag ui-label-tag-onlight" style="top:6px;right:8px" onclick="copyUiLabel('再生の設定（tools）', event)" title="クリックで「再生の設定（tools）」をコピー">□</span>
+            <h2 class="panel-title">再生の設定</h2>
+            <label class="tagedit-write"><input type="checkbox" id="set-pl-autoopen" onchange="db.settings.plAutoOpen = this.checked; saveDB();">プレイリスト再生時に play画面を自動で開く</label>
+          </section>
+          <!-- 再生画面の背景（スマホ版 v8.14.0。81-np-bg.js） -->
+          <section class="panel">
+            <span class="ui-label-tag ui-label-tag-onlight" style="top:6px;right:8px" onclick="copyUiLabel('再生画面の背景（tools）', event)" title="クリックで「再生画面の背景（tools）」をコピー">□</span>
+            <h2 class="panel-title">再生画面の背景</h2>
+            <p class="panel-desc">再生画面のいちばん奥に出す絵です。押すとすぐ変わります（再生画面の ⓘ の描き方メニューの「背景」からも選べます）。設定と自分の画像はバックアップに含まれます。</p>
+            <div id="set-np-bg"></div>
+          </section>
+          </div>
         </section>
 
-        <!-- Pin のアルバム（v3.4。26-pinned-albums.js） -->
-        <section class="panel">
-          <span class="ui-label-tag ui-label-tag-onlight" style="top:6px;right:8px" onclick="copyUiLabel('Pin のアルバム（tools）', event)" title="クリックで「Pin のアルバム（tools）」をコピー">□</span>
-          <h2 class="panel-title">Pin のアルバム</h2>
-          <p class="panel-desc">album の一覧の先頭に並べるアルバムです（アルバムの見出しの Pin ボタンで追加）。「↑」「↓」で先頭での順番を変えられます。ファイルは変わりません。設定はバックアップに含まれます。</p>
-          <div id="set-pinned-albums"></div>
+        <!-- ===== グループ「Pin」 ===== -->
+        <section class="set-group" id="setg-pin" data-group="pin">
+          <span class="ui-label-tag ui-label-tag-onlight" style="top:12px;right:10px" onclick="copyUiLabel('Pin のグループ（tools）', event)" title="クリックで「Pin のグループ（tools）」をコピー">□</span>
+          <h2 class="set-group-title"><button type="button" class="set-group-head" aria-expanded="false" aria-controls="setg-pin-body" onclick="toggleToolsGroup('pin')"><span class="set-group-chev" data-icon="down" aria-hidden="true"></span><span class="set-group-text"><span class="set-group-name">Pin</span><span class="set-group-sub">Pin のアルバム・Pin のアーティスト・Pin の曲</span></span></button></h2>
+          <div class="set-group-body" id="setg-pin-body">
+          <!-- Pin のアルバム（v3.4。26-pinned-albums.js） -->
+          <section class="panel">
+            <span class="ui-label-tag ui-label-tag-onlight" style="top:6px;right:8px" onclick="copyUiLabel('Pin のアルバム（tools）', event)" title="クリックで「Pin のアルバム（tools）」をコピー">□</span>
+            <h2 class="panel-title">Pin のアルバム</h2>
+            <p class="panel-desc">album の一覧の先頭に並べるアルバムです（アルバムの見出しの Pin ボタンで追加）。「↑」「↓」で先頭での順番を変えられます。ファイルは変わりません。設定はバックアップに含まれます。</p>
+            <div id="set-pinned-albums"></div>
+          </section>
+          <!-- Pin のアーティスト（v3.9。28-pinned-artists.js） -->
+          <section class="panel">
+            <span class="ui-label-tag ui-label-tag-onlight" style="top:6px;right:8px" onclick="copyUiLabel('Pin のアーティスト（tools）', event)" title="クリックで「Pin のアーティスト（tools）」をコピー">□</span>
+            <h2 class="panel-title">Pin のアーティスト</h2>
+            <p class="panel-desc">artist のアーティスト一覧の先頭に並べるアーティストです（一覧の行やアーティストの見出しの Pin ボタンで追加）。「↑」「↓」で先頭での順番を変えられます。ファイルは変わりません。設定はバックアップに含まれます。</p>
+            <div id="set-pinned-artists"></div>
+          </section>
+          <!-- Pin の曲（スマホ版 v8.18.0。84-pinned-songs.js） -->
+          <section class="panel">
+            <span class="ui-label-tag ui-label-tag-onlight" style="top:6px;right:8px" onclick="copyUiLabel('Pin の曲（tools）', event)" title="クリックで「Pin の曲（tools）」をコピー">□</span>
+            <h2 class="panel-title">Pin の曲</h2>
+            <p class="panel-desc">songs の先頭（Pin の区切り）に並べる曲です（曲の行の Pin ボタンや、曲の長押しのメニューで追加）。「↑」「↓」で先頭での順番を変えられます。ファイルは変わりません。設定はバックアップに含まれます。</p>
+            <div id="set-pinned-songs"></div>
+          </section>
+          </div>
         </section>
 
-        <!-- Pin のアーティスト（v3.9。28-pinned-artists.js） -->
-        <section class="panel">
-          <span class="ui-label-tag ui-label-tag-onlight" style="top:6px;right:8px" onclick="copyUiLabel('Pin のアーティスト（tools）', event)" title="クリックで「Pin のアーティスト（tools）」をコピー">□</span>
-          <h2 class="panel-title">Pin のアーティスト</h2>
-          <p class="panel-desc">artist のアーティスト一覧の先頭に並べるアーティストです（一覧の行やアーティストの見出しの Pin ボタンで追加）。「↑」「↓」で先頭での順番を変えられます。ファイルは変わりません。設定はバックアップに含まれます。</p>
-          <div id="set-pinned-artists"></div>
+        <!-- ===== グループ「アルバムの分類」 ===== -->
+        <section class="set-group" id="setg-album" data-group="album">
+          <span class="ui-label-tag ui-label-tag-onlight" style="top:12px;right:10px" onclick="copyUiLabel('アルバムの分類のグループ（tools）', event)" title="クリックで「アルバムの分類のグループ（tools）」をコピー">□</span>
+          <h2 class="set-group-title"><button type="button" class="set-group-head" aria-expanded="false" aria-controls="setg-album-body" onclick="toggleToolsGroup('album')"><span class="set-group-chev" data-icon="down" aria-hidden="true"></span><span class="set-group-text"><span class="set-group-name">アルバムの分類</span><span class="set-group-sub">アルバムのタグ・アーティスト名のコピー・ジャンルの候補・非表示のアルバム</span></span></button></h2>
+          <div class="set-group-body" id="setg-album-body">
+          <!-- タグの設定（v4.4。31-album-tags.js） -->
+          <section class="panel">
+            <span class="ui-label-tag ui-label-tag-onlight" style="top:6px;right:8px" onclick="copyUiLabel('タグの設定（tools）', event)" title="クリックで「タグの設定（tools）」をコピー">□</span>
+            <h2 class="panel-title">アルバムのタグ</h2>
+            <p class="panel-desc">アルバムの種類分けのラベルです（アルバムカードのソートキー・タグボタンや、アルバム情報の編集で1つ付けます）。名前・色を変えられ、「↑」「↓」の順番が並べ替えの「タグ」の順になります。削除すると、付けていたアルバムからも外れます。ファイルは変わりません。設定はバックアップに含まれます。</p>
+            <div id="set-album-tags"></div>
+          </section>
+          <!-- アーティスト名のコピー（スマホ版 v8.12.5。79-artist-copy.js） -->
+          <section class="panel">
+            <span class="ui-label-tag ui-label-tag-onlight" style="top:6px;right:8px" onclick="copyUiLabel('アーティスト名のコピー（tools）', event)" title="クリックで「アーティスト名のコピー（tools）」をコピー">□</span>
+            <h2 class="panel-title">アーティスト名のコピー</h2>
+            <p class="panel-desc">アルバムの「ソートキー」と「タグ」に、そのアルバムのアーティスト名（アルバムアーティスト。無ければ全曲共通のアーティスト）を入れます。タグはアーティスト名と同じ名前のタグを使い、無ければ作ります。ファイルは変わりません。設定はバックアップに含まれます。</p>
+            <div id="set-artist-copy"></div>
+          </section>
+          <!-- ジャンルの候補（v4.5。32-genre-suggest.js） -->
+          <section class="panel">
+            <span class="ui-label-tag ui-label-tag-onlight" style="top:6px;right:8px" onclick="copyUiLabel('ジャンルの候補（tools）', event)" title="クリックで「ジャンルの候補（tools）」をコピー">□</span>
+            <h2 class="panel-title">ジャンルの候補</h2>
+            <p class="panel-desc">曲情報の編集・アルバム情報の編集の「ジャンル」欄に出す候補です（自由に入れることもできます）。「↑」「↓」の順番で候補に出ます。設定はバックアップに含まれます。</p>
+            <div id="set-genre-suggest"></div>
+          </section>
+          <!-- 非表示のアルバム（v3.0。24-hidden-albums.js） -->
+          <section class="panel">
+            <span class="ui-label-tag ui-label-tag-onlight" style="top:6px;right:8px" onclick="copyUiLabel('非表示のアルバム（tools）', event)" title="クリックで「非表示のアルバム（tools）」をコピー">□</span>
+            <h2 class="panel-title">非表示のアルバム</h2>
+            <p class="panel-desc">album の一覧に出さないようにしたアルバムです（アルバムの見出しの「非表示にする」で追加）。ファイルは変わりません。曲は songs・artist・プレイリストなどにはそのまま出ます。設定はバックアップに含まれます。</p>
+            <div id="set-hidden-albums"></div>
+          </section>
+          </div>
         </section>
 
-        <!-- Pin の曲（スマホ版 v8.18.0。84-pinned-songs.js） -->
-        <section class="panel">
-          <span class="ui-label-tag ui-label-tag-onlight" style="top:6px;right:8px" onclick="copyUiLabel('Pin の曲（tools）', event)" title="クリックで「Pin の曲（tools）」をコピー">□</span>
-          <h2 class="panel-title">Pin の曲</h2>
-          <p class="panel-desc">songs の先頭（Pin の区切り）に並べる曲です（曲の行の Pin ボタンや、曲の長押しのメニューで追加）。「↑」「↓」で先頭での順番を変えられます。ファイルは変わりません。設定はバックアップに含まれます。</p>
-          <div id="set-pinned-songs"></div>
+        <!-- ===== グループ「特集画面の設定」 ===== -->
+        <section class="set-group" id="setg-special" data-group="special">
+          <span class="ui-label-tag ui-label-tag-onlight" style="top:12px;right:10px" onclick="copyUiLabel('特集画面の設定のグループ（tools）', event)" title="クリックで「特集画面の設定のグループ（tools）」をコピー">□</span>
+          <h2 class="set-group-title"><button type="button" class="set-group-head" aria-expanded="false" aria-controls="setg-special-body" onclick="toggleToolsGroup('special')"><span class="set-group-chev" data-icon="down" aria-hidden="true"></span><span class="set-group-text"><span class="set-group-name">特集画面の設定</span><span class="set-group-sub">Western music・Anime Songs・Seasons Song の設定、Seasons Song の非表示の曲</span></span></button></h2>
+          <div class="set-group-body" id="setg-special-body">
+          <!-- Western music の設定（v5.0。36-western.js） -->
+          <section class="panel">
+            <span class="ui-label-tag ui-label-tag-onlight" style="top:6px;right:8px" onclick="copyUiLabel('Western music の設定（tools）', event)" title="クリックで「Western music の設定（tools）」をコピー">□</span>
+            <h2 class="panel-title">Western music の設定</h2>
+            <p class="panel-desc">Western music（洋楽）に出すアルバムの決め方です。設定はバックアップに含まれます。ファイルは変わりません。</p>
+            <div id="set-western"></div>
+          </section>
+          <!-- Anime Songs の設定（スマホ版 v8.19.0。85-anime-songs.js） -->
+          <section class="panel">
+            <span class="ui-label-tag ui-label-tag-onlight" style="top:6px;right:8px" onclick="copyUiLabel('Anime Songs の設定（tools）', event)" title="クリックで「Anime Songs の設定（tools）」をコピー">□</span>
+            <h2 class="panel-title">Anime Songs の設定</h2>
+            <p class="panel-desc">Anime Songs に出すアルバムの決め方です。設定はバックアップに含まれます。ファイルは変わりません。</p>
+            <div id="set-anime"></div>
+          </section>
+          <!-- Seasons Song の設定（v7.4。46-seasons.js） -->
+          <section class="panel">
+            <span class="ui-label-tag ui-label-tag-onlight" style="top:6px;right:8px" onclick="copyUiLabel('Seasons Song の設定（tools）', event)" title="クリックで「Seasons Song の設定（tools）」をコピー">□</span>
+            <h2 class="panel-title">Seasons Song の設定</h2>
+            <p class="panel-desc">曲名と歌詞の季節の言葉で、曲を Spring／Summer／Fall／Winter に分けます。設定と手で決めた季節はバックアップに含まれます。ファイルは変わりません。</p>
+            <div id="set-seasons"></div>
+          </section>
+          <!-- Seasons Song の非表示の曲（スマホ版 v8.13.0。80-season-hidden.js） -->
+          <section class="panel">
+            <span class="ui-label-tag ui-label-tag-onlight" style="top:6px;right:8px" onclick="copyUiLabel('Seasons Song の非表示の曲（tools）', event)" title="クリックで「Seasons Song の非表示の曲（tools）」をコピー">□</span>
+            <h2 class="panel-title">Seasons Song の非表示の曲</h2>
+            <p class="panel-desc">Seasons Song の曲一覧で「非表示」にした曲です（Seasons Song の画面だけから外しています。ほかの画面・ファイルはそのまま）。バックアップに含まれます。</p>
+            <div id="set-season-hidden"></div>
+          </section>
+          </div>
         </section>
 
-        <!-- タグの設定（v4.4。31-album-tags.js） -->
-        <section class="panel">
-          <span class="ui-label-tag ui-label-tag-onlight" style="top:6px;right:8px" onclick="copyUiLabel('タグの設定（tools）', event)" title="クリックで「タグの設定（tools）」をコピー">□</span>
-          <h2 class="panel-title">アルバムのタグ</h2>
-          <p class="panel-desc">アルバムの種類分けのラベルです（アルバムカードのソートキー・タグボタンや、アルバム情報の編集で1つ付けます）。名前・色を変えられ、「↑」「↓」の順番が並べ替えの「タグ」の順になります。削除すると、付けていたアルバムからも外れます。ファイルは変わりません。設定はバックアップに含まれます。</p>
-          <div id="set-album-tags"></div>
-        </section>
-
-        <!-- アーティスト名のコピー（スマホ版 v8.12.5。79-artist-copy.js） -->
-        <section class="panel">
-          <span class="ui-label-tag ui-label-tag-onlight" style="top:6px;right:8px" onclick="copyUiLabel('アーティスト名のコピー（tools）', event)" title="クリックで「アーティスト名のコピー（tools）」をコピー">□</span>
-          <h2 class="panel-title">アーティスト名のコピー</h2>
-          <p class="panel-desc">アルバムの「ソートキー」と「タグ」に、そのアルバムのアーティスト名（アルバムアーティスト。無ければ全曲共通のアーティスト）を入れます。タグはアーティスト名と同じ名前のタグを使い、無ければ作ります。ファイルは変わりません。設定はバックアップに含まれます。</p>
-          <div id="set-artist-copy"></div>
-        </section>
-
-        <!-- ジャンルの候補（v4.5。32-genre-suggest.js） -->
-        <section class="panel">
-          <span class="ui-label-tag ui-label-tag-onlight" style="top:6px;right:8px" onclick="copyUiLabel('ジャンルの候補（tools）', event)" title="クリックで「ジャンルの候補（tools）」をコピー">□</span>
-          <h2 class="panel-title">ジャンルの候補</h2>
-          <p class="panel-desc">曲情報の編集・アルバム情報の編集の「ジャンル」欄に出す候補です（自由に入れることもできます）。「↑」「↓」の順番で候補に出ます。設定はバックアップに含まれます。</p>
-          <div id="set-genre-suggest"></div>
-        </section>
-
-        <!-- Western music の設定（v5.0。36-western.js） -->
-        <section class="panel">
-          <span class="ui-label-tag ui-label-tag-onlight" style="top:6px;right:8px" onclick="copyUiLabel('Western music の設定（tools）', event)" title="クリックで「Western music の設定（tools）」をコピー">□</span>
-          <h2 class="panel-title">Western music の設定</h2>
-          <p class="panel-desc">Western music（洋楽）に出すアルバムの決め方です。設定はバックアップに含まれます。ファイルは変わりません。</p>
-          <div id="set-western"></div>
-        </section>
-
-        <!-- Anime Songs の設定（スマホ版 v8.19.0。85-anime-songs.js） -->
-        <section class="panel">
-          <span class="ui-label-tag ui-label-tag-onlight" style="top:6px;right:8px" onclick="copyUiLabel('Anime Songs の設定（tools）', event)" title="クリックで「Anime Songs の設定（tools）」をコピー">□</span>
-          <h2 class="panel-title">Anime Songs の設定</h2>
-          <p class="panel-desc">Anime Songs に出すアルバムの決め方です。設定はバックアップに含まれます。ファイルは変わりません。</p>
-          <div id="set-anime"></div>
-        </section>
-
-        <!-- Seasons Song の設定（v7.4。46-seasons.js） -->
-        <section class="panel">
-          <span class="ui-label-tag ui-label-tag-onlight" style="top:6px;right:8px" onclick="copyUiLabel('Seasons Song の設定（tools）', event)" title="クリックで「Seasons Song の設定（tools）」をコピー">□</span>
-          <h2 class="panel-title">Seasons Song の設定</h2>
-          <p class="panel-desc">曲名と歌詞の季節の言葉で、曲を Spring／Summer／Fall／Winter に分けます。設定と手で決めた季節はバックアップに含まれます。ファイルは変わりません。</p>
-          <div id="set-seasons"></div>
-        </section>
-
-        <!-- Seasons Song の非表示の曲（スマホ版 v8.13.0。80-season-hidden.js） -->
-        <section class="panel">
-          <span class="ui-label-tag ui-label-tag-onlight" style="top:6px;right:8px" onclick="copyUiLabel('Seasons Song の非表示の曲（tools）', event)" title="クリックで「Seasons Song の非表示の曲（tools）」をコピー">□</span>
-          <h2 class="panel-title">Seasons Song の非表示の曲</h2>
-          <p class="panel-desc">Seasons Song の曲一覧で「非表示」にした曲です（Seasons Song の画面だけから外しています。ほかの画面・ファイルはそのまま）。バックアップに含まれます。</p>
-          <div id="set-season-hidden"></div>
-        </section>
-
-        <!-- 非表示のアルバム（v3.0。24-hidden-albums.js） -->
-        <section class="panel">
-          <span class="ui-label-tag ui-label-tag-onlight" style="top:6px;right:8px" onclick="copyUiLabel('非表示のアルバム（tools）', event)" title="クリックで「非表示のアルバム（tools）」をコピー">□</span>
-          <h2 class="panel-title">非表示のアルバム</h2>
-          <p class="panel-desc">album の一覧に出さないようにしたアルバムです（アルバムの見出しの「非表示にする」で追加）。ファイルは変わりません。曲は songs・artist・プレイリストなどにはそのまま出ます。設定はバックアップに含まれます。</p>
-          <div id="set-hidden-albums"></div>
-        </section>
-
-        <!-- 再生回数（20-heavy-rotation.js） -->
-        <section class="panel">
-          <span class="ui-label-tag ui-label-tag-onlight" style="top:6px;right:8px" onclick="copyUiLabel('再生回数のリセット', event)" title="クリックで「再生回数のリセット」をコピー">□</span>
-          <h2 class="panel-title">再生回数</h2>
-          <p class="panel-desc">曲を半分（または30秒）以上聞くと1回と数え、heavy rotation に使います。記録はバックアップに含まれ、ファイル整理で移動・名前変更しても引き継ぎます。</p>
-          <div class="btn-row"><button class="btn-inline-small btn-inline-danger" onclick="resetPlayCounts()"><span data-icon="trash"></span>再生回数をリセット</button></div>
-        </section>
-
-        <!-- タグ編集前の控え -->
-        <section class="panel">
-          <span class="ui-label-tag ui-label-tag-onlight" style="top:6px;right:8px" onclick="copyUiLabel('タグ編集前の控え', event)" title="クリックで「タグ編集前の控え」をコピー">□</span>
-          <h2 class="panel-title">タグ編集前の控え</h2>
-          <p class="panel-desc">
-            曲情報を音楽ファイルのタグに書き込む前に、元のファイルを音楽フォルダ直下の「タグ編集前の控え」フォルダへコピーしています（元のフォルダ構成のまま、名前に日時付き）。
-            「直前の操作を元に戻す」はこの控えから戻します。控えは自動では消えません。要らなくなったら、下のボタンで「削除フォルダ」へ移せます（ファイル整理の操作履歴から元に戻せます）。
-          </p>
-          <div id="set-tagbackup"></div>
-        </section>
-
-        <!-- 保存容量の使用状況（v8.2。53-storage-usage.js） -->
-        <section class="panel" id="set-storage-panel">
-          <span class="ui-label-tag ui-label-tag-onlight" style="top:6px;right:8px" onclick="copyUiLabel('保存容量の使用状況', event)" title="クリックで「保存容量の使用状況」をコピー">□</span>
-          <h2 class="panel-title">保存容量の使用状況</h2>
-          <div id="set-storage"></div>
+        <!-- ===== グループ「記録と保存容量」 ===== -->
+        <section class="set-group" id="setg-data" data-group="data">
+          <span class="ui-label-tag ui-label-tag-onlight" style="top:12px;right:10px" onclick="copyUiLabel('記録と保存容量のグループ（tools）', event)" title="クリックで「記録と保存容量のグループ（tools）」をコピー">□</span>
+          <h2 class="set-group-title"><button type="button" class="set-group-head" aria-expanded="false" aria-controls="setg-data-body" onclick="toggleToolsGroup('data')"><span class="set-group-chev" data-icon="down" aria-hidden="true"></span><span class="set-group-text"><span class="set-group-name">記録と保存容量</span><span class="set-group-sub">再生回数・タグ編集前の控え・保存容量の使用状況</span></span></button></h2>
+          <div class="set-group-body" id="setg-data-body">
+          <!-- 再生回数（20-heavy-rotation.js） -->
+          <section class="panel">
+            <span class="ui-label-tag ui-label-tag-onlight" style="top:6px;right:8px" onclick="copyUiLabel('再生回数のリセット', event)" title="クリックで「再生回数のリセット」をコピー">□</span>
+            <h2 class="panel-title">再生回数</h2>
+            <p class="panel-desc">曲を半分（または30秒）以上聞くと1回と数え、heavy rotation に使います。記録はバックアップに含まれ、ファイル整理で移動・名前変更しても引き継ぎます。</p>
+            <div class="btn-row"><button class="btn-inline-small btn-inline-danger" onclick="resetPlayCounts()"><span data-icon="trash"></span>再生回数をリセット</button></div>
+          </section>
+          <!-- タグ編集前の控え -->
+          <section class="panel">
+            <span class="ui-label-tag ui-label-tag-onlight" style="top:6px;right:8px" onclick="copyUiLabel('タグ編集前の控え', event)" title="クリックで「タグ編集前の控え」をコピー">□</span>
+            <h2 class="panel-title">タグ編集前の控え</h2>
+            <p class="panel-desc">
+              曲情報を音楽ファイルのタグに書き込む前に、元のファイルを音楽フォルダ直下の「タグ編集前の控え」フォルダへコピーしています（元のフォルダ構成のまま、名前に日時付き）。
+              「直前の操作を元に戻す」はこの控えから戻します。控えは自動では消えません。要らなくなったら、下のボタンで「削除フォルダ」へ移せます（ファイル整理の操作履歴から元に戻せます）。
+            </p>
+            <div id="set-tagbackup"></div>
+          </section>
+          <!-- 保存容量の使用状況（v8.2。53-storage-usage.js） -->
+          <section class="panel" id="set-storage-panel">
+            <span class="ui-label-tag ui-label-tag-onlight" style="top:6px;right:8px" onclick="copyUiLabel('保存容量の使用状況', event)" title="クリックで「保存容量の使用状況」をコピー">□</span>
+            <h2 class="panel-title">保存容量の使用状況</h2>
+            <div id="set-storage"></div>
+          </section>
+          </div>
         </section>
       </div>
     </div>
@@ -769,96 +822,97 @@
 <div id="busy-overlay" class="busy-overlay" hidden><div class="busy-box"><div class="busy-spinner"></div><div id="busy-text">実行中…</div></div></div>
 
 <!-- js は機能ごとのファイル。起動処理（12-init.js）は必ず最後（新しいファイルはその直前に足す） -->
-<script src="js/01-core.js?v=20261022-1"></script>
-<script src="js/02-folder-access.js?v=20261022-1"></script>
-<script src="js/03-tag-reader.js?v=20261022-1"></script>
-<script src="js/04-library.js?v=20261022-1"></script>
-<script src="js/05-library-page.js?v=20261022-1"></script>
-<script src="js/06-player.js?v=20261022-1"></script>
-<script src="js/07-playlists.js?v=20261022-1"></script>
-<script src="js/08-organizer.js?v=20261022-1"></script>
-<script src="js/09-file-ops.js?v=20261022-1"></script>
-<script src="js/10-settings-backup.js?v=20261022-1"></script>
-<script src="js/11-changelog.js?v=20261022-1"></script>
-<script src="js/13-artwork.js?v=20261022-1"></script>
-<script src="js/14-albums.js?v=20261022-1"></script>
-<script src="js/15-lyrics.js?v=20261022-1"></script>
-<script src="js/16-tag-writer.js?v=20261022-1"></script>
-<script src="js/17-tag-edit.js?v=20261022-1"></script>
-<script src="js/18-artwork-edit.js?v=20261022-1"></script>
-<script src="js/19-new-songs.js?v=20261022-1"></script>
-<script src="js/20-heavy-rotation.js?v=20261022-1"></script>
-<script src="js/21-artists.js?v=20261022-1"></script>
-<script src="js/22-load-progress.js?v=20261022-1"></script>
-<script src="js/23-library-index.js?v=20261022-1"></script>
-<script src="js/24-hidden-albums.js?v=20261022-1"></script>
-<script src="js/25-navigation.js?v=20261022-1"></script>
-<script src="js/26-pinned-albums.js?v=20261022-1"></script>
-<script src="js/27-card-actions.js?v=20261022-1"></script>
-<script src="js/28-pinned-artists.js?v=20261022-1"></script>
-<script src="js/29-album-sort.js?v=20261022-1"></script>
-<script src="js/30-album-sortkey.js?v=20261022-1"></script>
-<script src="js/31-album-tags.js?v=20261022-1"></script>
-<script src="js/32-genre-suggest.js?v=20261022-1"></script>
-<script src="js/33-album-genre.js?v=20261022-1"></script>
-<script src="js/34-duplicates.js?v=20261022-1"></script>
-<script src="js/35-album-folder.js?v=20261022-1"></script>
-<script src="js/36-western.js?v=20261022-1"></script>
-<script src="js/37-now-playing.js?v=20261022-1"></script>
-<script src="js/38-album-groups.js?v=20261022-1"></script>
-<script src="js/39-playlist-play.js?v=20261022-1"></script>
-<script src="js/40-coverflow.js?v=20261022-1"></script>
-<script src="js/41-album-bulk-edit.js?v=20261022-1"></script>
-<script src="js/42-sortkey-cover.js?v=20261022-1"></script>
-<script src="js/43-playlist-copy.js?v=20261022-1"></script>
-<script src="js/44-playlist-add-albums.js?v=20261022-1"></script>
-<script src="js/45-album-scroll.js?v=20261022-1"></script>
-<script src="js/46-seasons.js?v=20261022-1"></script>
-<script src="js/47-shuffle-play.js?v=20261022-1"></script>
-<script src="js/48-album-context-menu.js?v=20261022-1"></script>
-<script src="js/49-upbeat.js?v=20261022-1"></script>
-<script src="js/50-np-album.js?v=20261022-1"></script>
-<script src="js/51-album-reset.js?v=20261022-1"></script>
-<script src="js/52-data-store.js?v=20261022-1"></script>
-<script src="js/53-storage-usage.js?v=20261022-1"></script>
-<script src="js/54-spin-cd.js?v=20261022-1"></script>
-<script src="js/55-np-title-fit.js?v=20261022-1"></script>
-<script src="js/56-cassette.js?v=20261022-1"></script>
-<script src="js/57-record.js?v=20261022-1"></script>
-<script src="js/58-md.js?v=20261022-1"></script>
-<script src="js/59-mobile.js?v=20261022-1"></script>
-<script src="js/60-album-bar.js?v=20261022-1"></script>
-<script src="js/61-album-filter-icons.js?v=20261022-1"></script>
-<script src="js/62-lyrics-mini.js?v=20261022-1"></script>
-<script src="js/63-header-brand.js?v=20261022-1"></script>
-<script src="js/64-card-menu.js?v=20261022-1"></script>
-<script src="js/65-album-play-np.js?v=20261022-1"></script>
-<script src="js/66-bottom-nav.js?v=20261022-1"></script>
-<script src="js/67-np-viz-menu.js?v=20261022-1"></script>
-<script src="js/68-np-onescreen.js?v=20261022-1"></script>
-<script src="js/69-album-head-mobile.js?v=20261022-1"></script>
-<script src="js/70-np-viz-trail.js?v=20261022-1"></script>
-<script src="js/71-np-landscape.js?v=20261022-1"></script>
-<script src="js/72-pin-sort-drag.js?v=20261022-1"></script>
-<script src="js/73-np-viz-settings.js?v=20261022-1"></script>
-<script src="js/74-album-set-play.js?v=20261022-1"></script>
-<script src="js/75-np-viz-more.js?v=20261022-1"></script>
-<script src="js/76-romaji.js?v=20261022-1"></script>
-<script src="js/77-album-home.js?v=20261022-1"></script>
-<script src="js/78-np-lyrics-over.js?v=20261022-1"></script>
-<script src="js/79-artist-copy.js?v=20261022-1"></script>
-<script src="js/80-season-hidden.js?v=20261022-1"></script>
-<script src="js/81-np-bg.js?v=20261022-1"></script>
-<script src="js/82-up-next.js?v=20261022-1"></script>
-<script src="js/83-tag-file-write.js?v=20261022-1"></script>
-<script src="js/84-pinned-songs.js?v=20261022-1"></script>
-<script src="js/85-anime-songs.js?v=20261022-1"></script>
-<script src="js/86-fast-start.js?v=20261022-1"></script>
-<script src="js/87-marquee.js?v=20261022-1"></script>
-<script src="js/88-np-jacket-gesture.js?v=20261022-1"></script>
-<script src="js/89-np-vis-gesture.js?v=20261022-1"></script>
-<script src="js/90-np-fullscreen.js?v=20261022-1"></script>
-<script src="js/91-equalizer.js?v=20261022-1"></script>
-<script src="js/12-init.js?v=20261022-1"></script>
+<script src="js/01-core.js?v=20261022-2"></script>
+<script src="js/02-folder-access.js?v=20261022-2"></script>
+<script src="js/03-tag-reader.js?v=20261022-2"></script>
+<script src="js/04-library.js?v=20261022-2"></script>
+<script src="js/05-library-page.js?v=20261022-2"></script>
+<script src="js/06-player.js?v=20261022-2"></script>
+<script src="js/07-playlists.js?v=20261022-2"></script>
+<script src="js/08-organizer.js?v=20261022-2"></script>
+<script src="js/09-file-ops.js?v=20261022-2"></script>
+<script src="js/10-settings-backup.js?v=20261022-2"></script>
+<script src="js/11-changelog.js?v=20261022-2"></script>
+<script src="js/13-artwork.js?v=20261022-2"></script>
+<script src="js/14-albums.js?v=20261022-2"></script>
+<script src="js/15-lyrics.js?v=20261022-2"></script>
+<script src="js/16-tag-writer.js?v=20261022-2"></script>
+<script src="js/17-tag-edit.js?v=20261022-2"></script>
+<script src="js/18-artwork-edit.js?v=20261022-2"></script>
+<script src="js/19-new-songs.js?v=20261022-2"></script>
+<script src="js/20-heavy-rotation.js?v=20261022-2"></script>
+<script src="js/21-artists.js?v=20261022-2"></script>
+<script src="js/22-load-progress.js?v=20261022-2"></script>
+<script src="js/23-library-index.js?v=20261022-2"></script>
+<script src="js/24-hidden-albums.js?v=20261022-2"></script>
+<script src="js/25-navigation.js?v=20261022-2"></script>
+<script src="js/26-pinned-albums.js?v=20261022-2"></script>
+<script src="js/27-card-actions.js?v=20261022-2"></script>
+<script src="js/28-pinned-artists.js?v=20261022-2"></script>
+<script src="js/29-album-sort.js?v=20261022-2"></script>
+<script src="js/30-album-sortkey.js?v=20261022-2"></script>
+<script src="js/31-album-tags.js?v=20261022-2"></script>
+<script src="js/32-genre-suggest.js?v=20261022-2"></script>
+<script src="js/33-album-genre.js?v=20261022-2"></script>
+<script src="js/34-duplicates.js?v=20261022-2"></script>
+<script src="js/35-album-folder.js?v=20261022-2"></script>
+<script src="js/36-western.js?v=20261022-2"></script>
+<script src="js/37-now-playing.js?v=20261022-2"></script>
+<script src="js/38-album-groups.js?v=20261022-2"></script>
+<script src="js/39-playlist-play.js?v=20261022-2"></script>
+<script src="js/40-coverflow.js?v=20261022-2"></script>
+<script src="js/41-album-bulk-edit.js?v=20261022-2"></script>
+<script src="js/42-sortkey-cover.js?v=20261022-2"></script>
+<script src="js/43-playlist-copy.js?v=20261022-2"></script>
+<script src="js/44-playlist-add-albums.js?v=20261022-2"></script>
+<script src="js/45-album-scroll.js?v=20261022-2"></script>
+<script src="js/46-seasons.js?v=20261022-2"></script>
+<script src="js/47-shuffle-play.js?v=20261022-2"></script>
+<script src="js/48-album-context-menu.js?v=20261022-2"></script>
+<script src="js/49-upbeat.js?v=20261022-2"></script>
+<script src="js/50-np-album.js?v=20261022-2"></script>
+<script src="js/51-album-reset.js?v=20261022-2"></script>
+<script src="js/52-data-store.js?v=20261022-2"></script>
+<script src="js/53-storage-usage.js?v=20261022-2"></script>
+<script src="js/54-spin-cd.js?v=20261022-2"></script>
+<script src="js/55-np-title-fit.js?v=20261022-2"></script>
+<script src="js/56-cassette.js?v=20261022-2"></script>
+<script src="js/57-record.js?v=20261022-2"></script>
+<script src="js/58-md.js?v=20261022-2"></script>
+<script src="js/59-mobile.js?v=20261022-2"></script>
+<script src="js/60-album-bar.js?v=20261022-2"></script>
+<script src="js/61-album-filter-icons.js?v=20261022-2"></script>
+<script src="js/62-lyrics-mini.js?v=20261022-2"></script>
+<script src="js/63-header-brand.js?v=20261022-2"></script>
+<script src="js/64-card-menu.js?v=20261022-2"></script>
+<script src="js/65-album-play-np.js?v=20261022-2"></script>
+<script src="js/66-bottom-nav.js?v=20261022-2"></script>
+<script src="js/67-np-viz-menu.js?v=20261022-2"></script>
+<script src="js/68-np-onescreen.js?v=20261022-2"></script>
+<script src="js/69-album-head-mobile.js?v=20261022-2"></script>
+<script src="js/70-np-viz-trail.js?v=20261022-2"></script>
+<script src="js/71-np-landscape.js?v=20261022-2"></script>
+<script src="js/72-pin-sort-drag.js?v=20261022-2"></script>
+<script src="js/73-np-viz-settings.js?v=20261022-2"></script>
+<script src="js/74-album-set-play.js?v=20261022-2"></script>
+<script src="js/75-np-viz-more.js?v=20261022-2"></script>
+<script src="js/76-romaji.js?v=20261022-2"></script>
+<script src="js/77-album-home.js?v=20261022-2"></script>
+<script src="js/78-np-lyrics-over.js?v=20261022-2"></script>
+<script src="js/79-artist-copy.js?v=20261022-2"></script>
+<script src="js/80-season-hidden.js?v=20261022-2"></script>
+<script src="js/81-np-bg.js?v=20261022-2"></script>
+<script src="js/82-up-next.js?v=20261022-2"></script>
+<script src="js/83-tag-file-write.js?v=20261022-2"></script>
+<script src="js/84-pinned-songs.js?v=20261022-2"></script>
+<script src="js/85-anime-songs.js?v=20261022-2"></script>
+<script src="js/86-fast-start.js?v=20261022-2"></script>
+<script src="js/87-marquee.js?v=20261022-2"></script>
+<script src="js/88-np-jacket-gesture.js?v=20261022-2"></script>
+<script src="js/89-np-vis-gesture.js?v=20261022-2"></script>
+<script src="js/90-np-fullscreen.js?v=20261022-2"></script>
+<script src="js/91-equalizer.js?v=20261022-2"></script>
+<script src="js/92-tools-groups.js?v=20261022-2"></script>
+<script src="js/12-init.js?v=20261022-2"></script>
 </body>
 </html>

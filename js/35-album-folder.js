@@ -58,7 +58,7 @@ function copyFolderPath(folder) {
   copyTextToClipboard(p || (fsa.folderName || ''));
   if (base) showToast('フォルダの場所「' + p + '」をコピーしました。エクスプローラーのアドレス欄に貼り付けてください。');
   else showToast('音楽フォルダの中の場所「' + (p || '（直下）') + '」をコピーしました。tools の「音楽フォルダの場所」に Windows のパスを入れると、エクスプローラーでそのまま開ける場所をコピーできます。', false,
-    { label: 'tools を開く', fn: function () { showPage('settings'); var i = document.getElementById('set-win-path'); if (i) { i.scrollIntoView({ block: 'center' }); i.focus(); } } });
+    { label: 'tools を開く', fn: function () { showPage('settings'); var i = document.getElementById('set-win-path'); if (i) { if (typeof revealToolsGroupOf === 'function') revealToolsGroupOf(i); i.scrollIntoView({ block: 'center' }); i.focus(); } } });
 }
 
 /* ---------- 見出しのボタン・フォルダの選択メニュー ---------- */

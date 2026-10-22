@@ -393,6 +393,7 @@ function openStorageUsage() {
   showPage('settings');
   setTimeout(function () {
     var el = document.getElementById('set-storage-panel');
+    if (el && typeof revealToolsGroupOf === 'function') revealToolsGroupOf(el);   // 閉じたグループ「記録と保存容量」を開く（tools のグループ）
     if (el && el.scrollIntoView) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }, 80);
 }
