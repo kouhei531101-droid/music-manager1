@@ -190,7 +190,11 @@ async function onRestoreFileChosen(input) {
       '<tr><td>Seasons Song（手で決めた季節）</td><td>' + Object.keys(db.seasonOverride || {}).length + '曲' + (db.seasonWords ? '・言葉を変更' : '') + '</td><td>' + Object.keys(next.seasonOverride || {}).length + '曲' + (next.seasonWords ? '・言葉を変更' : '') + '</td></tr>' +
       '<tr><td>Seasons Song（非表示にした曲）</td><td>' + Object.keys(db.seasonHidden || {}).length + '曲</td><td>' + Object.keys(next.seasonHidden || {}).length + '曲</td></tr>' +   // v8.13.0
       '<tr><td>ソートキーの枠の代表ジャケット</td><td>' + Object.keys(db.skCovers || {}).length + '件</td><td>' + Object.keys(next.skCovers || {}).length + '件</td></tr>' +
+      // アーティストの代表ジャケット（選択と、見出しの拡大・位置の調整。調整は PC版 v8.7.79・スマホ版 v8.25.1。無い古いバックアップは調整 0人）
+      (typeof _acpBackupText === 'function' ? '<tr><td>アーティストの代表ジャケット（選択・拡大と位置の調整）</td><td>' + _acpBackupText(db) + '</td><td>' + _acpBackupText(next) + '</td></tr>' : '') +
       '<tr><td>Anime Songs の設定</td><td>' + (Array.isArray(db.animeWords) ? '言葉 ' + db.animeWords.length + '個' : '言葉は初期') + '・指定 ' + Object.keys(db.animeOverride || {}).length + '件・曲の指定 ' + Object.keys(db.animeSongOverride || {}).length + '件</td><td>' + (Array.isArray(next.animeWords) ? '言葉 ' + next.animeWords.length + '個' : '言葉は初期') + '・指定 ' + Object.keys(next.animeOverride || {}).length + '件・曲の指定 ' + Object.keys(next.animeSongOverride || {}).length + '件</td></tr>' +   // スマホ版 v8.19.0
+      // Anime Songs の作品（スマホ版 v8.25.0。作品名の指定・作品の画像。無い古いバックアップは 0件）
+      '<tr><td>Anime Songs の作品（作品名の指定・画像）</td><td>' + _awBackupText(db) + '</td><td>' + _awBackupText(next) + '</td></tr>' +
       '<tr><td>Pin した曲</td><td>' + (db.pinnedSongs || []).length + '曲</td><td>' + (next.pinnedSongs || []).length + '曲</td></tr>' +   // スマホ版 v8.18.0
       '<tr><td>予約（次に再生）</td><td>' + (db.upNext || []).length + '曲</td><td>' + (next.upNext || []).length + '曲</td></tr>' +   // スマホ版 v8.16.0
       '<tr><td>Pin したアーティスト</td><td>' + (db.pinnedArtists || []).length + '人</td><td>' + next.pinnedArtists.length + '人</td></tr>' +
@@ -261,3 +265,9 @@ async function onRestoreFileChosen(input) {
 
 /* ---------- 保存容量 ----------
    v8.2 から「保存容量の使用状況」として 53-storage-usage.js の renderSetStorage() に移した */
+
+// 復元の確認の表の「Anime Songs の作品」の行の文字（PC版 v8.7.77・スマホ版 v8.25.0）
+function _awBackupText(d) {
+  var a = Object.keys((d && d.animeAlbumWork) || {}).length, s = Object.keys((d && d.animeSongWork) || {}).length, im = Object.keys((d && d.animeWorkImages) || {}).length;
+  return '作品名 アルバム ' + a + '枚・曲 ' + s + '曲・画像 ' + im + '件';
+}

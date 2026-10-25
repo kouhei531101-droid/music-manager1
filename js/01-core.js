@@ -44,7 +44,7 @@ function freshDB() {
     albumOrder: [],  // アルバムのカスタム順（アルバムの目印の並び。14-albums.js の albumKeyOf）
     lyrics: {},      // 入力した歌詞 { 曲の相対パス: { text, updatedAt } }（15-lyrics.js）
     playStats: {},   // 再生回数 { 曲の相対パス: { c:回数, l:最終再生, h:[最近の再生日時] } }（20-heavy-rotation.js）
-    artistCovers: {},// アーティストの代表ジャケットの選択 { アーティスト名: { album:アルバムの目印 } または { custom:true } }（21-artists.js）
+    artistCovers: {},// アーティストの代表ジャケットの選択 { アーティスト名: { album:アルバムの目印 } または { custom:true } }（21-artists.js）。見出しの拡大・位置の調整 pos:{ x, y, z } も入る（{ pos } だけ＝標準のまま調整。PC版 v8.7.79・スマホ版 v8.25.1）
     tagOverrides: {},// アプリ内の曲情報の上書き { 曲の相対パス: { title?, artist?, album?, albumArtist? } }（17-tag-edit.js）
     hiddenAlbums: [],// 非表示のアルバム [{ key:アルバムの目印, name, artist, at }]（24-hidden-albums.js。v3.0）
     pinnedAlbums: [],// Pin したアルバム [{ key:アルバムの目印, name, artist, at }]（並び＝一覧の先頭の順。26-pinned-albums.js。v3.4）
@@ -55,6 +55,9 @@ function freshDB() {
     animeWords: null,      // Anime Songs の判定に使う言葉（null＝初期。スマホ版 v8.19.0。85-anime-songs.js。PC版と同じ名前）
     animeOverride: {},     // Anime Songs のアルバムごとの指定 { アルバムの目印: true（入れる）／false（外す） }（同上）
     animeSongOverride: {}, // Anime Songs の曲ごとの指定 { 曲の相対パス: 'in'（入れる）／'out'（外す） }（スマホ版 v8.20.0。PC版と同じ）
+    animeAlbumWork: {},    // Anime Songs の作品名（アルバムごと）{ アルバムの目印: '作品名' }（PC版 v8.7.77・スマホ版 v8.25.0。両版で同じ名前。大きな保存場所に置く）
+    animeSongWork: {},     // Anime Songs の作品名（曲ごと）{ 曲の相対パス: '作品名' }（同上）
+    animeWorkImages: {},   // Anime Songs の作品の画像 { 作品の目印: { name, type, w, h, at, data:dataURL } }（同上。バックアップに含む）
     westernGenres: null,   // 邦楽のジャンル（null＝初期の一覧。36-western.js。v5.0）
     westernAlbums: {},     // アルバムごとの洋楽の指定 { アルバムの目印: true／false }
     westernArtists: {},    // アーティストごとの洋楽の指定 { アーティスト名: true／false }
@@ -74,6 +77,28 @@ function freshDB() {
 }
 
 // 古いデータ・バックアップを読み込んだときに、足りない項目を補って形をそろえる
+// Anime Songs の作品（作品名の指定・作品の画像）をそろえる（PC版 v8.7.77・スマホ版 v8.25.0 で追加。両版で同じ名前・同じ形。古いデータ・バックアップには無いので空）
+//   animeAlbumWork  = { アルバムの目印: '作品名' }（アルバムごとの作品名）
+//   animeSongWork   = { 曲の相対パス: '作品名' }（曲ごとの作品名。アルバムごとより強い）
+//   animeWorkImages = { 作品の目印（作品名を _aniKey でそろえた文字）: { name, type, w, h, at, data: 'data:image/jpeg;base64,…'（長い辺 600px までに縮めた JPEG） } }
+function normalizeAnimeWorks(data, out) {
+  ['animeAlbumWork', 'animeSongWork'].forEach(function (k) {
+    out[k] = {};
+    var src = data[k];
+    if (src && typeof src === 'object' && !Array.isArray(src)) Object.keys(src).forEach(function (x) {
+      var v = typeof src[x] === 'string' ? src[x].replace(/\s+/g, ' ').trim().slice(0, 100) : '';
+      if (x && v) out[k][x] = v;
+    });
+  });
+  out.animeWorkImages = {};
+  var im = data.animeWorkImages;
+  if (im && typeof im === 'object' && !Array.isArray(im)) Object.keys(im).forEach(function (x) {
+    var o = im[x], d = o && typeof o === 'object' && typeof o.data === 'string' ? o.data : '';
+    if (!x || !/^data:image\/[a-z0-9.+-]+;base64,/i.test(d) || d.length > 3000000) return;
+    out.animeWorkImages[x] = { name: String(o.name || '').slice(0, 100), type: typeof o.type === 'string' && o.type ? o.type : 'image/jpeg',
+      w: +o.w > 0 ? Math.round(+o.w) : 0, h: +o.h > 0 ? Math.round(+o.h) : 0, at: typeof o.at === 'string' && o.at ? o.at : nowIso(), data: d };
+  });
+}
 function normalizeDB(data) {
   var base = freshDB();
   if (!data || typeof data !== 'object') return base;
@@ -184,6 +209,7 @@ function normalizeDB(data) {
   if (data.animeOverride && typeof data.animeOverride === 'object' && !Array.isArray(data.animeOverride)) Object.keys(data.animeOverride).forEach(function (k) { if (k && typeof data.animeOverride[k] === 'boolean') out.animeOverride[k] = data.animeOverride[k]; });
   out.animeSongOverride = {};   // 曲ごとの指定（v8.20.0。古いデータは空）
   if (data.animeSongOverride && typeof data.animeSongOverride === 'object' && !Array.isArray(data.animeSongOverride)) Object.keys(data.animeSongOverride).forEach(function (k) { var v = data.animeSongOverride[k]; if (k && (v === 'in' || v === 'out')) out.animeSongOverride[k] = v; });
+  normalizeAnimeWorks(data, out);   // Anime Songs の作品（作品名の指定・作品の画像。PC版 v8.7.77・スマホ版 v8.25.0）
   out.westernGenres = Array.isArray(data.westernGenres) ? data.westernGenres.filter(function (g) { return typeof g === 'string' && g.trim(); }).map(function (g) { return g.trim().slice(0, 40); }) : null;
   ['westernAlbums', 'westernArtists'].forEach(function (k) {
     out[k] = {};
@@ -252,7 +278,16 @@ function normalizeDB(data) {
   if (data.artistCovers && typeof data.artistCovers === 'object') {
     Object.keys(data.artistCovers).forEach(function (k) {
       var v = data.artistCovers[k];
-      if (v && typeof v === 'object' && (typeof v.album === 'string' || v.custom === true)) out.artistCovers[k] = v.custom ? { custom: true } : { album: v.album };
+      if (!v || typeof v !== 'object') return;
+      var e = v.custom === true ? { custom: true } : (typeof v.album === 'string' ? { album: v.album } : {});
+      // 見出しの代表ジャケットの拡大・位置の調整 pos { x, y, z }（PC版 v8.7.79・スマホ版 v8.25.1。86／94-artist-cover-pos.js。両版で同じ形）。
+      //   x・y は 0〜100（%）、z は 1〜3（倍）。初期の表示（50・50・1）なら持たない。無い古いデータ・バックアップは初期の表示
+      if (v.pos && typeof v.pos === 'object') {
+        var pn = function (x, lo, hi, d) { x = +x; return isFinite(x) ? Math.min(hi, Math.max(lo, x)) : d; };
+        var p = { x: Math.round(pn(v.pos.x, 0, 100, 50) * 10) / 10, y: Math.round(pn(v.pos.y, 0, 100, 50) * 10) / 10, z: Math.round(pn(v.pos.z, 1, 3, 1) * 100) / 100 };
+        if (!(p.x === 50 && p.y === 50 && p.z === 1)) e.pos = p;
+      }
+      if (e.custom || e.album !== undefined || e.pos) out.artistCovers[k] = e;
     });
   }
   // 入力した歌詞（v1.4 で追加。古いデータ・バックアップには無いので空のまま）

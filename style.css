@@ -3850,3 +3850,88 @@ body.alb-fab-on #main { padding-bottom: calc(var(--player-h) + var(--lyr-bottom)
 .eq-chip.is-cur .eq-curve .eq-line { stroke: var(--primary-mid); }
 .eq-chip:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
 @media (max-width: 360px) { .eq-chip { font-size: 12px; padding: 5px 4px; } }
+
+/* ---------- Anime Songs の作品（作品の一覧・作品の画面。スマホ版 v8.25.0。93-anime-works.js） ---------- */
+/* 作品カードは album のアルバムカード（.album-card・.art-card）と同じ見た目。登録した画像は .ani-work-pic */
+.ani-work-grid { margin-top: 6px; }
+.ani-work-pic img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.ani-work-card.is-none .album-card-name { color: var(--text-sub); }
+/* 作品の見出し：左に大きな画像、右に作品名・曲数・ボタン */
+.ani-work-head { position: relative; display: flex; align-items: flex-start; gap: 20px; padding: 16px; margin-bottom: 18px; }
+.ani-work-head-art { flex: 0 0 180px; width: 180px; min-width: 0; }
+.ani-work-head-art .art-thumb.art-card { margin-bottom: 0; }
+.ani-work-head-art.drag-over .art-thumb.art-card { outline: 3px dashed var(--primary); outline-offset: 3px; }
+.ani-work-head-text { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; align-items: flex-start; gap: 8px; }
+.ani-work-title { margin: 2px 0 0; font-size: 22px; font-weight: 700; line-height: 1.3; color: var(--ink); overflow-wrap: anywhere; }
+.ani-work-meta { font-size: 12.5px; color: var(--text-sub); }
+.ani-work-btns { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.ani-work-btns .btn-save, .ani-work-btns .btn-inline-small, .ani-work-back { display: inline-flex; align-items: center; gap: 4px; white-space: nowrap; }
+.ani-work-btns svg, .ani-work-back svg { width: 15px; height: 15px; }
+.ani-work-btns button:disabled { opacity: 0.45; cursor: default; }
+.ani-work-songs { position: relative; }
+.ani-work-song-btn { padding: 2px 8px; font-size: 11.5px; white-space: nowrap; }
+/* tools の「Anime Songs の作品の設定」 */
+.ani-work-set { margin-top: 14px; }
+.ani-work-set-check { display: flex; align-items: flex-start; gap: 6px; margin: 4px 0 6px; font-size: 13px; cursor: pointer; }
+.ani-work-set-check input { margin-top: 3px; flex: none; }
+.ani-work-set-thumb { width: 40px; height: 40px; border-radius: 6px; object-fit: cover; flex: none; background: var(--primary-pale); }
+@media (max-width: 760px) {
+  .ani-work-head { gap: 12px; padding: 12px; }
+  .ani-work-head-art { flex-basis: 108px; width: 108px; }
+  .ani-work-title { font-size: 18px; }
+  .ani-work-songs .col-extra { display: none; }   /* スマホ幅では曲名を広く。作品名は曲の長押しのメニュー・見出しの「作品名を変える」で */
+}
+/* ---------- 代表ジャケットの表示の調整（PC版 v8.7.79・スマホ版 v8.25.1。86-artist-cover-pos.js／スマホ版 94-artist-cover-pos.js） ---------- */
+/* アーティストの見出しの代表ジャケットを一回り大きく（アルバムの見出しは今までどおり）：
+   広いとき 150→180px、見出しの幅 560px 以下 112→136px、400px 以下（スマホ幅）96→120px */
+.artist-head .album-head-art { width: 180px; height: 180px; }
+@container albumdetail (max-width: 560px) { .artist-head .album-head-art { width: 136px; height: 136px; } }
+@container albumdetail (max-width: 400px) { .artist-head .album-head-art { width: 120px; height: 120px; } }
+/* 保存した拡大・位置：--acp-x / --acp-y（見せる位置 0〜100%）と --acp-z（拡大率 1〜3 倍）。画像そのものは変えない */
+.artist-head-art.is-acp .art-thumb img {
+  object-position: var(--acp-x, 50%) var(--acp-y, 50%);
+  transform: scale(var(--acp-z, 1)); transform-origin: var(--acp-x, 50%) var(--acp-y, 50%);
+}
+/* 位置を調整ボタン（代表ジャケットの下の真ん中。マウスのある環境では写真にマウスを乗せたときだけ出す） */
+.acp-open-wrap { position: absolute; left: 50%; bottom: 6px; transform: translateX(-50%); z-index: 2; display: inline-flex; }
+.acp-open-btn {
+  display: inline-flex; align-items: center; gap: 4px; height: 26px; padding: 0 10px; white-space: nowrap;
+  border-radius: 13px; border: 1px solid var(--chip-border-soft); background: var(--chip-bg-soft); color: var(--ink-mid);
+  font-size: 11.5px; font-weight: 600; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35); cursor: pointer;
+}
+.acp-open-btn:hover { background: var(--chip-hover); }
+.acp-open-btn:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+.acp-open-btn svg { width: 13px; height: 13px; flex: none; }
+@media (hover: hover) {
+  .album-head-art-wrap .acp-open-btn { opacity: 0; transition: opacity 0.15s; }
+  .album-head-art-wrap:hover .acp-open-btn, .album-head-art-wrap:focus-within .acp-open-btn { opacity: 1; }
+}
+/* 代表ジャケットの調整モード：写真の上のボタンを隠し、写真に点線の枠。右の列は調整バーだけにする */
+.artist-head.is-acp-editing .album-head-art-wrap > :not(.album-head-art) { display: none !important; }
+.artist-head.is-acp-editing .artist-head-art {
+  cursor: grab; touch-action: none; user-select: none; -webkit-user-select: none;
+  outline: 2px dashed var(--accent); outline-offset: 3px; border-radius: 10px;
+}
+.artist-head.is-acp-editing .artist-head-art:focus-visible { outline-style: solid; }
+.artist-head.is-acp-editing .artist-head-art.is-acp-dragging { cursor: grabbing; }
+.artist-head.is-acp-editing .artist-head-art img { pointer-events: none; -webkit-user-drag: none; }
+.artist-head.is-acp-editing .album-head-info > :not(.acp-bar) { display: none; }
+/* 代表ジャケットの調整バー */
+.acp-bar { position: relative; display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.acp-title { font-size: 15px; font-weight: 700; color: var(--ink); }
+.acp-hint { font-size: 12px; color: var(--text-sub); line-height: 1.5; }
+.acp-zoom { display: flex; align-items: center; gap: 8px; min-width: 0; max-width: 360px; }
+.acp-zoom-label { font-size: 12.5px; font-weight: 600; color: var(--text-sub); flex: none; }
+.acp-zoom input[type="range"] { flex: 1; min-width: 60px; accent-color: var(--primary); }
+.acp-zoom-val { font-size: 12.5px; font-variant-numeric: tabular-nums; color: var(--ink-mid); flex: none; min-width: 3.4em; text-align: right; }
+.acp-btns { display: flex; flex-wrap: wrap; gap: 6px; }
+.acp-btns button { font-size: 12.5px; padding: 6px 12px; }
+.acp-btns button svg { width: 14px; height: 14px; }
+@container albumdetail (max-width: 400px) {
+  .acp-title { font-size: 14px; }
+  .acp-hint { font-size: 11px; }
+  .acp-btns { gap: 5px; }
+  .acp-btns button { font-size: 12px; padding: 6px 9px; }
+  .acp-btns [data-acp="reset"] { order: 3; }   /* 狭いときは「キャンセル」「保存」を先の行に、「元に戻す」を次の行に */
+  .acp-open-btn { height: 24px; padding: 0 8px; font-size: 11px; }
+}

@@ -140,6 +140,10 @@ function migrateAlbumKeys() {
   var wmap = {};
   Object.keys(db.westernAlbums || {}).forEach(function (k) { if (!current.has(k) && oldToNew.has(k)) wmap[k] = oldToNew.get(k); });
   if (Object.keys(wmap).length && typeof renameWesternAlbumKeys === 'function' && renameWesternAlbumKeys(wmap)) changed = true;
+  // Anime Songs の作品名（アルバムごと。スマホ版 v8.25.0）
+  var awmap = {};
+  Object.keys(db.animeAlbumWork || {}).forEach(function (k) { if (!current.has(k) && oldToNew.has(k)) awmap[k] = oldToNew.get(k); });
+  if (Object.keys(awmap).length && typeof renameAnimeWorkAlbumKeys === 'function' && renameAnimeWorkAlbumKeys(awmap)) changed = true;
   // ソートキーの枠の代表ジャケット（v6.0。値がアルバムの目印）
   var cmap = {};
   Object.keys(db.skCovers || {}).forEach(function (k) { var v = typeof skCoverAlbumKeyOf === 'function' ? skCoverAlbumKeyOf(db.skCovers[k]) : db.skCovers[k]; if (v && !current.has(v) && oldToNew.has(v)) cmap[v] = oldToNew.get(v); });

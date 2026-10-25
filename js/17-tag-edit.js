@@ -506,6 +506,7 @@ function _renameAlbumKeysAfter(before, changedPaths) {
     if (typeof renameAlbumSortKeys === 'function') { var sm = {}; sm[oldKey] = newKey; renameAlbumSortKeys(sm); }   // ソートキー（v4.3）
     if (typeof renameAlbumTagKeys === 'function') { var tm = {}; tm[oldKey] = newKey; renameAlbumTagKeys(tm); }   // タグ（v4.4）
     if (typeof renameWesternAlbumKeys === 'function') { var wm = {}; wm[oldKey] = newKey; renameWesternAlbumKeys(wm); }   // 洋楽の指定（v5.0）
+    if (typeof renameAnimeWorkAlbumKeys === 'function') { var awm = {}; awm[oldKey] = newKey; renameAnimeWorkAlbumKeys(awm); }   // Anime Songs の作品名（アルバムごと。スマホ版 v8.25.0）
     if (typeof renameSkCoverAlbumKeys === 'function') { var cm = {}; cm[oldKey] = newKey; renameSkCoverAlbumKeys(cm); }   // ソートキーの枠の代表ジャケット（v6.0）
   });
 }

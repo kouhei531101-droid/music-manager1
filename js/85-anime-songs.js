@@ -13,6 +13,8 @@
    ・非表示のアルバムは出さない
    ・設定（animeWords・animeOverride）はバックアップ・復元に含む（PC版と同じ名前）。古いデータに無ければ初期の言葉・指定なし
    ・tools の「Anime Songs の設定」：判定に使う言葉の一覧（追加・× で外す・初期に戻す）、アルバムの指定の件数と解除
+   ・スマホ版 v8.25.0：フィルターバーに「表示の切り替え」（#ani-mode。「作品」〔初期〕／「アルバム」。ui.animeMode）を足した。
+     作品の一覧・作品の画面・作品名・作品の画像は 93-anime-works.js（PC版 v8.7.77 の 84-anime-works.js と同じ作り・同じデータ）
    ========================================================= */
 
 var ANIME_WORDS_DEFAULT = ['Anime', 'アニメ', 'アニソン', 'Anisong', 'アニメソング', 'Animation', 'アニメーション'];
@@ -115,6 +117,8 @@ function animeCount() {
 }
 
 /* ---------- 画面 ---------- */
+// 表示：'works' 作品（スマホ版 v8.25.0 から初期。93-anime-works.js）／'albums' アルバム
+function _aniMode() { return ui.animeMode === 'albums' || typeof renderAnimeWorks !== 'function' ? 'albums' : 'works'; }
 function getAnimeAlbums() {
   var albums = buildAlbums();
   _prepareAlbumSortKeys(albums);
@@ -144,6 +148,10 @@ function renderAnimePage() {
   if (!isConnected()) { body.innerHTML = welcomeCardHtml(); countEl.textContent = ''; bar.hidden = true; return; }
   if (!library.scanned) { body.innerHTML = '<div class="empty-msg">音楽フォルダを読み込んでいます…</div>'; bar.hidden = true; return; }
   bar.hidden = false;
+  var mode = _aniMode(), md = document.getElementById('ani-mode');
+  if (md) md.innerHTML = [['works', '作品'], ['albums', 'アルバム']].map(function (o) { return '<button class="tab-btn' + (o[0] === mode ? ' active' : '') + '" data-ani-mode="' + o[0] + '" aria-pressed="' + (o[0] === mode) + '">' + o[1] + '</button>'; }).join('');
+  var sw = document.querySelector('#page-anime .album-sort-wrap'); if (sw) sw.hidden = mode === 'works';   // 作品の表示では並べ替え（album と共通）を使わない
+  if (mode === 'works') { renderAnimeWorks(); return; }   // 作品の一覧・作品の画面（93-anime-works.js）
   var r = getAnimeAlbums();
   animeView.list = r.list;
   _aniCount = { at: Date.now(), n: r.all.length, len: library.tracks.length };
@@ -187,7 +195,7 @@ function returnToAnimeFromAlbum(ret) {
   restoreListPosition(idx >= 0 ? document.querySelector('#ani-body [data-ani-album="' + idx + '"]') : null, ret.scroll);
 }
 // 連続再生：表示中のアルバムの曲を、アルバムの並び・曲順でつなげる
-function _animePaths() { var ps = []; animeView.list.forEach(function (a) { a.tracks.forEach(function (t) { if (isAnimeTrack(t, a)) ps.push(t.path); }); }); return ps; }   // v8.20.0：外した曲は入れない
+function _animePaths() { if (_aniMode() === 'works') return animeWorksPlayPaths(); var ps = []; animeView.list.forEach(function (a) { a.tracks.forEach(function (t) { if (isAnimeTrack(t, a)) ps.push(t.path); }); }); return ps; }   // v8.20.0：外した曲は入れない
 function initAnimePage() {
   var search = document.getElementById('ani-search');
   if (!search) return;
@@ -196,9 +204,12 @@ function initAnimePage() {
     var p = openAlbumSortDialog();
     Promise.resolve(p).then(function () { if (currentPage === 'anime') { animeView.limit = ANI_PAGE_SIZE; renderAnimePage(); } });
   });
+  var md = document.getElementById('ani-mode');   // 表示の切り替え（スマホ版 v8.25.0）
+  if (md) md.addEventListener('click', function (ev) { var b = ev.target.closest('[data-ani-mode]'); if (!b) return; ui.animeMode = b.getAttribute('data-ani-mode'); saveUi(); animeView.limit = ANI_PAGE_SIZE; renderAnimePage(); window.scrollTo(0, 0); });
   document.getElementById('ani-play').addEventListener('click', function () { var ps = _animePaths(); if (ps.length) playQueue(ps, 0, 'Anime Songs'); });
   document.getElementById('ani-shuffle').addEventListener('click', function () { var ps = _animePaths(); if (ps.length) shufflePlay(function () { playQueue(ps, 0, 'Anime Songs'); }); });
   document.getElementById('ani-body').addEventListener('click', function (ev) {
+    if (_aniMode() === 'works') return;   // 作品の表示の操作は 93-anime-works.js
     if (ev.target.closest('[data-act="more"]')) { animeLoadMore(); return; }
     if (ev.target.closest('[data-card-act]')) return;   // カードの再生・Pin ボタン（27-card-actions.js）
     var c = ev.target.closest('[data-ani-album]');

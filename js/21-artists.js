@@ -293,7 +293,7 @@ async function openArtistCoverEditor(ar) {
   var h = '<span class="ui-label-tag ui-label-tag-onlight" style="top:6px;right:8px" onclick="copyUiLabel(\'代表ジャケットの設定ダイアログ\', event)" title="クリックで「代表ジャケットの設定ダイアログ」をコピー">□</span>' +
     '<p class="dialog-message">「' + escapeHtml(_artistLabel(ar.name)) + '」の代表ジャケットを選びます。アプリの中だけの設定で、曲ファイルは変わりません。</p>' +
     '<div class="ac-choices">' +
-      '<label class="ac-choice"><input type="radio" name="ac" value="__default"' + (!sel ? ' checked' : '') + '><span class="ac-thumb">' + (ar.albums[0] ? artThumbHtml(ar.albums[0].cover, 'art-card') : '') + '</span><span class="ac-name">標準（最初のアルバム）</span></label>';
+      '<label class="ac-choice"><input type="radio" name="ac" value="__default"' + (!sel || (!sel.custom && !sel.album) ? ' checked' : '') + '><span class="ac-thumb">' + (ar.albums[0] ? artThumbHtml(ar.albums[0].cover, 'art-card') : '') + '</span><span class="ac-name">標準（最初のアルバム）</span></label>';
   ar.albums.forEach(function (a, i) {
     h += '<label class="ac-choice"><input type="radio" name="ac" value="a' + i + '"' + (sel && sel.album === a.key ? ' checked' : '') + '><span class="ac-thumb">' + artThumbHtml(a.cover, 'art-card') + '</span><span class="ac-name">' + escapeHtml(a.name) + '</span></label>';
   });
@@ -350,20 +350,30 @@ async function openArtistCoverEditor(ar) {
   if (onPaste) document.removeEventListener('paste', onPaste);
   if (st.newUrl) URL.revokeObjectURL(st.newUrl);
   if (v !== 'ok') return;
+  // 見出しの拡大・位置の調整（v8.25.1。94-artist-cover-pos.js）：同じ代表ジャケットのままなら引き継ぎ、別のものに変えたら初期の表示に戻す
+  var prevPos = sel && sel.pos ? sel.pos : null, keepPos = false;
   try {
     if (choice === '__custom') {
+      keepPos = !!(sel && sel.custom && !st.pic);   // 前と同じ独自の画像のまま
       if (st.pic) await userPicSet('artist:' + ar.name, { blob: new Blob([st.pic.bytes], { type: st.pic.mime }), mime: st.pic.mime, width: st.pic.width, height: st.pic.height, at: Date.now() });
       db.artistCovers[ar.name] = { custom: true };
     } else {
       await userPicDelete('artist:' + ar.name).catch(function () {});
-      if (choice === '__default') delete db.artistCovers[ar.name];
-      else db.artistCovers[ar.name] = { album: ar.albums[+choice.slice(1)].key };
+      if (choice === '__default') {
+        keepPos = !sel || (!sel.custom && !sel.album);   // 前も標準
+        delete db.artistCovers[ar.name];
+      } else {
+        var ck = ar.albums[+choice.slice(1)].key;
+        keepPos = !!(sel && !sel.custom && sel.album === ck);   // 前と同じアルバム
+        db.artistCovers[ar.name] = { album: ck };
+      }
     }
+    if (prevPos && keepPos) { if (!db.artistCovers[ar.name]) db.artistCovers[ar.name] = {}; db.artistCovers[ar.name].pos = prevPos; }
   } catch (e) { await showAlert({ title: '保存できませんでした', message: escapeHtml((e && e.message) || String(e)) }); return; }
   _forgetArtistPic(ar.name);
   saveDB();
   renderArtistsPage();
-  showToast('代表ジャケットを変更しました。');
+  showToast(prevPos && !keepPos ? '代表ジャケットを変更しました（拡大・位置の調整は初期の表示に戻しました）。' : '代表ジャケットを変更しました。');
 }
 
 /* ---------- 操作の受け付け ---------- */

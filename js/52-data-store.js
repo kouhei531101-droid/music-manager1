@@ -24,7 +24,7 @@
 var STORE_DB_NAME = 'musicManager_store', STORE_KV = 'kv';
 // 大きな保存場所に置く項目（それ以外は基本の設定として localStorage に残す）
 var DB_HEAVY_KEYS = ['playlists', 'history', 'playStats', 'lyrics', 'tagOverrides', 'albumOrder', 'hiddenAlbums', 'pinnedAlbums', 'pinnedArtists',
-  'artistCovers', 'albumTagOf', 'albumSortKeys', 'westernAlbums', 'westernArtists', 'dupIgnore', 'genreSuggest', 'bpmManual', 'seasonOverride', 'skCovers', 'seasonHidden', 'upNext', 'pinnedSongs', 'animeOverride', 'animeSongOverride'];
+  'artistCovers', 'albumTagOf', 'albumSortKeys', 'westernAlbums', 'westernArtists', 'dupIgnore', 'genreSuggest', 'bpmManual', 'seasonOverride', 'skCovers', 'seasonHidden', 'upNext', 'pinnedSongs', 'animeOverride', 'animeSongOverride', 'animeAlbumWork', 'animeSongWork', 'animeWorkImages'];
 // 画面に出すときの名前（保存容量の使用状況）
 var DB_HEAVY_LABELS = {
   playlists: 'プレイリスト', history: '操作履歴', playStats: '再生回数の記録', lyrics: '入力した歌詞', tagOverrides: 'アプリ内の曲情報の上書き',
@@ -36,7 +36,8 @@ var DB_HEAVY_LABELS = {
   upNext: '次に再生（予約）',   // スマホ版 v8.16.0
   pinnedSongs: 'Pin した曲',   // スマホ版 v8.18.0
   animeOverride: 'Anime Songs の指定',   // スマホ版 v8.19.0
-  animeSongOverride: 'Anime Songs の曲の指定'   // スマホ版 v8.20.0
+  animeSongOverride: 'Anime Songs の曲の指定',   // スマホ版 v8.20.0
+  animeAlbumWork: 'Anime Songs の作品名（アルバム）', animeSongWork: 'Anime Songs の作品名（曲）', animeWorkImages: 'Anime Songs の作品の画像'   // スマホ版 v8.25.0
 };
 var DB_STORE_SAVE_DELAY = 400;   // 大きな保存場所へ書くまでの待ち時間（ミリ秒）
 
