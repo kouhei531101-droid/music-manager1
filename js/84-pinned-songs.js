@@ -9,6 +9,9 @@
    ・検索中は、検索に合う Pin だけを出す（並べ替えモードは、Pin が全部見えているときだけ）
    ・ファイル整理で場所が変わったときは付け替える（applyPathMapping を包む）
    ・ファイルは一切触らない
+   ・スマホ版 v8.25.4：Pin した曲は album の「Pin の区切り」にも「Pin の曲のカード」（ジャケットのカード）で並ぶ（95-pin-song-cards.js）。
+     データ（db.pinnedSongs）は今までのまま（今までに Pin した曲もそのままカードに出る）。メニューの言葉は「この曲を Pin 止め」。
+     アルバムの曲一覧の曲の行にも曲の Pin ボタン
    ========================================================= */
 
 var songPin = { sorting: false };
@@ -28,6 +31,8 @@ function _songPinChanged() {
   _pinnedSongSet.src = null;
   if (currentPage === 'library') { var y = window.scrollY; renderLibraryPage(); window.scrollTo(0, y); }
   if (currentPage === 'settings') renderSetPinnedSongs();
+  // スマホ版 v8.25.4：album の Pin の区切りの「Pin の曲のカード」・アルバムの曲一覧の曲の Pin ボタン（95-pin-song-cards.js）
+  if (currentPage === 'albums' && typeof renderAlbumsPage === 'function') { var ya = window.scrollY; renderAlbumsPage(); window.scrollTo(0, ya); }
 }
 
 /* ---------- Pin する・外す ---------- */
@@ -45,7 +50,7 @@ function togglePinSong(path) {
   } else {
     db.pinnedSongs = list.concat([path]);
     saveDB(); _songPinChanged();
-    showToast('曲「' + name + '」を Pin しました（songs の先頭に出ます）。', false, { label: '元に戻す', fn: function () {
+    showToast('曲「' + name + '」を Pin 止めしました（album の Pin の区切りと songs の先頭に出ます）。', false, { label: '元に戻す', fn: function () {
       db.pinnedSongs = pinnedSongList().filter(function (p) { return p !== path; }); saveDB(); _songPinChanged();
     } });
   }
@@ -71,7 +76,7 @@ function movePinnedSongPath(path, dir) { movePinnedSong(pinnedSongList().indexOf
 function songPinBtnHtml(path) {
   var on = isSongPinned(path);
   return '<button type="button" class="song-pin-btn' + (on ? ' is-pinned' : '') + '" data-song-pin="' + escapeHtml(path) + '" aria-pressed="' + on + '"' +
-    ' title="' + (on ? 'Pin を外す' : 'Pin する（songs の先頭に出す）') + '" aria-label="' + (on ? 'Pin を外す' : 'Pin する') + '">' + ICONS.pin + '</button>';
+    ' title="' + (on ? 'Pin を外す' : 'この曲を Pin 止め（album の Pin の区切りと songs の先頭に出す）') + '" aria-label="' + (on ? 'Pin を外す' : 'この曲を Pin 止め') + '">' + ICONS.pin + '</button>';
 }
 
 /* ---------- songs の「Pin の区切り（曲）」 ---------- */
@@ -114,7 +119,7 @@ function renderSetPinnedSongs() {
   if (!el) return;
   var list = pinnedSongList();
   if (!list.length) { el.innerHTML = '<p class="panel-meta">Pin した曲はありません。</p>'; return; }
-  var h = '<p class="panel-meta">' + list.length + '曲（上から順に songs の先頭に並びます）</p><ul class="hidden-album-list pinned-album-list">';
+  var h = '<p class="panel-meta">' + list.length + '曲（上から順に album の Pin の区切りと songs の先頭に並びます）</p><ul class="hidden-album-list pinned-album-list">';
   list.forEach(function (p, i) {
     var t = library.byPath[p];
     h += '<li><span class="pinned-album-no">' + (i + 1) + '</span><span class="hidden-album-name">' + escapeHtml(_songTitle(p)) + '</span>' +

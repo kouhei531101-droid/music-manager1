@@ -3850,6 +3850,40 @@ body.alb-fab-on #main { padding-bottom: calc(var(--player-h) + var(--lyr-bottom)
 .eq-chip.is-cur .eq-curve .eq-line { stroke: var(--primary-mid); }
 .eq-chip:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
 @media (max-width: 360px) { .eq-chip { font-size: 12px; padding: 5px 4px; } }
+/* 「音質の調整」（スマホ版 v8.25.3。PC版 np-eq-common.js・スマホ版 91-equalizer.js の eqEditHtml。PC版・スマホ版で同じ見た目）
+   ・音質パネル：今の音質の名前の横に「調整済み」の印（.eq-badge）、グラフの下に「このプリセットを調整」ボタン（.eq-edit-btn。フラットは案内の文 .eq-acts-note）、
+     調整したプリセットのチップは名前の前に小さな点（.eq-dot）
+   ・音質の調整：上にグラフ（動かすと変わる）、横向きのスライダーを縦に10本（周波数・スライダー・値。.eq-sl）、
+     プリアンプの見出し（.eq-pre-head。「自動」ボタン .eq-auto）とスライダー、下に「初期に戻す」「キャンセル」「保存」（.eq-ed-btns） */
+.eq-badge { flex: none; align-self: center; font-size: 11px; font-weight: 700; line-height: 1.5; padding: 0 8px; border-radius: 999px; border: 1px solid var(--primary-mid); background: var(--primary-pale); color: var(--ink); }
+.eq-acts { display: flex; align-items: center; flex-wrap: wrap; gap: 6px; margin: -2px 0 10px; }
+.eq-edit-btn { display: inline-flex; align-items: center; gap: 6px; }
+.eq-edit-btn svg { width: 16px; height: 16px; flex: none; }
+.eq-acts-note { font-size: 11.5px; color: var(--text-sub); line-height: 1.5; }
+.eq-dot { display: inline-block; width: 7px; height: 7px; margin-right: 4px; border-radius: 50%; background: var(--primary-mid); vertical-align: 1px; }
+.eq-ed-state { font-weight: 600; }
+.eq-ed-graph { margin-bottom: 6px; }
+.eq-sliders { display: flex; flex-direction: column; }
+.eq-sl { display: grid; grid-template-columns: 54px minmax(0, 1fr) 58px; align-items: center; gap: 8px; min-height: 34px; }
+.eq-sl-f { font-size: 12.5px; color: var(--text-sub); text-align: right; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.eq-sl-in { width: 100%; min-width: 0; height: 26px; margin: 0; accent-color: var(--primary-mid); cursor: pointer; }
+.eq-sl-v { font-size: 13px; font-weight: 700; color: var(--text); text-align: right; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.eq-pre-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin: 8px 0 0; padding-top: 8px; border-top: 1px dashed var(--border2); font-size: 12.5px; font-weight: 700; color: var(--text-sub); }
+.eq-auto { min-height: 28px; padding: 2px 14px; border-radius: 999px; border: 1px solid var(--border2); background: var(--surface); color: var(--text-sub); font-size: 12px; cursor: pointer; }
+.eq-auto.is-on { border-color: var(--primary-mid); background: var(--primary-pale); color: var(--ink); font-weight: 700; }
+.eq-auto:focus-visible, .eq-sl-in:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+.eq-ed-btns { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 12px; }
+.eq-ed-sp { flex: 1; }
+/* 指で操作する画面（スマホ）：行を高くして、つまみをつかみやすく */
+@media (pointer: coarse) {
+  .eq-sl { min-height: 44px; }
+  .eq-sl-in { height: 40px; }
+  .eq-auto { min-height: 36px; }
+}
+@media (max-width: 400px) {
+  .eq-sl { grid-template-columns: 48px minmax(0, 1fr) 54px; gap: 6px; }
+  .eq-ed-btns .btn-cancel, .eq-ed-btns .btn-save { padding-left: 12px; padding-right: 12px; }
+}
 
 /* ---------- Anime Songs の作品（作品の一覧・作品の画面。スマホ版 v8.25.0。93-anime-works.js） ---------- */
 /* 作品カードは album のアルバムカード（.album-card・.art-card）と同じ見た目。登録した画像は .ani-work-pic */
@@ -3935,3 +3969,27 @@ body.alb-fab-on #main { padding-bottom: calc(var(--player-h) + var(--lyr-bottom)
   .acp-btns [data-acp="reset"] { order: 3; }   /* 狭いときは「キャンセル」「保存」を先の行に、「元に戻す」を次の行に */
   .acp-open-btn { height: 24px; padding: 0 8px; font-size: 11px; }
 }
+
+/* ---------- スマホ版 v8.25.4：Pin の曲のカード（95-pin-song-cards.js）----------
+   ・Pin の区切りの中の「Pin の曲のカード」の並び（.pin-song-grid）は、Pin のアルバムのカードの並びのすぐ下（同じ大きさ・同じ見た目のカード）。
+     2つの並びの間には区切りの線を引かない（Pin の区切りの最後の並びの下にだけ点線）
+   ・Pin の曲の印（.pin-song-badge）：ジャケットの右上の小さな音符。アルバムの Pin と見分ける（押せない）
+   ・アルバムの曲一覧の「Pin の曲だけの表示」（.is-pin-song-only）：Pin の曲の行だけを出す。「Pin の曲の表示の帯」（.pin-song-bar）で全曲と切り替え */
+.album-pin-grid:not(.pin-song-grid):has(+ .pin-song-grid) { padding-bottom: 0; border-bottom: none; margin-bottom: 12px; }
+.album-pin-grid.pin-song-grid { margin-bottom: 26px; }
+.pin-song-badge { position: absolute; top: 4px; right: 4px; z-index: 3; display: inline-flex; align-items: center; justify-content: center;
+  width: 18px; height: 18px; border-radius: 50%; background: var(--primary-mid); color: #fff; box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3); pointer-events: none; }
+.pin-song-badge svg { width: 10px; height: 10px; }
+.pin-song-card .pin-song-album { color: var(--text-faint); }
+.album-detail.is-pin-song-only .album-row.pin-song-other,
+.album-detail.is-pin-song-only .album-disc-row { display: none; }
+.album-row.is-pin-song-row > td { background: var(--accent-pale, rgba(240, 140, 60, 0.10)); }
+.album-detail.is-pin-song-view .album-row.is-pin-song-row > td:first-child { box-shadow: inset 3px 0 0 var(--accent); }
+.pin-song-bar { position: relative; display: flex; align-items: center; flex-wrap: wrap; gap: 6px 10px; margin: 14px 0 10px; padding: 8px 12px;
+  border: 1px solid var(--border2); border-radius: 10px; background: var(--surface); color: var(--text-sub); font-size: 13px; }
+.pin-song-bar-icon { flex: none; display: inline-flex; color: var(--accent); }
+.pin-song-bar-icon svg { width: 16px; height: 16px; }
+.pin-song-bar-text { flex: 1 1 14em; min-width: 0; color: var(--text); }
+.pin-song-bar-btn { flex: none; }
+/* アルバムの曲一覧の曲の行の曲の Pin ボタンは、songs の行と同じ（.song-pin-btn）。少しだけ小さく */
+.album-row .song-pin-btn { width: 28px; height: 28px; }

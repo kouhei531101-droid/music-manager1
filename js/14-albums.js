@@ -350,8 +350,10 @@ function renderAlbumsPage() {
   albView.current = null;
   // Pin のみ（v4.1）：Pin したアルバムだけを並べる（非表示のアルバムを見ている間は効かない）
   var pinPresentN = pinnedAlbumsPresentCount(albums);
-  var pinOnly = isPinOnlyActive(pinPresentN);
-  renderPinOnlyToggle(pinPresentN);
+  // Pin の曲のカード（スマホ版 v8.25.4。95-pin-song-cards.js）：今の音楽フォルダにある Pin の曲（非表示のアルバムの曲は除く）。Pin のみでも出す
+  var pinSongAll = typeof pinSongEntries === 'function' && !albView.showHidden ? pinSongEntries(albums) : [];
+  var pinOnly = isPinOnlyActive(pinPresentN + pinSongAll.length);
+  renderPinOnlyToggle(pinPresentN, pinSongAll.length);
   var custom = albumSortMode() === 'custom' && !albView.showHidden && !pinOnly;   // 非表示のアルバム・Pin のみを見ている間は、カスタム順の編集はしない
   _updateAlbumSearchBox(custom);
   var list = getAlbumList(albums);
@@ -360,10 +362,13 @@ function renderAlbumsPage() {
   //   Pin の区切りのカードは data-pin-album＝albView.pinned の番号、通常の一覧のカードは data-album＝albView.list の番号で、別々に拾う）
   var sp =albView.showHidden ? { pinned: [], rest: list } : splitPinnedAlbums(list);
   albView.pinned = sp.pinned;
+  // Pin の曲のカード（スマホ版 v8.25.4）：検索・絞り込みに合う Pin の曲（[{ t:曲, a:アルバム }]。Pin の順）
+  var pinSongs = pinSongAll.length ? pinSongFilter(pinSongAll, list) : [];
+  albView.pinSongs = pinSongs;
   // Pin の並べ替えモード（v8.7.8）：検索・絞り込みで Pin の一部しか見えていないときは使えない（並べ替えボタンを押せなくし、モードも終わる）
-  var pinPartial = !albView.showHidden && sp.pinned.length < pinPresentN;
+  var pinPartial = !albView.showHidden && (sp.pinned.length < pinPresentN || pinSongs.length < pinSongAll.length);
   albView.pinSortBlocked = pinPartial;
-  if (sp.pinned.length < 2 || pinPartial) albView.pinSorting = false;
+  if ((sp.pinned.length < 2 && pinSongs.length < 2) || pinPartial) albView.pinSorting = false;
   var fullList = pinOnly ? sp.pinned : list;
   list = pinOnly ? [] : list;   // v8.12.4：通常の一覧は Pin も含めた全部（sp.rest ではなく）
   // グループ表示（v5.3。38-album-groups.js）：並べ替えたあとの一覧をグループに分け、グループの順につなげたものを albView.list にする
@@ -376,22 +381,24 @@ function renderAlbumsPage() {
   if (clustered) list = [].concat.apply([], albView.clusters.map(function (it) { return it.cluster ? it.cluster.albums : [it.album]; }));
   albView.list = list;
   if (albView.showHidden) countEl.textContent = '非表示 ' + hiddenN + '枚';
-  else if (pinOnly) countEl.textContent = 'Pin ' + (albView.query.trim() ? sp.pinned.length + '枚 / 全' + pinPresentN + '枚' : pinPresentN + '枚');
+  else if (pinOnly) countEl.textContent = 'Pin ' + (albView.query.trim() ? sp.pinned.length + '枚 / 全' + pinPresentN + '枚' : pinPresentN + '枚') +
+    (pinSongAll.length ? ' ・ ' + (albView.query.trim() ? pinSongs.length + '曲 / 全' + pinSongAll.length + '曲' : pinSongAll.length + '曲') : '');
   else if (!custom && (albView.query.trim() || (typeof albumTagFilter === 'function' && albumTagFilter()) || (typeof albumGenreFilter === 'function' && albumGenreFilter()))) countEl.textContent = fullList.length + '枚 / 全' + visibleN + '枚';
-  if (!fullList.length) {
+  if (!fullList.length && !pinSongs.length) {
     body.innerHTML = '<div class="empty-msg">' + (pinOnly ? '検索に当てはまる Pin のアルバムがありません。' : albView.showHidden ? (albView.query.trim() ? '検索に当てはまる非表示のアルバムがありません。' : '非表示のアルバムはありません。')
       : visibleN ? '検索に当てはまるアルバムがありません。' : albums.length ? 'すべてのアルバムを非表示にしています（「非表示のアルバム」から戻せます）。' : '曲が見つかりませんでした。') + '</div>';
     return;
   }
   var shown = custom ? list : list.slice(0, albView.limit);   // カスタム順の編集中は全部並べる（どこへでも動かせるように）
   var h = '';
-  if (sp.pinned.length) {   // Pin の区切り（v3.4）
+  if (sp.pinned.length || pinSongs.length) {   // Pin の区切り（v3.4。スマホ版 v8.25.4 から Pin の曲のカードも）
     var ps = albView.pinSorting;
-    var canSort = sp.pinned.length > 1 || (pinPartial && pinPresentN > 1);
-    h += '<div class="album-section-head album-pin-head"><span class="album-section-icon">' + ICONS.pin + '</span>Pin<span class="album-section-count">' + sp.pinned.length + '枚</span>' +
+    var canSort = sp.pinned.length > 1 || pinSongs.length > 1 || (pinPartial && (pinPresentN > 1 || pinSongAll.length > 1));
+    h += '<div class="album-section-head album-pin-head"><span class="album-section-icon">' + ICONS.pin + '</span>Pin<span class="album-section-count">' +
+        (sp.pinned.length ? sp.pinned.length + '枚' : '') + (pinSongs.length ? (sp.pinned.length ? ' ・ ' : '') + pinSongs.length + '曲' : '') + '</span>' +   // スマホ版 v8.25.4：Pin の曲は「〇曲」
       '<span class="pin-head-btns">' +
-      // Pin の再生ボタン・Pin のシャッフル再生ボタン（v8.7.8。62-album-set-play.js）：並べ替えモード中は押せない
-      albumSetPlayBtnsHtml({ act: 'pin', name: 'Pin ', btnName: 'Pin', albums: sp.pinned, disabled: ps, labels: true }) +
+      // Pin の再生ボタン・Pin のシャッフル再生ボタン（v8.7.8。62-album-set-play.js）：並べ替えモード中は押せない。Pin のアルバムが無いときは出さない
+      (sp.pinned.length ? albumSetPlayBtnsHtml({ act: 'pin', name: 'Pin ', btnName: 'Pin', albums: sp.pinned, disabled: ps, labels: true }) : '') +
       // Pin の並べ替えボタン（v4.1。v8.7.8 から押すと「Pin の並べ替えモード」：カードをドラッグで動かす）
       (canSort ? '<span class="pin-sort-wrap"><button class="btn-inline-small pin-sort-btn' + (ps ? ' active' : '') + '" data-act="pin-sort" aria-pressed="' + ps + '"' + (pinPartial ? ' disabled' : '') + ' title="' +
         (pinPartial ? 'Pin の並べ替え（検索・絞り込みで Pin の一部だけを表示している間は使えません。検索・絞り込みを解除してください）'
@@ -400,7 +407,9 @@ function renderAlbumsPage() {
       '</span>' +
       '<span class="ui-label-tag ui-label-tag-onlight" style="top:-6px;right:0" onclick="copyUiLabel(\'Pin の区切り\', event)" title="クリックで「Pin の区切り」をコピー">□</span></div>' +
       (ps ? '<p class="pin-sort-hint"><strong>Pin の並べ替えモード</strong>　カードをドラッグして好きな位置へ動かします（キーボードはカードを選んで ← →）。並びは自動で保存されます。終わるときは「完了」か Esc。</p>' : '') +
-      '<div class="album-grid album-pin-grid' + (ps ? ' is-editing pin-sort-mode' : '') + '"' + (ps ? ' role="list" aria-label="Pin の並べ替えモード"' : '') + '>' + sp.pinned.map(function (a, i) { return _albumCardHtml(a, i, false, sp.pinned.length, true); }).join('') + '</div>' +
+      (sp.pinned.length ? '<div class="album-grid album-pin-grid' + (ps ? ' is-editing pin-sort-mode' : '') + '"' + (ps ? ' role="list" aria-label="Pin の並べ替えモード"' : '') + '>' + sp.pinned.map(function (a, i) { return _albumCardHtml(a, i, false, sp.pinned.length, true); }).join('') + '</div>' : '') +
+      // Pin の曲のカードの並び（スマホ版 v8.25.4。95-pin-song-cards.js）：Pin のアルバムのカードのすぐ下に、同じ大きさのカードで
+      (pinSongs.length ? pinSongGridHtml(pinSongs, ps) : '') +
       (list.length ? '<div class="album-section-head">アルバム<span class="album-section-count">' + list.length + '枚</span></div>' : '');   // v8.12.4：Pin も含めた枚数
   }
   if (custom) {
@@ -578,6 +587,7 @@ function renderAlbumDetail(a, body) {
       '<td class="col-no">' + no + '</td>' +
       '<td class="col-play"><button class="btn-icon btn-play-row" data-act="play" data-i="' + i + '" title="この曲から再生">' + ICONS.play + '</button></td>' +
       '<td class="col-title"><div class="lib-title-row"><div class="lib-title' + (t.titleGuessed ? ' guessed' : '') + '">' + escapeHtml(t.title) + '</div>' +
+        (typeof songPinBtnHtml === 'function' ? songPinBtnHtml(t.path) : '') +   // 曲の Pin ボタン（スマホ版 v8.25.4。84-pinned-songs.js。押すとこの曲を Pin 止め／外す）
         (isNew ? '<span class="song-new-mark" title="new songs の期間に追加した曲（' + escapeHtml(formatDateShort(t.firstSeen)) + '）">NEW</span>' : '') + '</div>' +
         (showArtist ? '<div class="album-row-artist">' + artistLinkHtml(t) + '</div>' : '') + '</td>' +
       '<td class="col-dur">' + formatDuration(t.duration) + '</td>' +

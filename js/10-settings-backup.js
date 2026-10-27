@@ -205,6 +205,8 @@ async function onRestoreFileChosen(input) {
         (npBgBackupHasImage(obj) ? '・自分の画像あり' : (npBgHasImage() ? '（画像は入っていないので今の画像のまま）' : '')) + '</td></tr>' : '') +
       // 音質（スマホ版 v8.24.0。91-equalizer.js）：古いバックアップ・PC版のバックアップに無ければ「フラット」
       (typeof eqPresetName === 'function' ? '<tr><td>音質（イコライザー）</td><td>' + escapeHtml(eqPresetName(db.settings)) + '</td><td>' + escapeHtml(eqPresetName(next.settings)) + '</td></tr>' : '') +
+      // 音質の調整（スマホ版 v8.25.3。db.settings.eqCustom。PC版・スマホ版で同じ形）：プリセットごとに調整した値。無い古いバックアップは「なし」（初期の値）
+      (typeof eqCustomText === 'function' ? '<tr><td>音質の調整（プリセットごと）</td><td>' + escapeHtml(eqCustomText(db.settings)) + '</td><td>' + escapeHtml(eqCustomText(next.settings)) + '</td></tr>' : '') +
       '<tr><td>画面の色</td><td>' + escapeHtml(themeName(currentThemeSetting())) + '</td><td>' + (bkTheme ? escapeHtml(themeName(bkTheme)) : '含まれていません（今の色のまま）') + '</td></tr>' +
       '<tr><td>書き出した日時</td><td>—</td><td>' + (obj.exportedAt ? formatDateTime(obj.exportedAt) : '不明') + '</td></tr>' +
       '<tr><td>音楽フォルダ</td><td>' + escapeHtml(fsa.folderName || '—') + '</td><td>' + escapeHtml(obj.musicFolderName || '不明') + '</td></tr>' +

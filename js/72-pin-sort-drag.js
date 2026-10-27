@@ -36,6 +36,11 @@ function applyPinnedOrderShown(keys) {
   saveDB();
   return true;
 }
+// grid の並びを保存する（Pin のアルバムのカードの並び → db.pinnedAlbums、Pin の曲のカードの並び〔.pin-song-grid。v8.7.82／スマホ版 v8.25.4〕→ db.pinnedSongs）
+function _pinApplyOrder(grid, keys) {
+  if (grid && grid.classList.contains('pin-song-grid')) return typeof applyPinnedSongOrderShown === 'function' && applyPinnedSongOrderShown(keys);
+  return applyPinnedOrderShown(keys);
+}
 // 今の Pin の並び（目印の配列。確認・不具合調べ用）
 function pinnedAlbumOrder() { return (db.pinnedAlbums || []).map(function (p) { return p.key; }); }
 
@@ -169,7 +174,7 @@ function _pinDragEnd(cancel) {
     if (d.ghost) d.ghost.remove();
     d.card.classList.remove('is-drag-source');
     var keys = _pinKeysOf(d.grid);
-    var changed = !cancel && keys.join('\n') !== d.startKeys.join('\n') && applyPinnedOrderShown(keys);
+    var changed = !cancel && keys.join('\n') !== d.startKeys.join('\n') && _pinApplyOrder(d.grid, keys);
     if (cancel || changed) {
       var y = window.scrollY;
       renderAlbumsPage();
@@ -203,7 +208,7 @@ function _pinKeyMove(card, key) {
   else if (key === 'End') j = keys.length - 1;
   if (j < 0 || j >= keys.length || j === i) return;
   keys.splice(i, 1); keys.splice(j, 0, k);
-  if (applyPinnedOrderShown(keys)) {
+  if (_pinApplyOrder(grid, keys)) {
     var y = window.scrollY;
     renderAlbumsPage();
     window.scrollTo(0, y);

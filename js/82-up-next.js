@@ -198,7 +198,7 @@ function openSongMenu(paths, x, y, title) {
   el.innerHTML = '<span class="ui-label-tag ui-label-tag-onlight" style="top:-9px;right:-6px" onclick="copyUiLabel(\'曲のメニュー\', event)" title="クリックで「曲のメニュー」をコピー">□</span>' +
     '<div class="acm-head" title="' + escapeHtml(title) + '">' + escapeHtml(title) + (paths.length > 1 ? '<span class="acm-sub">' + paths.length + '曲</span>' : '') + '</div>' +
     item('next', ICONS.playNext, '次に再生') + item('last', ICONS.queueAdd, 'キューの最後に追加') + item('add', ICONS.plus, 'プレイリストに追加…') +
-    (paths.length === 1 && typeof isSongPinned === 'function' ? item('pin', ICONS.pin, isSongPinned(paths[0]) ? 'Pin を外す' : 'Pin する') : '') +   // スマホ版 v8.18.0（84-pinned-songs.js）
+    (paths.length === 1 && typeof isSongPinned === 'function' ? item('pin', ICONS.pin, isSongPinned(paths[0]) ? 'Pin を外す' : 'この曲を Pin 止め') : '') +   // スマホ版 v8.18.0（84-pinned-songs.js）。v8.25.4 から「この曲を Pin 止め」（album の Pin の区切りに Pin の曲のカードで出る）
     (typeof openFileWriteDialog === 'function' ? item('write', ICONS.download, 'ファイルに書き込む…') : '') +   // スマホ版 v8.17.0（83-tag-file-write.js）
     (n ? '<div class="acm-sep"></div>' + item('view', ICONS.playlist, '次に再生（予約）を見る（' + n + '曲）') : '');
   document.body.appendChild(el);

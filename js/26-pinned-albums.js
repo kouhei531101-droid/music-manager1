@@ -175,9 +175,13 @@ function togglePinOnly(on) {
   renderAlbumsPage();
   window.scrollTo(0, 0);
 }
-function renderPinOnlyToggle(presentN) {
+// songN：Pin の曲のカードの数（v8.7.82／スマホ版 v8.25.4。Pin の曲だけでもボタンを出す）
+function renderPinOnlyToggle(presentN, songN) {
   var b = document.getElementById('alb-pin-only');
   if (!b) return;
+  songN = songN || 0;
+  var lbl = presentN + '枚' + (songN ? '・' + songN + '曲' : '');
+  presentN += songN;
   var on = isPinOnlyActive(presentN);
   b.hidden = !presentN;
   b.disabled = !!albView.showHidden;
@@ -185,6 +189,6 @@ function renderPinOnlyToggle(presentN) {
   b.setAttribute('aria-pressed', on ? 'true' : 'false');
   b.innerHTML = ICONS.pin;   // アイコンだけ（状態は色・title・aria-pressed で伝える）
   b.title = albView.showHidden ? 'Pin のみ（非表示のアルバムを見ている間は使えません）'
-    : 'Pin のみ（' + presentN + '枚）：' + (on ? 'ふつうの一覧に戻る' : 'Pin したアルバムだけを表示する');
-  b.setAttribute('aria-label', 'Pin のみ（' + presentN + '枚）');
+    : 'Pin のみ（' + lbl + '）：' + (on ? 'ふつうの一覧に戻る' : 'Pin したアルバム・曲だけを表示する');
+  b.setAttribute('aria-label', 'Pin のみ（' + lbl + '）');
 }
