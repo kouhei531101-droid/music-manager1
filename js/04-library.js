@@ -197,6 +197,7 @@ async function scanLibrary(opts) {
   library.lastAdded = firstLoad ? 0 : added;
   library.lastRemoved = firstLoad ? 0 : Math.max(0, library.tracks.length - (found.files.length - added));
   if (same) {
+    resetTrackDetailTried();   // 同じ曲の入れ物を使い続けるので、「読みに行った」印を外す（スマホ版 v8.25.5。入れ替えるときは新しい入れ物なので印は無い）
     found.files.forEach(function (f) { prev[f.path].handle = f.handle; });
     library.folders = found.folders;
     library.trashFiles = found.trash;
@@ -403,11 +404,16 @@ function readTrackMetaNow(t) {
   return t._metaP;
 }
 // list：読む曲（高速モードは増えた曲だけ、全確認は全曲）。full：全確認（終わったら最終の全確認を記録）
-// 古い控えの曲（ジャンル・発売年などが無い）を、裏の順番を待たずに今すぐ補う（開いたアルバムの曲。v3.2）。補ったら onDone
+// 古い控えの曲（ジャンル・発売年などが無い）を、裏の順番を待たずに今すぐ補う（開いたアルバムの曲。v3.2）。新しく読めた曲があったら onDone
+// スマホ版 v8.25.5（PC版 v8.7.84 と同じ）：読みに行った曲には t._detailTried の印を付け、同じ曲は二度読みに行かない（メモリだけ。保存しない）。
+//   今までは、読めなかった曲（ファイルを開けない・見つからない など）の控えが古いまま残り、onDone の描き直し
+//   → また readTrackDetailNow → 失敗済みの t._metaP がすぐ終わる → また描き直し…が止まらず、画面が固まっていた。
+//   印は、フォルダの読み込み直し・選び直し（scanLibrary の resetTrackDetailTried）で外す（読めるようになった曲をもう一度読む）
 function readTrackDetailNow(tracks, onDone) {
   var ps = [];
   tracks.forEach(function (t) {
-    if (!t || !tagCacheNeedsDetail(tagCache[t.path])) return;
+    if (!t || t._detailTried || !tagCacheNeedsDetail(tagCache[t.path])) return;
+    t._detailTried = true;   // 読めても読めなくても、この曲はもう読みに行った
     if (!t._metaP) {
       t._metaP = _readOneTrackMeta(t, true).then(function (d) { if (d) _metaDirty = true; return true; },
         function (e) { console.warn('曲情報を読めませんでした:', t.path, e); return false; });
@@ -415,11 +421,15 @@ function readTrackDetailNow(tracks, onDone) {
     ps.push(t._metaP);
   });
   if (!ps.length) return false;
-  Promise.all(ps).then(function () {
+  Promise.all(ps).then(function (rs) {
     if (!library.metaRunning && _metaDirty) { libIndexChanged(); _metaDirty = false; }   // 読み込みの外で補ったときは、ここで保存
-    if (onDone) onDone();
+    if (onDone && rs.some(function (ok) { return ok; })) onDone();   // 描き直しは、新しく読めた曲があったときだけ
   });
   return true;
+}
+// 「読みに行った」印（t._detailTried）を外す（フォルダの読み込み直し・選び直しのとき。スマホ版 v8.25.5）
+function resetTrackDetailTried(tracks) {
+  (tracks || library.tracks).forEach(function (t) { if (t) delete t._detailTried; });
 }
 async function readMetadataInBackground(token, list, full) {
   list = list || library.tracks.slice();

@@ -512,6 +512,7 @@ function _updateAlbumSearchBox(custom) {
 function renderAlbumDetail(a, body) {
   albView.current = a;
   // 古い版の控えの曲（ジャンル・発売年が無い）は、このアルバムの曲を先に補って、補えたら見出しを描き直す（v3.2）
+  //   スマホ版 v8.25.5：読みに行くのは1曲1回だけ（読めなかった曲は描き直さない。04-library.js の readTrackDetailNow。描き直しが止まらず画面が固まっていた）
   if (typeof readTrackDetailNow === 'function') {
     readTrackDetailNow(a.tracks, function () { if (currentPage === 'albums' && albView.current && albView.current.key === a.key) renderAlbumsPage(); });
   }
