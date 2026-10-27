@@ -26,7 +26,10 @@ function _npEnsureAudioGraph() {
   var AC = window.AudioContext || window.webkitAudioContext;
   if (!AC) return false;
   try {
-    np.ctx = new AC();
+    // スマホ版 v8.25.2：音飛び対策。latencyHint 'playback'（再生向け。音の余裕を大きく取り、描く処理が重いときも音が途切れにくい）で作る。
+    //   指定できない古いブラウザでは、指定なしで作り直す。作った値（baseLatency）は確かめのために console に1回だけ出す
+    try { np.ctx = new AC({ latencyHint: 'playback' }); } catch (e1) { np.ctx = new AC(); }
+    try { console.info('[音飛び対策] AudioContext baseLatency =', np.ctx.baseLatency, 'sampleRate =', np.ctx.sampleRate); } catch (e2) {}
     np.src = np.ctx.createMediaElementSource(player.audio);   // 1回だけ（2回目はエラーになる）
     np.analyser = np.ctx.createAnalyser();
     np.analyser.fftSize = 2048;
@@ -322,11 +325,14 @@ function _hslToRgb(h, s, l) {
 /* ---------- 描く ---------- */
 // スマホ版 v8.24.2：キャンバスの点の数の上限（NP_VIZ_MAX_PX）。タブレット（1280×800・画面の細かさ 2）では 2560×1600＝約410万点を
 //   毎フレーム描いていて、端末の描く力（GPU）を使い切っていた。上限を超えるときは細かさを下げる（スマホの大きさ 412×915×2 はほぼそのまま）
-var NP_VIZ_MAX_PX = 1500000;
+// スマホ版 v8.25.2：音飛び対策で、さらに下げた。細かさ（devicePixelRatio）は NP_VIZ_MAX_DPR（1.5）まで、点の数は NP_VIZ_MAX_PX（60万点）まで。
+//   スマホ（412×915・細かさ 2.625）では 822×1825＝約150万点 → 約52万点（519×1153）。ブラック・パープルの加算合成（70-np-viz-trail.js）で
+//   描く力（GPU）を使い切って 37fps まで落ちていたのを防ぐ（キャンバスは画面の後ろの光の絵なので、少し粗くしても目立ちにくい）
+var NP_VIZ_MAX_PX = 600000, NP_VIZ_MAX_DPR = 1.5;
 function _npSizeCanvas() {
   var cv = document.getElementById('np-viz');
   if (!cv) return;
-  var dpr = Math.min(2, window.devicePixelRatio || 1), w = cv.clientWidth, h = cv.clientHeight;
+  var dpr = Math.min(NP_VIZ_MAX_DPR, window.devicePixelRatio || 1), w = cv.clientWidth, h = cv.clientHeight;
   if (w * h * dpr * dpr > NP_VIZ_MAX_PX) dpr = Math.max(0.75, Math.sqrt(NP_VIZ_MAX_PX / Math.max(1, w * h)));
   if (cv.width !== Math.round(w * dpr) || cv.height !== Math.round(h * dpr)) { cv.width = Math.round(w * dpr); cv.height = Math.round(h * dpr); np.vizAt = 0; }
 }
@@ -346,6 +352,10 @@ function _npVizCenter(cv) {
 // スマホ版 v8.24.2：止まっている（一時停止・曲が無い）ときは、残像・粒が消えるまで（NP_VIZ_IDLE_AFTER ミリ秒）だけふつうに描き、
 //   そのあとは NP_VIZ_IDLE_EVERY ミリ秒に1回だけ描く（設定を変えたとき・向きを変えたときも少し待てば描き直される）
 var NP_VIZ_IDLE_AFTER = 3000, NP_VIZ_IDLE_EVERY = 250;
+// スマホ版 v8.25.2：音飛び対策。再生中のビジュアライザーは 1秒 NP_VIZ_FPS（30）回までにする（前に描いた時刻と比べて間引く）。
+//   画面の書き換えの間隔（60Hz なら 16.7ms・120Hz なら 8.3ms）のゆれで間引きすぎないよう、NP_VIZ_GAP_SLACK（4ms）だけ早めでも描く。
+//   動きの速さは描く間隔（dt）で計算しているので変わらない。間引くのはビジュアライザー（#np-viz）だけで、回転CD・歌詞・流れる表示は今までどおり
+var NP_VIZ_FPS = 30, NP_VIZ_GAP_SLACK = 4;
 function _npStartLoop() {
   if (np.raf || !np.open || document.hidden) return;
   var step = function (ts) {
@@ -353,8 +363,8 @@ function _npStartLoop() {
     if (!np.open || document.hidden) return;
     var a = player.audio, idle = !a || a.paused || !a.getAttribute('src');
     if (!idle) np.idleAt = 0; else if (!np.idleAt) np.idleAt = ts;
-    var gap = np.reduced ? 120 : (idle && ts - np.idleAt > NP_VIZ_IDLE_AFTER ? NP_VIZ_IDLE_EVERY : 0);
-    if (!gap || ts - np.lastDraw > gap) { np.lastDraw = ts; _npDraw(); }
+    var gap = np.reduced ? 120 : (idle && ts - np.idleAt > NP_VIZ_IDLE_AFTER ? NP_VIZ_IDLE_EVERY : 1000 / NP_VIZ_FPS - NP_VIZ_GAP_SLACK);
+    if (!np.lastDraw || ts - np.lastDraw >= gap || ts < np.lastDraw) { np.lastDraw = ts; _npDraw(); }
     np.raf = requestAnimationFrame(step);
   };
   np.raf = requestAnimationFrame(step);
