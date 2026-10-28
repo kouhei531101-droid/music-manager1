@@ -129,7 +129,10 @@ function openUpNextDialog() {
     title: '次に再生（予約）' + (n ? '　' + n + '曲' : ''),
     size: 'small',
     body: '<div id="upn-dlg">' + _upDialogBody() + '</div>',
-    buttons: (n ? [{ label: '予約をすべてクリア', value: 'clear', cls: 'btn-cancel upn-clear-btn' }] : []).concat([{ label: '閉じる', value: 'ok', cls: 'btn-save', isDefault: true }]),
+    buttons: (n ? [{ label: '予約をすべてクリア', value: 'clear', cls: 'btn-cancel upn-clear-btn' }] : [])
+      // スマホ版 v8.25.6：再生画面を開いているときは「＋曲を追加」（96-np-queue-add.js のキューに追加パネルを開く）
+      .concat(typeof npqaOpen === 'function' && typeof np !== 'undefined' && np.open ? [{ label: '＋曲を追加', value: 'qa', cls: 'btn-cancel upn-qa-btn' }] : [])
+      .concat([{ label: '閉じる', value: 'ok', cls: 'btn-save', isDefault: true }]),
     onOpen: function (body) {
       var box = body.querySelector('#upn-dlg');
       box.addEventListener('click', function (ev) {
@@ -140,7 +143,7 @@ function openUpNextDialog() {
         if (nb && !nb.disabled) { try { nb.focus({ preventScroll: true }); } catch (e) { /* 無視 */ } }
       });
     }
-  }).then(function (v) { if (v === 'clear') upNextClear(); });
+  }).then(function (v) { if (v === 'clear') upNextClear(); else if (v === 'qa' && typeof npqaOpen === 'function') npqaOpen(); });
 }
 // 予約が変わったら：開いているダイアログ・再生画面の札を合わせる
 function upNextRefresh() {

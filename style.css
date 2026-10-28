@@ -3993,3 +3993,64 @@ body.alb-fab-on #main { padding-bottom: calc(var(--player-h) + var(--lyr-bottom)
 .pin-song-bar-btn { flex: none; }
 /* アルバムの曲一覧の曲の行の曲の Pin ボタンは、songs の行と同じ（.song-pin-btn）。少しだけ小さく */
 .album-row .song-pin-btn { width: 28px; height: 28px; }
+
+/* ---------- スマホ版 v8.25.6：キューに追加ボタン・キューに追加パネル（96-np-queue-add.js。PC版 v8.7.85 と同じ名前）----------
+   ・キューに追加ボタン（.np-qa-btn）：再生画面の曲リスト・プレイリストのキューの見出しの右の「＋追加」。パネルを開いている間は色を付ける
+   ・キューに追加パネル（#np-qa）：再生画面の下から出るシート（スマホ幅）。PC 幅（761px 以上）は右の枠。後ろ（#np-qa-drop）を押すと閉じる
+   ・ジャケットは小さく（曲 40px・アルバム 46px・アルバムの見出し 58px）。色は画面の色の変数だけ（ライト・ブラック・セピアなど）
+   ・「次に再生」「最後に追加」は指で押しやすい大きさ（54×44px。アイコンの下に短い名前） */
+.np-qa-btn { flex: none; margin-left: auto; display: inline-flex; align-items: center; gap: 3px; min-height: 34px; padding: 0 13px 0 10px; border-radius: 999px;
+  border: 1px solid var(--primary-mid); background: var(--primary-pale); color: var(--ink); font: inherit; font-size: 13px; font-weight: 700; cursor: pointer; white-space: nowrap; }
+.np-qa-btn svg { width: 15px; height: 15px; flex: none; }
+.np-qa-btn.active { background: var(--primary-mid); color: #fff; }
+.np-qa-btn:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+.np-qa-back-drop { position: absolute; inset: 0; z-index: 60; background: rgba(0, 0, 0, 0.32); }
+.np-qa-back-drop[hidden] { display: none; }
+.np-qa { position: absolute; z-index: 61; left: 0; right: 0; bottom: 0; height: min(80%, 680px); display: flex; flex-direction: column;
+  border-radius: 16px 16px 0 0; border-top: 1px solid var(--border2); background: var(--surface); color: var(--text); box-shadow: 0 -12px 40px rgba(0, 0, 0, 0.3);
+  padding: 0 env(safe-area-inset-right, 0px) env(safe-area-inset-bottom, 0px) env(safe-area-inset-left, 0px); overflow: hidden; }
+.np-qa[hidden] { display: none; }
+@media (min-width: 761px) {
+  .np-qa { left: auto; right: 16px; bottom: 16px; top: 72px; height: auto; width: min(440px, calc(100% - 32px)); border-radius: 14px; border: 1px solid var(--border2); }
+  .np-qa-back-drop { background: transparent; }
+}
+.np-qa-head { flex: none; display: flex; align-items: center; gap: 8px; padding: 10px 10px 8px 16px; border-bottom: 1px solid var(--border); }
+.np-qa-title { display: inline-flex; align-items: center; gap: 5px; font-size: 14px; font-weight: 700; color: var(--ink); white-space: nowrap; }
+.np-qa-title svg { width: 16px; height: 16px; }
+.np-qa-n { font-size: 12px; color: var(--text-sub); white-space: nowrap; }
+.np-qa-close { margin-left: auto; display: inline-flex; align-items: center; gap: 4px; min-height: 36px; padding: 0 14px; border-radius: 999px; border: 1px solid var(--border2);
+  background: var(--surface); color: var(--text); font: inherit; font-size: 13px; font-weight: 600; cursor: pointer; }
+.np-qa-close svg { width: 15px; height: 15px; }
+.np-qa-tabs { flex: none; display: flex; gap: 5px; padding: 9px 10px 7px; }
+.np-qa-tab { flex: 1 1 0; min-width: 0; min-height: 36px; padding: 4px 6px; border-radius: 999px; border: 1px solid var(--border2); background: var(--surface); color: var(--text-sub);
+  font: inherit; font-size: 12px; font-weight: 600; line-height: 1.2; cursor: pointer; }
+.np-qa-tab.active { background: var(--primary-mid); border-color: var(--primary-mid); color: #fff; }
+.np-qa-tab:focus-visible, .np-qa-add:focus-visible, .np-qa-open:focus-visible, .np-qa-backbtn:focus-visible { outline: 2px solid var(--primary); outline-offset: 1px; }
+.np-qa-note { flex: none; padding: 0 16px 7px; font-size: 11px; color: var(--text-sub); }
+.np-qa-note[hidden] { display: none; }
+.np-qa-body { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; border-top: 1px solid var(--border); }
+.np-qa-empty { margin: 0; padding: 18px 16px; font-size: 13px; line-height: 1.7; color: var(--text-sub); }
+.np-qa-list { margin: 0; padding: 2px 0 8px; list-style: none; }
+.np-qa-row { display: flex; align-items: center; gap: 8px; padding: 5px 8px 5px 12px; border-bottom: 1px solid var(--border); }
+.np-qa-row:last-child { border-bottom: none; }
+.art-thumb.np-qa-art { flex: none; width: 40px; height: 40px; border-radius: 5px; }
+.art-thumb.np-qa-art-m { width: 46px; height: 46px; }
+.art-thumb.np-qa-art-l { width: 58px; height: 58px; border-radius: 7px; }
+.np-qa-no { flex: none; width: 2.2em; text-align: right; font-size: 12px; color: var(--text-sub); font-variant-numeric: tabular-nums; }
+.np-qa-text { flex: 1; min-width: 0; display: flex; flex-direction: column; text-align: left; }
+.np-qa-t, .np-qa-a { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.np-qa-t { font-size: 14px; color: var(--text); }
+.np-qa-a { font-size: 12px; color: var(--text-sub); }
+.np-qa-s { margin-left: 6px; font-variant-numeric: tabular-nums; }
+.np-qa-btns { flex: none; display: inline-flex; gap: 4px; }
+.np-qa-add { display: inline-flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px; width: 54px; min-height: 44px; padding: 3px 2px;
+  border-radius: 9px; border: 1px solid var(--border2); background: var(--surface); color: var(--text); font: inherit; font-size: 10px; line-height: 1.15; cursor: pointer; }
+.np-qa-add svg { width: 18px; height: 18px; flex: none; }
+.np-qa-add.is-done { background: var(--primary-mid); border-color: var(--primary-mid); color: #fff; }
+.np-qa-open { flex: 1; min-width: 0; display: flex; align-items: center; gap: 9px; padding: 0; border: none; background: none; color: inherit; font: inherit; cursor: pointer; }
+.np-qa-backbtn { display: inline-flex; align-items: center; gap: 4px; min-height: 36px; margin: 8px 10px 2px; padding: 0 12px 0 8px; border-radius: 999px; border: 1px solid var(--border2);
+  background: var(--surface); color: var(--text-sub); font: inherit; font-size: 13px; cursor: pointer; }
+.np-qa-backbtn svg { width: 15px; height: 15px; }
+.np-qa-album-head { display: flex; align-items: flex-start; gap: 10px; padding: 8px 12px; border-bottom: 1px solid var(--border); }
+.np-qa-album-head .np-qa-t { font-weight: 700; white-space: normal; }
+.np-qa-whole { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin-top: 6px; font-size: 12px; color: var(--text-sub); }
