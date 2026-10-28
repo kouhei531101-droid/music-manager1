@@ -3797,9 +3797,9 @@ body.alb-fab-on #main { padding-bottom: calc(var(--player-h) + var(--lyr-bottom)
      離したら .np-vg-back で元の位置へなめらかに戻す（prefers-reduced-motion ではすぐ戻す）
    ・タップの印（.np-jg-badge。v8.23.5 と同じ見た目）は、プレイヤー表示の枠（#np-vis-frame）の真ん中に出す */
 @media (max-width: 760px), (orientation: landscape) and (max-height: 500px) and (max-width: 1000px) {
-  #now-playing .np-cd-disc, #now-playing .np-cs-body, #now-playing .np-rc-body, #now-playing .np-md-body {
+  #now-playing .np-cd-disc, #now-playing .np-cs-body, #now-playing .np-rc-body, #now-playing .np-md-body, #now-playing .np-sp-body {   /* .np-sp-body：スピーカーのモード（v8.25.7） */
     touch-action: pan-y; cursor: pointer; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; }
-  #now-playing .np-cd-disc img, #now-playing .np-cs-body img, #now-playing .np-rc-body img, #now-playing .np-md-body img { -webkit-user-drag: none; }
+  #now-playing .np-cd-disc img, #now-playing .np-cs-body img, #now-playing .np-rc-body img, #now-playing .np-md-body img, #now-playing .np-sp-body img { -webkit-user-drag: none; }
 }
 .np-vg-back { transition: translate 0.22s ease-out; }
 #now-playing .np-vis-frame > .np-jg-badge { top: 50%; }
@@ -4054,3 +4054,93 @@ body.alb-fab-on #main { padding-bottom: calc(var(--player-h) + var(--lyr-bottom)
 .np-qa-album-head { display: flex; align-items: flex-start; gap: 10px; padding: 8px 12px; border-bottom: 1px solid var(--border); }
 .np-qa-album-head .np-qa-t { font-weight: 700; white-space: normal; }
 .np-qa-whole { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin-top: 6px; font-size: 12px; color: var(--text-sub); }
+
+/* ---------- スピーカーのモード（PC版 v8.7.86・スマホ版 v8.25.7。np-speaker.js・PC版 90-np-speaker.js・スマホ版 97-np-speaker.js）----------
+   ・プレイヤー表示の枠（.np-vis-frame）の中に「スピーカーのモード」（.np-sp-big）。上の段に「左スピーカー」・ジャケット・「右スピーカー」、下に「アンプのパネル」
+   ・大きさはすべて --u（全体の幅）の割合。--u は枠に入る最大（枠を container にして cqw・cqh で決める）。高さは --u × 0.75
+   ・毎フレーム変えるのは、コーン（.np-sp-cone）・ツイーター（.np-sp-tw-dome）・針（.np-sp-needle）の transform と、ピークランプ（.np-sp-peak）の opacity だけ。
+     影・木目・金属の模様は動かない部品にだけ付ける（一度描けば描き直さない）
+   ・色：木目 --sp-w1/--sp-w2、金属 --sp-m1/--sp-m2、文字 --sp-ink。ライト＝ウォルナットと銀、ブラック（パープルも）＝濃い木と黒の金属、セピア＝明るい木とシャンパンゴールド */
+.np-sp-big { display: none; --sp-w1: #9a6638; --sp-w2: #6a4021; --sp-m1: #eef0f2; --sp-m2: #b4b8be; --sp-ink: #2b2e33; --sp-ink2: rgba(43, 46, 51, 0.62); }
+:root[data-theme="dark"] .np-sp-big { --sp-w1: #5c3b22; --sp-w2: #33200f; --sp-m1: #34363b; --sp-m2: #131417; --sp-ink: #d4d6db; --sp-ink2: rgba(212, 214, 219, 0.6); }
+:root[data-palette="sepia"] .np-sp-big { --sp-w1: #b5804a; --sp-w2: #7d5129; --sp-m1: #efe2c2; --sp-m2: #bda477; --sp-ink: #3b2c17; --sp-ink2: rgba(59, 44, 23, 0.62); }
+.np.np-sp-mode .np-vis-frame { container-type: size; }
+.np.np-sp-mode .np-sp-big { --u: min(calc(100cqw - var(--visL) - 12px), calc((100cqh - 24px) / 0.75), 760px);
+  display: block; position: absolute; z-index: 0; left: calc(var(--visL) + (100cqw - var(--visL) - var(--u)) / 2); top: 50%;
+  width: var(--u); height: calc(var(--u) * 0.75); transform: translateY(-50%); pointer-events: none;
+  font-family: 'DM Sans', Arial, Helvetica, sans-serif; line-height: 1; color: var(--sp-ink); }
+.np-sp-big .ui-label-tag { pointer-events: auto; }
+.np-sp-labeltag { top: -15px; right: 0; left: auto; }
+.np-sp-labeltag-l, .np-sp-labeltag-r { top: -15px; left: 0; }
+.np-sp-labeltag-amp { top: 3px; right: 3px; left: auto; }
+/* 上の段：スピーカー・ジャケット・スピーカー */
+.np-sp-stage { position: absolute; left: 0; top: 0; width: 100%; height: calc(var(--u) * 0.49); display: flex; align-items: stretch; justify-content: space-between; }
+.np-sp-body { position: relative; flex: none; width: calc(var(--u) * 0.49); height: calc(var(--u) * 0.49); padding: 0; border: none; border-radius: calc(var(--u) * 0.014); overflow: hidden;
+  background: var(--surface-2); box-shadow: 0 10px 28px rgba(0, 0, 0, 0.30); pointer-events: auto; cursor: zoom-in; }
+.np-sp-body:disabled { cursor: default; opacity: 1; }
+.np-sp-body:focus-visible { outline: 3px solid var(--primary); outline-offset: 4px; }
+.np-sp-art, .np-sp-art .art-thumb { display: block; width: 100%; height: 100%; border-radius: 0; }
+.np-sp-art .art-thumb img { width: 100%; height: 100%; object-fit: cover; }
+.np-sp-art .art-thumb.art-none { display: flex; align-items: center; justify-content: center; }   /* 絵の無い曲：音符を真ん中に */
+.np-sp-art .art-thumb.art-none svg { width: 30%; height: 30%; }
+/* スピーカー（木目の箱 ＞ 黒い前の板 ＞ ツイーター・ウーファー・バスレフの穴） */
+.np-sp-spk { position: relative; flex: none; width: calc(var(--u) * 0.22); height: 100%; border-radius: calc(var(--u) * 0.01);
+  background: repeating-linear-gradient(91deg, rgba(0, 0, 0, 0.10) 0 1px, transparent 1px 5px, rgba(255, 255, 255, 0.05) 5px 6px, transparent 6px 11px),
+    repeating-radial-gradient(ellipse 160% 22% at 30% 40%, rgba(0, 0, 0, 0.07) 0 2px, transparent 2px 7px),
+    linear-gradient(180deg, var(--sp-w1), var(--sp-w2));
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.28), inset 0 1px 0 rgba(255, 255, 255, 0.18), inset 0 -2px 0 rgba(0, 0, 0, 0.25); }
+.np-sp-baffle { position: absolute; inset: calc(var(--u) * 0.012); border-radius: calc(var(--u) * 0.006);
+  background: radial-gradient(ellipse 120% 70% at 50% 30%, #262628, #141415 70%); box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.6), inset 0 2px 6px rgba(0, 0, 0, 0.5); }
+.np-sp-tw { position: absolute; left: 50%; top: 7%; width: 44%; aspect-ratio: 1; transform: translateX(-50%); border-radius: 50%;
+  background: radial-gradient(circle closest-side, #0d0d0e 0 58%, #5a5b60 63%, #2c2c2f 74%, #151516 92%, #2a2a2c 100%); }
+.np-sp-tw-dome { position: absolute; inset: 25%; border-radius: 50%; will-change: transform;
+  background: radial-gradient(circle at 38% 32%, #fbfbfb, #c0c2c7 32%, #66686d 68%, #2a2b2e 100%); }
+.np-sp-woofer { position: absolute; left: 50%; top: 38%; width: 92%; aspect-ratio: 1; transform: translateX(-50%); border-radius: 50%;
+  background: radial-gradient(circle closest-side, #0b0b0c 0 84%, #4c4d52 87%, #2a2a2d 92%, #111112 100%); }
+.np-sp-woofer::before { content: ''; position: absolute; inset: 1.5%; border-radius: 50%;   /* 枠のねじ（4つ） */
+  background: radial-gradient(circle at 50% 3%, #8d8f95 0 1.6%, transparent 2.2%), radial-gradient(circle at 50% 97%, #8d8f95 0 1.6%, transparent 2.2%),
+    radial-gradient(circle at 3% 50%, #8d8f95 0 1.6%, transparent 2.2%), radial-gradient(circle at 97% 50%, #8d8f95 0 1.6%, transparent 2.2%); }
+.np-sp-cone { position: absolute; inset: 9%; border-radius: 50%; will-change: transform;
+  background: repeating-radial-gradient(circle closest-side, rgba(255, 255, 255, 0.035) 0 3%, rgba(0, 0, 0, 0.09) 3% 6%),
+    radial-gradient(circle closest-side, #39393d 0 30%, #2b2b2e 74%, #18181a 79%, #46464b 87%, #1a1a1c 95%, #0c0c0d 100%); }
+.np-sp-cap { position: absolute; inset: 33%; border-radius: 50%; background: radial-gradient(circle at 38% 32%, #77777d, #2a2a2d 55%, #111112 100%); box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.55); }
+.np-sp-port { position: absolute; left: 50%; bottom: 5.5%; width: 46%; height: 4.5%; transform: translateX(-50%); border-radius: 999px;
+  background: #040404; box-shadow: inset 0 2px 3px rgba(0, 0, 0, 0.9), 0 1px 0 rgba(255, 255, 255, 0.08); }
+/* アンプのパネル（金属の板・左右に木の板） */
+.np-sp-amp { position: absolute; left: 0; right: 0; bottom: 0; height: calc(var(--u) * 0.22); box-sizing: border-box; display: flex; align-items: center; gap: calc(var(--u) * 0.02);
+  padding: 0 calc(var(--u) * 0.04); border-radius: calc(var(--u) * 0.012); font-size: calc(var(--u) * 0.02); color: var(--sp-ink);
+  background: repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.07) 0 1px, rgba(0, 0, 0, 0.035) 1px 2px, transparent 2px 4px), linear-gradient(180deg, var(--sp-m1), var(--sp-m2));
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.26), inset 0 1px 0 rgba(255, 255, 255, 0.45), inset 0 -2px 0 rgba(0, 0, 0, 0.2); }
+.np-sp-amp::before, .np-sp-amp::after { content: ''; position: absolute; top: 0; bottom: 0; width: calc(var(--u) * 0.018);
+  background: repeating-linear-gradient(0deg, rgba(0, 0, 0, 0.12) 0 1px, transparent 1px 4px), linear-gradient(90deg, var(--sp-w1), var(--sp-w2)); }
+.np-sp-amp::before { left: 0; border-radius: calc(var(--u) * 0.012) 0 0 calc(var(--u) * 0.012); }
+.np-sp-amp::after { right: 0; border-radius: 0 calc(var(--u) * 0.012) calc(var(--u) * 0.012) 0; }
+.np-sp-amp-l { flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; align-items: flex-start; gap: calc(var(--u) * 0.012); overflow: hidden; }
+.np-sp-brand { font-size: calc(var(--u) * 0.021); font-weight: 700; letter-spacing: 0.08em; white-space: nowrap; }
+.np-sp-model { font-size: calc(var(--u) * 0.013); letter-spacing: 0.12em; color: var(--sp-ink2); white-space: nowrap; }
+.np-sp-power { display: flex; align-items: center; gap: calc(var(--u) * 0.008); margin-top: calc(var(--u) * 0.01); font-size: calc(var(--u) * 0.014); letter-spacing: 0.1em; color: var(--sp-ink2); }
+.np-sp-lamp { width: calc(var(--u) * 0.016); aspect-ratio: 1; border-radius: 50%; background: radial-gradient(circle at 40% 35%, #c9b089, #6a4a22 70%); box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.35); }
+.np.np-is-playing .np-sp-lamp { background: radial-gradient(circle at 40% 35%, #fff4c2, #ffb21e 50%, #c26a00); box-shadow: 0 0 calc(var(--u) * 0.01) #ffae1a, inset 0 0 0 1px rgba(0, 0, 0, 0.2); }
+.np-sp-vu { flex: none; width: calc(var(--u) * 0.27); display: flex; flex-direction: column; align-items: stretch; gap: calc(var(--u) * 0.007); }
+.np-sp-face { position: relative; width: 100%; aspect-ratio: 100 / 56; overflow: hidden; border-radius: calc(var(--u) * 0.006);
+  background: radial-gradient(ellipse 90% 120% at 50% 105%, #ffe9ad, #f6dc98 45%, #e7c374 100%);
+  box-shadow: inset 0 0 0 calc(var(--u) * 0.004) #18181a, inset 0 3px 7px rgba(0, 0, 0, 0.35), 0 1px 0 rgba(255, 255, 255, 0.35); }
+.np-sp-scale { position: absolute; inset: 0; width: 100%; height: 100%; }
+.np-sp-ch { position: absolute; left: 7%; bottom: 8%; font-size: calc(var(--u) * 0.018); font-weight: 700; color: #2a2118; }
+.np-sp-needle { position: absolute; left: 50%; bottom: -10.7%; width: max(1px, calc(var(--u) * 0.0028)); height: 88%; margin-left: max(-0.5px, calc(var(--u) * -0.0014));
+  border-radius: 1px; background: linear-gradient(180deg, #c0281c 0 14%, #1a1a1a 14%); transform: rotate(-46deg); transform-origin: 50% 100%; will-change: transform; }
+.np-sp-hub { position: absolute; left: 39%; width: 22%; bottom: 0; height: 13%; border-radius: 100% 100% 0 0 / 200% 200% 0 0; background: linear-gradient(180deg, #3a3a3d, #121213); }
+.np-sp-glass { position: absolute; inset: 0; pointer-events: none; background: linear-gradient(162deg, rgba(255, 255, 255, 0.38), rgba(255, 255, 255, 0) 38%); }
+.np-sp-peak-wrap { display: flex; align-items: center; justify-content: flex-end; gap: calc(var(--u) * 0.008); font-size: calc(var(--u) * 0.013); letter-spacing: 0.1em; color: var(--sp-ink2); }
+.np-sp-peak { width: calc(var(--u) * 0.015); aspect-ratio: 1; border-radius: 50%; opacity: 0.16; will-change: opacity;
+  background: radial-gradient(circle at 40% 35%, #ffc2b8, #ff2a12 55%, #8a0d00); box-shadow: 0 0 calc(var(--u) * 0.01) #ff3b1f; }
+.np-sp-amp-r { flex: none; display: flex; flex-direction: column; align-items: center; gap: calc(var(--u) * 0.01); }
+.np-sp-knob { position: relative; width: calc(var(--u) * 0.085); aspect-ratio: 1; border-radius: 50%;
+  background: repeating-conic-gradient(rgba(255, 255, 255, 0.16) 0 3deg, rgba(0, 0, 0, 0.10) 3deg 6deg), radial-gradient(circle at 40% 35%, #f7f7f8, #aeb2b8 60%, #6b6f75);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.35), inset 0 0 0 1px rgba(0, 0, 0, 0.25); transform: rotate(35deg); }
+.np-sp-knob::after { content: ''; position: absolute; left: 47%; top: 8%; width: 6%; height: 26%; border-radius: 2px; background: #2a2b2e; }
+.np-sp-knob-label { font-size: calc(var(--u) * 0.012); letter-spacing: 0.12em; color: var(--sp-ink2); }
+/* スマホ版：スマホの並び（ひと画面。枠は container）は、枠に入る最大の大きさで真ん中に。全体を縮めるので、スピーカー・ジャケット・アンプの比はそのまま */
+@media (max-width: 760px), (orientation: landscape) and (max-height: 500px) and (max-width: 1000px) {
+  #now-playing.np-sp-mode .np-sp-big { --u: min(calc(100cqw - 20px), calc((100cqh - 12px) / 0.75), 560px); left: 50%; transform: translate(-50%, -50%); }
+}

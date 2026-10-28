@@ -42,9 +42,11 @@ function _npEnsureAudioGraph() {
     if (eq) {
       eq.out.connect(np.ctx.destination);
       eq.viz.connect(np.analyser);
+      np.vizSrc = eq.viz;   // スピーカーのモード（np-speaker.js）が左右に分けて見る所（ビジュアライザーと同じ所）
     } else {
       np.src.connect(np.ctx.destination);   // 音はそのまま出す
       np.src.connect(np.analyser);          // 形を見るためだけの枝分かれ
+      np.vizSrc = np.src;
     }
     np.freq = new Uint8Array(np.analyser.frequencyBinCount);
     np.wave = new Uint8Array(np.analyser.fftSize);

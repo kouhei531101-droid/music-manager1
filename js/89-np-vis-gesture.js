@@ -5,6 +5,7 @@
        カセット … #np-cs-body（.np-cs-body。56-cassette.js）
        レコード … #np-rc-body（.np-rc-body。57-record.js）
        MD       … #np-md-body（.np-md-body。58-md.js）
+       スピーカー … #np-sp-body（.np-sp-body。スピーカーのモードのジャケット。97-np-speaker.js。スマホ版 v8.25.7）
      スマホの並び（88-np-jacket-gesture.js の npJacketGestureOn()＝68 の npOneNarrow()：幅 760px 以下・横向きのスマホ）のときだけ。PC 幅は今まで通り
      「ジャケット」のときは 88-np-jacket-gesture.js（ジャケットの並び）が受け持つ
    ・動き（88 の「ジャケットの操作」と同じ。判定・曲送り・一時停止／再生・印は 88 の共通の部品を使う）：
@@ -22,8 +23,8 @@
    ・保存データ・バックアップには触らない
    ========================================================= */
 
-var NPVG_BODY_SEL = '.np-cd-disc, .np-cs-body, .np-rc-body, .np-md-body';   // 押せる本体
-var NPVG_BIG_SEL = '.np-cd-big, .np-cs-big, .np-rc-big, .np-md-big';        // 本体の置き場所（動かしている間に横へずらす）
+var NPVG_BODY_SEL = '.np-cd-disc, .np-cs-body, .np-rc-body, .np-md-body, .np-sp-body';   // 押せる本体（スマホ版 v8.25.7：スピーカーのモードのジャケット .np-sp-body も）
+var NPVG_BIG_SEL = '.np-cd-big, .np-cs-big, .np-rc-big, .np-md-big, .np-sp-big';        // 本体の置き場所（動かしている間に横へずらす）
 var NPVG_MOVE_PX = 8;      // これより動かしたらタップではない
 var NPVG_NUDGE = 0.3;      // 指の動きに対する、ずらす割合
 var NPVG_NUDGE_MAX = 36;   // ずらす最大（px）
@@ -101,7 +102,7 @@ function _npvgBind(frame) {
 }
 
 // 本体の名前（指を置いたとき・読み上げ）：スマホの並びでは操作に合わせる。PC 幅は元の名前に戻す
-var NPVG_NAMES = { 'np-cd-disc': '回転CD', 'np-cs-body': 'カセットテープ', 'np-rc-body': 'レコード', 'np-md-body': 'MD' };
+var NPVG_NAMES = { 'np-cd-disc': '回転CD', 'np-cs-body': 'カセットテープ', 'np-rc-body': 'レコード', 'np-md-body': 'MD', 'np-sp-body': 'スピーカーのモード' };
 function _npvgLabels(el) {
   var on = typeof npJacketGestureOn === 'function' && npJacketGestureOn();   // スマホの並びかどうか（本体が見えるのはプレイヤー表示の枠を出しているときだけ）
   Object.keys(NPVG_NAMES).forEach(function (id) {

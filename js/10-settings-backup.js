@@ -200,6 +200,8 @@ async function onRestoreFileChosen(input) {
       '<tr><td>Pin したアーティスト</td><td>' + (db.pinnedArtists || []).length + '人</td><td>' + next.pinnedArtists.length + '人</td></tr>' +
       // アーティスト名の自動コピー（スマホ版 v8.12.5。79-artist-copy.js）：ソートキー／タグ の ON/OFF
       '<tr><td>アーティスト名の自動コピー</td><td>' + _artistCopyOnOffText(db.settings) + '</td><td>' + _artistCopyOnOffText(next.settings) + '</td></tr>' +
+      // 再生画面のプレイヤー表示（スマホ版 v8.25.7。スピーカーのモードを足したので比較表にも出す。db.settings.npVisual。無い古いバックアップは前の版と同じ読み方）
+      (typeof npVisualLabel === 'function' ? '<tr><td>再生画面のプレイヤー表示</td><td>' + escapeHtml(npVisualLabel(db.settings)) + '</td><td>' + escapeHtml(npVisualLabel(next.settings)) + '</td></tr>' : '') +
       // 再生画面の背景（スマホ版 v8.14.0。81-np-bg.js）：背景の種類・覆いの濃さ・自分の画像。古いバックアップに無ければ「なし」、画像が無ければ今の画像はそのまま
       (typeof npBgSummary === 'function' ? '<tr><td>再生画面の背景</td><td>' + npBgSummary(db.settings) + (npBgHasImage() ? '・自分の画像あり' : '') + '</td><td>' + npBgSummary(next.settings) +
         (npBgBackupHasImage(obj) ? '・自分の画像あり' : (npBgHasImage() ? '（画像は入っていないので今の画像のまま）' : '')) + '</td></tr>' : '') +

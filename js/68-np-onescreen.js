@@ -80,7 +80,7 @@ window.addEventListener('resize', debounce(function () {
     if (!el || !cv.clientWidth || el.classList.contains('np-list-open')) return null;
     var jk = el.classList.contains('np-jacket-mode');
     var t = jk ? el.querySelector('.np-flow-item.is-center')
-      : el.querySelector('.np-cd-mode .np-cd-disc, .np-cs-mode .np-cs-body, .np-rc-mode .np-rc-platter, .np-md-mode .np-md-body');
+      : el.querySelector('.np-cd-mode .np-cd-disc, .np-cs-mode .np-cs-body, .np-rc-mode .np-rc-platter, .np-md-mode .np-md-body, .np-sp-mode .np-sp-body');   // スマホ版 v8.25.7：スピーカーのモードはジャケット
     if (!t) return null;
     var r = t.getBoundingClientRect(), cr = cv.getBoundingClientRect(), k = cv.width / cv.clientWidth;
     if (r.width < 1) return null;
